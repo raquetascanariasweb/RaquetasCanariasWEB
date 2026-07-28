@@ -26,7 +26,10 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const categories = await getCategories()
+  let categories: { id: string; name: string; slug: string }[] = []
+  try {
+    categories = await getCategories()
+  } catch {} // Supabase no configurado aún
 
   return (
     <ClerkProvider>
