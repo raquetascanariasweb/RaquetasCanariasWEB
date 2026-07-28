@@ -13,7 +13,7 @@ export default function SearchBar() {
     e.preventDefault()
     const trimmed = query.trim()
     if (trimmed) {
-      router.push(`/shop?search=${encodeURIComponent(trimmed)}`)
+      router.push(`/?search=${encodeURIComponent(trimmed)}`)
       inputRef.current?.blur()
     }
   }
@@ -21,10 +21,10 @@ export default function SearchBar() {
   return (
     <form onSubmit={handleSubmit} className="relative w-full">
       <div
-        className={`flex items-center gap-2 rounded-lg border bg-[#12121a]/80 px-3 h-9 transition-all duration-300 ${
+        className={`flex items-center gap-2 rounded-lg border bg-black/30 px-3 h-9 transition-all duration-300 ${
           focused
-            ? "border-[#00e5ff]/60 shadow-[0_0_12px_-2px_rgba(0,229,255,0.2)]"
-            : "border-[#1e1e2e]"
+            ? "border-ember/50 shadow-[0_0_12px_-2px_rgba(196,227,38,0.2)]"
+            : "border-white/15"
         }`}
       >
         <svg
@@ -38,7 +38,7 @@ export default function SearchBar() {
           strokeLinecap="round"
           strokeLinejoin="round"
           className={`shrink-0 transition-colors duration-300 ${
-            focused ? "text-[#00e5ff]" : "text-[#6b6b80]"
+            focused ? "text-ember" : "text-white/40"
           }`}
         >
           <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
@@ -51,7 +51,7 @@ export default function SearchBar() {
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           placeholder="Buscar productos..."
-          className="flex-1 bg-transparent text-sm text-[#f0f0f5] placeholder-[#6b6b80] outline-none"
+          className="flex-1 bg-transparent text-sm text-white placeholder-white/40 outline-none"
         />
       </div>
     </form>

@@ -83,6 +83,22 @@ export default function AdminDashboard() {
     orders: d.orders,
   }))
 
+  const weekMap = new Map<string, { revenue: number; orders: number }>()
+  data.revenue_chart.forEach((d) => {
+    const dObj = new Date(d.date)
+    const weekStart = new Date(dObj)
+    weekStart.setDate(dObj.getDate() - dObj.getDay() + 1)
+    const weekKey = weekStart.toISOString().slice(0, 10)
+    const w = weekMap.get(weekKey) ?? { revenue: 0, orders: 0 }
+    w.revenue += Math.round(d.revenue_cents / 100)
+    w.orders += d.orders
+    weekMap.set(weekKey, w)
+  })
+  const weeklyChartData = Array.from(weekMap.entries()).map(([week, vals]) => ({
+    week: week.slice(5),
+    ...vals,
+  }))
+
   const topProductsData = data.top_products.map((p) => ({
     name: p.name.length > 16 ? p.name.slice(0, 16) + '…' : p.name,
     revenue: Math.round(p.revenue_cents / 100),
@@ -226,11 +242,11 @@ export default function AdminDashboard() {
 
       {/* ── Charts Row ─────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-7 gap-4">
-        {/* Revenue Chart */}
-        <Card className="lg:col-span-5 border-border/60">
+        {/* Revenue by Day (left) */}
+        <Card className="lg:col-span-4 border-border/60">
           <CardHeader className="pb-1">
             <CardTitle className="text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">
-              Revenue &amp; Orders — 14 Days
+              Revenue &amp; Orders — por Día
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-1">
@@ -251,7 +267,7 @@ export default function AdminDashboard() {
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                     <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} />
-                    <YAxis yAxisId="left" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickFormatter={(v) => fmt(v * 100)} tickLine={false} axisLine={false} width={50} />
+                    <YAxis yAxisId="left" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickFormatter={(v) => fmt(v * 100)} tickLine={false} axisLine={false} width={65} />
                     <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} width={30} allowDecimals={false} />
                     <Tooltip
                       contentStyle={{
@@ -271,26 +287,43 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        {/* Top Products + Quick Stats */}
-        <div className="lg:col-span-2 space-y-4">
+        {/* Panel Derecho: Semanal + Stats */}
+        <div className="lg:col-span-3 space-y-4">
+          {/* Revenue by Week */}
           <Card className="border-border/60">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
-                Top Products
+            <CardHeader className="pb-1">
+              <CardTitle className="text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">
+                Revenue &amp; Orders — por Semana
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-0">
-              {topProductsData.length === 0 ? (
-                <p className="text-xs text-muted-foreground py-4 text-center">No sales yet</p>
-              ) : (
-                <ResponsiveContainer width="100%" height={topProductsData.length * 40 + 20}>
-                  <BarChart data={topProductsData} layout="vertical" margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
-                    <XAxis type="number" hide />
-                    <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} width={90} />
-                    <Bar dataKey="revenue" fill="hsl(var(--primary))" fillOpacity={0.85} radius={[0, 3, 3, 0]} maxBarSize={14} />
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
+            <CardContent className="pt-1">
+              <div className="h-36">
+                {weeklyChartData.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full text-xs text-muted-foreground gap-1">
+                    No weekly data yet
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={weeklyChartData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                      <XAxis dataKey="week" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} />
+                      <YAxis yAxisId="left" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickFormatter={(v) => fmt(v * 100)} tickLine={false} axisLine={false} width={65} />
+                      <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} width={30} allowDecimals={false} />
+                      <Tooltip
+                        contentStyle={{
+                          background: 'hsl(var(--popover))',
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: 8,
+                          fontSize: 12,
+                        }}
+                        formatter={(value: any, name: any) => [name === 'revenue' ? fmt(value * 100) : value, name === 'revenue' ? 'Revenue' : 'Orders']}
+                      />
+                      <Bar yAxisId="left" dataKey="revenue" fill="hsl(var(--primary))" fillOpacity={0.7} radius={[3, 3, 0, 0]} maxBarSize={32} />
+                      <Bar yAxisId="right" dataKey="orders" fill="hsl(var(--muted-foreground))" fillOpacity={0.4} radius={[3, 3, 0, 0]} maxBarSize={32} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
             </CardContent>
           </Card>
 
