@@ -1,10 +1,8 @@
 "use client"
 
-import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useCartStore } from "@/store/cart"
-import { useUser } from "@clerk/nextjs"
 
 function formatPrice(cents: number) {
   return (cents / 100).toFixed(2)
@@ -12,15 +10,9 @@ function formatPrice(cents: number) {
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, subtotal, clearCart } = useCartStore()
-  const { isSignedIn } = useUser()
   const router = useRouter()
-  const [checkingOut, setCheckingOut] = useState(false)
 
   async function handleCheckout() {
-    if (!isSignedIn) {
-      router.push("/sign-in?redirect_url=/cart")
-      return
-    }
     router.push("/checkout")
   }
 
@@ -156,10 +148,9 @@ export default function CartPage() {
 
                 <button
                   onClick={handleCheckout}
-                  disabled={checkingOut}
-                  className="mt-6 w-full py-3 rounded-xl bg-ember text-black font-semibold text-sm hover:bg-ember/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  className="mt-6 w-full py-3 rounded-xl bg-ember text-black font-semibold text-sm hover:bg-ember/90 transition-all"
                 >
-                  {checkingOut ? "Procesando..." : "Proceder al pago"}
+                  Proceder al pago
                 </button>
 
                 <Link
