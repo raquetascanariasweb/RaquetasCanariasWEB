@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
@@ -12,8 +12,6 @@ function formatPrice(cents: number) {
 
 export default function CartDrawer() {
   const { items, isOpen, closeCart, removeItem, updateQuantity, subtotal } = useCartStore()
-  const [checkingOut, setCheckingOut] = useState(false)
-  const [error, setError] = useState("")
 
   useEffect(() => {
     if (isOpen) {
@@ -25,37 +23,8 @@ export default function CartDrawer() {
   }, [isOpen])
 
   async function handleCheckout() {
-    setError("")
-    setCheckingOut(true)
-    try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items: items.map((i) => ({
-            product_id: i.product_id,
-            size: i.size,
-            color: i.color,
-            quantity: i.quantity,
-          })),
-        }),
-      })
-      const data = await res.json()
-      if (!res.ok) {
-        setError(data.error || "Error al procesar el pago")
-        return
-      }
-      if (data.url) {
-        closeCart()
-        window.location.href = data.url
-      } else {
-        setError("No se pudo iniciar el pago")
-      }
-    } catch {
-      setError("Error de conexión. Intenta de nuevo.")
-    } finally {
-      setCheckingOut(false)
-    }
+    closeCart()
+    window.location.href = "/checkout"
   }
 
   const shipping = subtotal() >= 7500 ? 0 : 300
@@ -174,15 +143,11 @@ export default function CartDrawer() {
                     </div>
                   </div>
 
-                  {error && (
-                    <p className="text-red-400 text-xs text-center mb-2">{error}</p>
-                  )}
                   <button
                     onClick={handleCheckout}
-                    disabled={checkingOut}
-                    className="w-full py-3 rounded-xl bg-ember text-black font-semibold text-sm hover:bg-ember/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="w-full py-3 rounded-xl bg-ember text-black font-semibold text-sm hover:bg-ember/90 transition-colors"
                   >
-                    {checkingOut ? "Procesando..." : `Pagar ${formatPrice(total)}€`}
+                    Pagar {formatPrice(total)}€
                   </button>
 
                   <Link
