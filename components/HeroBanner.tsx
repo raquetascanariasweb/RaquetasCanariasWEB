@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion"
 interface Banner {
   id: string
   image_url: string
+  video_url?: string
   title?: string
   subtitle?: string
   link_label?: string
@@ -76,7 +77,16 @@ export default function HeroBanner() {
             transition={{ duration: 0.8 }}
             className="absolute inset-0"
           >
-            {activeBanner.image_url && (
+            {activeBanner.video_url ? (
+              <video
+                src={activeBanner.video_url}
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            ) : activeBanner.image_url ? (
               <Image
                 src={activeBanner.image_url}
                 alt={activeBanner.title || ""}
@@ -85,8 +95,8 @@ export default function HeroBanner() {
                 sizes="100vw"
                 className="object-cover"
               />
-            )}
-            <div className="absolute inset-0 bg-black/60" />
+            ) : null}
+            <div className="absolute inset-0 bg-black/50" />
           </motion.div>
         </AnimatePresence>
       ) : null}
