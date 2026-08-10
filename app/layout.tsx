@@ -1,9 +1,15 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Sora, Inter, JetBrains_Mono } from "next/font/google"
 import { ClerkProvider } from "@clerk/nextjs"
 import FavoritesHydrator from "@/components/FavoritesHydrator"
 import { Toaster } from "sonner"
 import "./globals.css"
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+}
 
 const sora = Sora({
   variable: "--font-sora",
@@ -42,7 +48,7 @@ export default function RootLayout({
         lang="es"
         className={`${sora.variable} ${inter.variable} ${jetbrainsMono.variable} h-full antialiased`}
       >
-        <body className="min-h-full flex flex-col bg-paper text-ink">
+        <body className="min-h-full flex flex-col bg-paper text-ink overflow-x-hidden">
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
           <FavoritesHydrator />
