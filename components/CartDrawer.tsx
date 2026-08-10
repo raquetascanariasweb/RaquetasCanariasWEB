@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
@@ -12,6 +12,8 @@ function formatPrice(cents: number) {
 
 export default function CartDrawer() {
   const { items, isOpen, closeCart, removeItem, updateQuantity, subtotal } = useCartStore()
+  const [checkingOut, setCheckingOut] = useState(false)
+  const [error, setError] = useState("")
 
   useEffect(() => {
     if (isOpen) {
@@ -23,7 +25,8 @@ export default function CartDrawer() {
   }, [isOpen])
 
   async function handleCheckout() {
-    closeCart()
+    setError("")
+    setCheckingOut(true)
     try {
       const res = await fetch("/api/checkout", {
         method: "POST",
@@ -38,10 +41,21 @@ export default function CartDrawer() {
         }),
       })
       const data = await res.json()
-      if (data.url) {
-        window.location.href = data.url
+      if (!res.ok) {
+        setError(data.error || "Error al procesar el pago")
+        return
       }
-    } catch {}
+      if (data.url) {
+        closeCart()
+        window.location.href = data.url
+      } else {
+        setError("No se pudo iniciar el pago")
+      }
+    } catch {
+      setError("Error de conexión. Intenta de nuevo.")
+    } finally {
+      setCheckingOut(false)
+    }
   }
 
   const shipping = subtotal() >= 7500 ? 0 : 300
@@ -160,11 +174,15 @@ export default function CartDrawer() {
                     </div>
                   </div>
 
+                  {error && (
+                    <p className="text-red-400 text-xs text-center mb-2">{error}</p>
+                  )}
                   <button
                     onClick={handleCheckout}
-                    className="w-full py-3 rounded-xl bg-ember text-black font-semibold text-sm hover:bg-ember/90 transition-colors"
+                    disabled={checkingOut}
+                    className="w-full py-3 rounded-xl bg-ember text-black font-semibold text-sm hover:bg-ember/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
-                    Pagar {formatPrice(total)}€
+                    {checkingOut ? "Procesando..." : `Pagar ${formatPrice(total)}€`}
                   </button>
 
                   <Link
