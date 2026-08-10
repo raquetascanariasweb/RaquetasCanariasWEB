@@ -172,7 +172,7 @@ export default function CheckoutPage() {
 
             {/* Cart items */}
             <div className="space-y-3">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-ink/60">Tu pedido ({totalItems()} artículos)</h2>
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-ink/60">Tu pedido (<span suppressHydrationWarning>{totalItems()}</span> artículos)</h2>
               {items.length === 0 ? (
                 <div className="flex flex-col items-center py-16 text-center">
                   <ShoppingBag size={40} strokeWidth={1} className="mx-auto mb-4 text-linen/30" />

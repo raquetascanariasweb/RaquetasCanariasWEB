@@ -48,6 +48,64 @@ const STATUS_CONFIG: Record<ProductStatus, { label: string; className: string }>
 
 type StockFilter = 'all' | 'in' | 'out' | 'low'
 
+function StockCell({ row }: { row: any }) {
+  const hasInv = row.original.track_inventory
+  const qty = row.original.stock_quantity
+  const inStock = row.original.in_stock
+  const isLow = hasInv && qty > 0 && qty <= 5
+  const [editing, setEditing] = useState(false)
+  const [editQty, setEditQty] = useState(qty)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (editing) inputRef.current?.focus()
+  }, [editing])
+
+  async function save() {
+    const newStock = editQty
+    const newInStock = newStock > 0
+    const res = await quickUpdateProduct(row.original.id, {
+      stock_quantity: newStock,
+      in_stock: newInStock,
+      track_inventory: true,
+    })
+    if (res.error) {
+      toast.error(res.error)
+    } else {
+      row.original.stock_quantity = newStock
+      row.original.in_stock = newInStock
+      row.original.track_inventory = true
+    }
+    setEditing(false)
+  }
+
+  if (editing) {
+    return (
+      <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+        <input
+          ref={inputRef}
+          type="number"
+          min={0}
+          value={editQty}
+          onChange={(e) => setEditQty(Number(e.target.value))}
+          onKeyDown={(e) => { if (e.key === 'Enter') save(); if (e.key === 'Escape') setEditing(false) }}
+          onBlur={save}
+          className="w-16 h-7 px-2 text-xs border border-input rounded bg-background"
+        />
+      </div>
+    )
+  }
+
+  return (
+    <button onClick={(e) => { e.stopPropagation(); setEditQty(qty); setEditing(true) }} className="flex items-center gap-2 cursor-pointer hover:opacity-80">
+      <div className={`w-2 h-2 rounded-full ${isLow ? 'bg-admin-warning' : inStock ? 'bg-admin-success' : 'bg-admin-danger'}`} />
+      <span className="text-xs">{isLow ? 'Low Stock' : inStock ? 'In Stock' : 'Out of Stock'}</span>
+      {hasInv && <span className="text-[10px] text-muted-foreground">({qty})</span>}
+      <span className="text-muted-foreground hover:text-foreground underline text-[10px]">Edit</span>
+    </button>
+  )
+}
+
 function CategorySelectItem({ cat, depth = 0 }: { cat: AdminCategory; depth?: number }) {
   const children = cat.children
   return (
@@ -402,19 +460,7 @@ export default function AdminProductsPage() {
           Stock <ArrowUpDown size={12} />
         </button>
       ),
-      cell: ({ row }) => {
-        const hasInv = row.original.track_inventory
-        const qty = row.original.stock_quantity
-        const inStock = row.original.in_stock
-        const isLow = hasInv && qty > 0 && qty <= 5
-        return (
-          <div className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${isLow ? 'bg-admin-warning' : inStock ? 'bg-admin-success' : 'bg-admin-danger'}`} />
-            <span className="text-xs">{isLow ? 'Low Stock' : inStock ? 'In Stock' : 'Out of Stock'}</span>
-            {hasInv && <span className="text-[10px] text-muted-foreground">({qty})</span>}
-          </div>
-        )
-      },
+      cell: ({ row }) => <StockCell row={row} />,
     },
     {
       accessorKey: 'created_at',

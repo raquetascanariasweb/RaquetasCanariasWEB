@@ -314,10 +314,10 @@ export async function duplicateProduct(id: string) {
   return { product }
 }
 
-export async function quickUpdateProduct(id: string, data: { name?: string; price_cents?: number; status?: ProductStatus; category_id?: string | null; category_ids?: string[] }) {
+export async function quickUpdateProduct(id: string, data: { name?: string; price_cents?: number; status?: ProductStatus; category_id?: string | null; category_ids?: string[]; stock_quantity?: number; in_stock?: boolean; track_inventory?: boolean }) {
   await checkAdmin()
   const supabase = createAdminClient()
-  const updateData: Record<string, string | number | null | string[]> = {}
+  const updateData: Record<string, string | number | null | string[] | boolean> = {}
   if (data.name !== undefined) {
     updateData.name = data.name
     updateData.slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
@@ -326,6 +326,9 @@ export async function quickUpdateProduct(id: string, data: { name?: string; pric
   if (data.status !== undefined) updateData.status = data.status
   if (data.category_id !== undefined) updateData.category_id = data.category_id
   if (data.category_ids !== undefined) updateData.category_ids = data.category_ids
+  if (data.stock_quantity !== undefined) updateData.stock_quantity = data.stock_quantity
+  if (data.in_stock !== undefined) updateData.in_stock = data.in_stock
+  if (data.track_inventory !== undefined) updateData.track_inventory = data.track_inventory
   const { error } = await supabase.from('products').update(updateData).eq('id', id)
   if (error) return { error: error.message }
   revalidatePath('/admin/products')
