@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import { motion } from 'framer-motion'
 import { ShoppingBag, Minus, Plus, Trash2, ChevronLeft, Lock } from 'lucide-react'
 import Image from 'next/image'
@@ -20,6 +20,7 @@ export default function CheckoutPage() {
   const searchParams = useSearchParams()!
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const mounted = useSyncExternalStore(() => () => {}, () => true, () => false)
 
   const [form, setForm] = useState({
     name: '',
@@ -172,7 +173,7 @@ export default function CheckoutPage() {
 
             {/* Cart items */}
             <div className="space-y-3">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-ink/60">Tu pedido (<span suppressHydrationWarning>{totalItems()}</span> artículos)</h2>
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-ink/60">Tu pedido ({mounted ? totalItems() : 0} artículos)</h2>
               {items.length === 0 ? (
                 <div className="flex flex-col items-center py-16 text-center">
                   <ShoppingBag size={40} strokeWidth={1} className="mx-auto mb-4 text-linen/30" />
@@ -235,20 +236,20 @@ export default function CheckoutPage() {
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
                   <span className="text-linen">Subtotal</span>
-                  <span className="text-ink">{formatPrice(subtotalCents)}</span>
+                  <span className="text-ink">{mounted ? formatPrice(subtotalCents) : '...'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-linen">Envío</span>
-                  <span className="text-ink">{shipping === 0 ? 'Gratis' : formatPrice(shipping)}</span>
+                  <span className="text-ink">{mounted ? (shipping === 0 ? 'Gratis' : formatPrice(shipping)) : '...'}</span>
                 </div>
-                {subtotalCents < 7500 && subtotalCents > 0 && (
+                {mounted && subtotalCents < 7500 && subtotalCents > 0 && (
                   <p className="text-xs text-linen/70">
                     Añade {formatPrice(7500 - subtotalCents)} más para envío gratis
                   </p>
                 )}
                 <div className="border-t border-[#E5E0D8] pt-3 flex justify-between font-semibold text-base">
                   <span>Total</span>
-                  <span>{formatPrice(total)}</span>
+                  <span>{mounted ? formatPrice(total) : '...'}</span>
                 </div>
               </div>
 
@@ -266,7 +267,7 @@ export default function CheckoutPage() {
                 ) : (
                   <>
                     <Lock size={15} />
-                    Confirmar y pagar {formatPrice(total)}
+                    Confirmar y pagar {mounted ? formatPrice(total) : '...'}
                   </>
                 )}
               </Button>

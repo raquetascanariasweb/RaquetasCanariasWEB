@@ -47,7 +47,7 @@ export default function HeroBanner() {
   const activeBanner = banners[currentBanner]
 
   return (
-    <section className="relative min-h-[75vh] flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-[50vh] sm:min-h-[60vh] lg:min-h-[75vh] flex items-center justify-center overflow-hidden">
       {/* Background: dark gradient with subtle light flares */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-[#111] to-[#1a1a1a]" />
 
