@@ -47,15 +47,15 @@ export default function HeroBanner() {
   const activeBanner = banners[currentBanner]
 
   return (
-    <section className="relative min-h-[50vh] sm:min-h-[60vh] lg:min-h-[75vh] flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-[40vh] sm:min-h-[50vh] lg:min-h-[70vh] flex items-center justify-center overflow-hidden">
       {/* Background: dark gradient with subtle light flares */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-[#111] to-[#1a1a1a]" />
 
       {/* Light flare: top center */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-[#C4E326] opacity-[0.03] blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] sm:w-[500px] lg:w-[600px] h-[200px] sm:h-[300px] lg:h-[400px] bg-[#C4E326] opacity-[0.03] blur-[80px] sm:blur-[120px] rounded-full pointer-events-none" />
 
       {/* Light flare: bottom right */}
-      <div className="absolute bottom-0 right-0 w-[500px] h-[350px] bg-[#C4E326] opacity-[0.02] blur-[100px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-[250px] sm:w-[400px] lg:w-[500px] h-[180px] sm:h-[280px] lg:h-[350px] bg-[#C4E326] opacity-[0.02] blur-[60px] sm:blur-[100px] rounded-full pointer-events-none" />
 
       {/* Subtle grain overlay */}
       <div
