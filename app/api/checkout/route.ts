@@ -7,9 +7,6 @@ import type Stripe from 'stripe'
 
 export async function POST(request: Request) {
   const { userId } = await auth()
-  if (!userId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
 
   const body = await request.json()
   const { items, shippingAddress } = body as {
@@ -85,7 +82,7 @@ export async function POST(request: Request) {
         allowed_countries: ['US', 'CA', 'GB', 'DE', 'FR', 'IT', 'ES', 'NL', 'BE', 'CH', 'AT', 'PT', 'DK', 'SE', 'NO', 'FI', 'IE', 'AU', 'NZ', 'JP', 'AE', 'MX', 'BR', 'CO'],
       },
       metadata: {
-        userId,
+        userId: userId ?? null,
         items: JSON.stringify(items),
       },
     })
@@ -98,7 +95,7 @@ export async function POST(request: Request) {
   }
 
   const { error: orderError } = await supabase.from('orders').insert({
-    user_id: userId,
+    user_id: userId ?? null,
     status: 'pending',
     total_cents: subtotalCents,
     stripe_session_id: session.id,

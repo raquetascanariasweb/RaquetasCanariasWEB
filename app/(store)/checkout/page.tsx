@@ -15,7 +15,7 @@ import { toast } from 'sonner'
 
 export default function CheckoutPage() {
   const { items, updateQuantity, removeItem, subtotal, totalItems } = useCartStore()
-  const { isSignedIn, user } = useUser()
+  const { user } = useUser()
   const router = useRouter()
   const searchParams = useSearchParams()!
   const [loading, setLoading] = useState(false)
@@ -45,11 +45,6 @@ export default function CheckoutPage() {
   const subtotalCents = subtotal()
   const shipping = subtotalCents >= 7500 ? 0 : 499
   const total = subtotalCents + shipping
-
-  if (!isSignedIn) {
-    router.push(`/sign-in?redirect_url=/checkout`)
-    return null
-  }
 
   const canceled = searchParams.get('canceled') === '1'
 

@@ -3,10 +3,8 @@
 import { useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { useCartStore } from "@/store/cart"
-import { useUser } from "@clerk/nextjs"
 
 function formatPrice(cents: number) {
   return (cents / 100).toFixed(2)
@@ -14,8 +12,6 @@ function formatPrice(cents: number) {
 
 export default function CartDrawer() {
   const { items, isOpen, closeCart, removeItem, updateQuantity, subtotal } = useCartStore()
-  const { isSignedIn } = useUser()
-  const router = useRouter()
 
   useEffect(() => {
     if (isOpen) {
@@ -27,10 +23,6 @@ export default function CartDrawer() {
   }, [isOpen])
 
   async function handleCheckout() {
-    if (!isSignedIn) {
-      router.push("/sign-in?redirect_url=/cart")
-      return
-    }
     closeCart()
     try {
       const res = await fetch("/api/checkout", {
