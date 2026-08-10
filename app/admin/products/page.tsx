@@ -48,6 +48,20 @@ const STATUS_CONFIG: Record<ProductStatus, { label: string; className: string }>
 
 type StockFilter = 'all' | 'in' | 'out' | 'low'
 
+function CategorySelectItem({ cat, depth = 0 }: { cat: AdminCategory; depth?: number }) {
+  const children = cat.children
+  return (
+    <>
+      <SelectItem value={cat.id}>
+        <span style={{ paddingLeft: depth * 16 }}>{cat.name}</span>
+      </SelectItem>
+      {children?.map((child) => (
+        <CategorySelectItem key={child.id} cat={child} depth={depth + 1} />
+      ))}
+    </>
+  )
+}
+
 export default function AdminProductsPage() {
   const { formatPrice: fmt, code: currencyCode } = useAdminCurrency()
   const [data, setData] = useState<AdminProduct[]>([])
@@ -502,10 +516,12 @@ export default function AdminProductsPage() {
           </SelectContent>
         </Select>
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-          <SelectTrigger className="w-[160px]"><SelectValue placeholder="Category" /></SelectTrigger>
+          <SelectTrigger className="w-[200px]"><SelectValue placeholder="Category" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Categories</SelectItem>
-            {categories.map((cat) => (<SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>))}
+            {categories.map((cat) => (
+              <CategorySelectItem key={cat.id} cat={cat} />
+            ))}
           </SelectContent>
         </Select>
         <Select value={stockFilter} onValueChange={(v) => setStockFilter(v as StockFilter)}>
