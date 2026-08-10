@@ -1,0 +1,5 @@
+ALTER TABLE homepage_hero ADD COLUMN IF NOT EXISTS title_color TEXT;
+ALTER TABLE homepage_hero ADD COLUMN IF NOT EXISTS subtitle_color TEXT;
+
+ALTER TABLE banners ADD COLUMN IF NOT EXISTS title_color TEXT;
+ALTER TABLE banners ADD COLUMN IF NOT EXISTS subtitle_color TEXT;

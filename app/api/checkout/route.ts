@@ -12,8 +12,9 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json()
-  const { items } = body as {
+  const { items, shippingAddress } = body as {
     items: { product_id: string; size: string; color: string; quantity: number }[]
+    shippingAddress?: Record<string, string>
   }
 
   if (!items?.length) {
@@ -79,7 +80,7 @@ export async function POST(request: Request) {
       line_items,
       shipping_options: shippingOptions,
       success_url: `${origin}/orders?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/checkout`,
+      cancel_url: `${origin}/checkout?canceled=1`,
       shipping_address_collection: {
         allowed_countries: ['US', 'CA', 'GB', 'DE', 'FR', 'IT', 'ES', 'NL', 'BE', 'CH', 'AT', 'PT', 'DK', 'SE', 'NO', 'FI', 'IE', 'AU', 'NZ', 'JP', 'AE', 'MX', 'BR', 'CO'],
       },
@@ -101,6 +102,7 @@ export async function POST(request: Request) {
     status: 'pending',
     total_cents: subtotalCents,
     stripe_session_id: session.id,
+    shipping_address: shippingAddress ?? null,
     items: items.map((item) => ({
       product_id: item.product_id,
       product_name: productMap.get(item.product_id)?.name ?? '',

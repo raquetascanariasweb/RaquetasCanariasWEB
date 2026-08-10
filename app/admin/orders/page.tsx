@@ -7,7 +7,7 @@ import {
   type SortingState, type ColumnDef,
 } from '@tanstack/react-table'
 import {
-  Search, ArrowUpDown, Eye, Trash2, Globe, FileText, Archive, FilterX, Keyboard,
+  Search, ArrowUpDown, Eye, Trash2, Globe, FileText, Archive, FilterX, Keyboard, Download,
 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -107,6 +107,42 @@ export default function AdminOrdersPage() {
       setRowSelection({})
     }
     setBulkDeleteOpen(false)
+  }
+
+  function handleExportExcel() {
+    const headers = ['Order ID', 'Date', 'Status', 'Total (€)', 'Items', 'Client', 'Shipping Address', 'Tracking']
+    const rows = data.map((order) => {
+      const total = (order.total_cents / 100).toFixed(2)
+      const date = new Date(order.created_at).toLocaleDateString('es-ES')
+      const items = order.items?.map((i) => `${i.product_name} x${i.quantity}`).join('; ') || ''
+      const address = order.shipping_address
+        ? `${order.shipping_address.name || ''}, ${order.shipping_address.line1 || ''}, ${order.shipping_address.city || ''}, ${order.shipping_address.country || ''}`
+        : ''
+      return [
+        `#${order.id.slice(0, 8)}`,
+        date,
+        ORDER_STATUS_LABELS[order.status] || order.status,
+        total,
+        items,
+        order.user_id.slice(0, 8),
+        address,
+        order.tracking_number || '',
+      ]
+    })
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(',')),
+    ].join('\n')
+
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `pedidos-sportbalin-${new Date().toISOString().split('T')[0]}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+    toast.success(`${data.length} pedidos exportados`)
   }
 
   const formatDate = (d: string) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -236,6 +272,10 @@ export default function AdminOrdersPage() {
           </SelectContent>
         </Select>
         {hasFilters && (<Button variant="ghost" size="sm" onClick={clearFilters} className="text-xs gap-1"><FilterX size={12} /> Clear</Button>)}
+        <div className="flex-1" />
+        <Button variant="outline" size="sm" className="h-8 text-xs gap-1" onClick={handleExportExcel}>
+          <Download size={12} /> Export Excel
+        </Button>
       </div>
 
       {selectedCount > 0 && (

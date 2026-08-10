@@ -135,12 +135,6 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
-
-      <footer className="border-t border-[#DDD8CC] py-10 text-center text-sm text-[#A09C95]">
-        <div className="container-main">
-          <p>&copy; {new Date().getFullYear()} Sportbalin. Todos los derechos reservados.</p>
-        </div>
-      </footer>
     </main>
   )
 }

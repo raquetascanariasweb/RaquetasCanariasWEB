@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import {
-  Plus, Edit, Trash2, ChevronRight, FolderOpen, ImageIcon,
+  Plus, Edit, Trash2, FolderOpen,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -105,12 +105,12 @@ export default function AdminCategoriesPage() {
   }
 
   function renderCategory(cat: AdminCategory, depth = 0) {
+    const indent = depth * 24
     return (
       <div key={cat.id}>
         <div
-          className={`flex items-center justify-between py-3 px-4 rounded-lg hover:bg-accent/5 transition-colors ${
-            depth > 0 ? 'ml-8 border-l-2 border-border pl-4' : ''
-          }`}
+          className="flex items-center justify-between py-3 px-4 rounded-lg hover:bg-accent/5 transition-colors"
+          style={{ marginLeft: `${indent}px`, paddingLeft: depth > 0 ? '16px' : undefined, borderLeft: depth > 0 ? '2px solid hsl(var(--border))' : undefined }}
         >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded bg-muted flex items-center justify-center overflow-hidden">
@@ -132,7 +132,7 @@ export default function AdminCategoriesPage() {
           </div>
           <div className="flex items-center gap-3">
             <Badge variant="secondary" className="text-xs">{cat.product_count} products</Badge>
-            <button onClick={() => openAdd(cat.id)} className="text-muted-foreground hover:text-foreground p-1">
+            <button onClick={() => openAdd(cat.id)} className="text-muted-foreground hover:text-foreground p-1" title="Add subcategory">
               <Plus size={14} />
             </button>
             <button onClick={() => openEdit(cat)} className="text-muted-foreground hover:text-foreground p-1">
@@ -146,6 +146,17 @@ export default function AdminCategoriesPage() {
         {cat.children?.map((child) => renderCategory(child, depth + 1))}
       </div>
     )
+  }
+
+  function flattenCategories(cats: AdminCategory[], depth = 0): { id: string; name: string; depth: number }[] {
+    let result: { id: string; name: string; depth: number }[] = []
+    for (const cat of cats) {
+      result.push({ id: cat.id, name: cat.name, depth })
+      if (cat.children?.length) {
+        result.push(...flattenCategories(cat.children, depth + 1))
+      }
+    }
+    return result
   }
 
   if (loading) {
@@ -200,8 +211,10 @@ export default function AdminCategoriesPage() {
                 onChange={(e) => setForm({ ...form, parent_id: e.target.value })}
               >
                 <option value="">None (top-level)</option>
-                {data.map((cat) => (
-                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                {flattenCategories(data).map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {'— '.repeat(cat.depth)}{cat.name}
+                  </option>
                 ))}
               </select>
             </div>

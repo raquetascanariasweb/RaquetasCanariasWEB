@@ -8,7 +8,7 @@ import {
 } from '@tanstack/react-table'
 import {
   Plus, Search, Edit, Trash2, MoreHorizontal, ArrowUpDown, ImageIcon,
-  Copy, Eye, Globe, FileText, Archive, FilterX, Keyboard,
+  Copy, Eye, Globe, FileText, Archive, FilterX, Keyboard, Star,
 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -18,7 +18,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
@@ -26,8 +26,9 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
-import { getProducts, deleteProduct, bulkDeleteProducts, bulkUpdateProducts, duplicateProduct } from '@/lib/admin/products'
+import { getProducts, deleteProduct, bulkDeleteProducts, bulkUpdateProducts, duplicateProduct, quickUpdateProduct } from '@/lib/admin/products'
 import { getCategories } from '@/lib/admin/categories'
+import { getFeaturedProductIds, toggleFeaturedByProductId } from '@/lib/admin/featured-products'
 import { useAdminCurrency } from '../AdminLayoutClient'
 import type { AdminProduct, AdminCategory, ProductStatus } from '@/lib/admin/types'
 import { toast } from 'sonner'
@@ -66,13 +67,15 @@ export default function AdminProductsPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
   const [stockFilter, setStockFilter] = useState<StockFilter>('all')
+  const [featuredIds, setFeaturedIds] = useState<Set<string>>(new Set())
   const searchRef = useRef<HTMLInputElement>(null)
 
   async function load() {
     try {
-      const [products, cats] = await Promise.all([getProducts(), getCategories()])
+      const [products, cats, fIds] = await Promise.all([getProducts(), getCategories(), getFeaturedProductIds()])
       setData(products)
       setCategories(cats)
+      setFeaturedIds(new Set(fIds))
     } catch (e) {
       console.error(e)
     }
@@ -172,6 +175,59 @@ export default function AdminProductsPage() {
       enableSorting: false,
     },
     {
+      id: 'featured',
+      size: 40,
+      minSize: 40,
+      header: () => null,
+      cell: ({ row }) => {
+        const isFeatured = featuredIds.has(row.original.id)
+        async function toggle() {
+          // Optimistic update
+          const wasFeatured = featuredIds.has(row.original.id)
+          setFeaturedIds((prev) => {
+            const next = new Set(prev)
+            if (wasFeatured) next.delete(row.original.id)
+            else next.add(row.original.id)
+            return next
+          })
+          try {
+            const res = await toggleFeaturedByProductId(row.original.id)
+            if (res.error) {
+              setFeaturedIds((prev) => {
+                const next = new Set(prev)
+                if (wasFeatured) next.add(row.original.id)
+                else next.delete(row.original.id)
+                return next
+              })
+              toast.error(res.error)
+            } else {
+              toast.success(res.featured ? 'Añadido a más vendidos' : 'Eliminado de más vendidos')
+            }
+          } catch (e: any) {
+            setFeaturedIds((prev) => {
+              const next = new Set(prev)
+              if (wasFeatured) next.add(row.original.id)
+              else next.delete(row.original.id)
+              return next
+            })
+            toast.error(e.message || 'Error al actualizar')
+          }
+        }
+        return (
+          <button
+            onClick={toggle}
+            className={`p-1 rounded transition-colors ${
+              isFeatured ? 'text-ember hover:text-ember/70' : 'text-muted-foreground/20 hover:text-muted-foreground'
+            }`}
+            title={isFeatured ? 'Quitar de más vendidos' : 'Añadir a más vendidos'}
+          >
+            <Star size={15} fill={isFeatured ? 'currentColor' : 'none'} strokeWidth={1.5} />
+          </button>
+        )
+      },
+      enableSorting: false,
+    },
+    {
       accessorKey: 'name',
       header: ({ column }) => (
         <button onClick={() => column.toggleSorting()} className="flex items-center gap-1 text-xs font-medium">
@@ -192,15 +248,105 @@ export default function AdminProductsPage() {
       ),
     },
     {
-      accessorKey: 'category_name',
-      size: 130,
-      minSize: 100,
+      accessorKey: 'category_ids',
+      size: 170,
+      minSize: 130,
       header: ({ column }) => (
         <button onClick={() => column.toggleSorting()} className="flex items-center gap-1 text-xs font-medium">
-          Category <ArrowUpDown size={12} />
+          Categories <ArrowUpDown size={12} />
         </button>
       ),
-      cell: ({ getValue }) => <span className="text-xs text-muted-foreground">{String(getValue() ?? '-')}</span>,
+      cell: ({ row }) => {
+        const [open, setOpen] = useState(false)
+        
+        // Build category ID -> name map from the tree
+        const catNameMap = useMemo(() => {
+          const map = new Map<string, string>()
+          function walk(cats: AdminCategory[]) {
+            for (const c of cats) {
+              map.set(c.id, c.name)
+              if (c.children) walk(c.children)
+            }
+          }
+          walk(categories)
+          return map
+        }, [categories])
+
+        const ids: string[] = row.original.category_ids ?? []
+        const displayNames = ids.length > 0
+          ? ids.map(id => catNameMap.get(id) || id.slice(0, 8)).join(', ')
+          : '-'
+
+        async function toggleCat(catId: string) {
+          const current = new Set(row.original.category_ids ?? [])
+          if (current.has(catId)) current.delete(catId)
+          else current.add(catId)
+          const newIds = Array.from(current)
+          const res = await quickUpdateProduct(row.original.id, { category_ids: newIds, category_id: newIds[0] || null })
+          if (res.error) toast.error(res.error)
+          else {
+            row.original.category_ids = newIds
+            row.original.category_id = newIds[0] || null
+          }
+        }
+
+        async function clearAll() {
+          const res = await quickUpdateProduct(row.original.id, { category_ids: [], category_id: null })
+          if (res.error) toast.error(res.error)
+          else {
+            row.original.category_ids = []
+            row.original.category_id = null
+            setOpen(false)
+          }
+        }
+
+        function renderCategoryItems(cat: AdminCategory, depth: number) {
+          const isChecked = ids.includes(cat.id)
+          const indent = depth * 16
+          return (
+            <div key={cat.id}>
+              <DropdownMenuItem
+                className="text-xs"
+                style={{ paddingLeft: `${8 + indent}px` }}
+                onClick={async (e) => {
+                  e.preventDefault()
+                  await toggleCat(cat.id)
+                }}
+              >
+                <span className={`mr-2 text-[10px] ${isChecked ? 'text-ember' : 'text-muted-foreground/30'}`}>
+                  {isChecked ? '✓' : '○'}
+                </span>
+                <span className={isChecked ? 'text-foreground' : 'text-muted-foreground'}>
+                  {cat.name}
+                </span>
+              </DropdownMenuItem>
+              {cat.children?.map((child: AdminCategory) => renderCategoryItems(child, depth + 1))}
+            </div>
+          )
+        }
+
+        return (
+          <DropdownMenu open={open} onOpenChange={setOpen}>
+            <DropdownMenuTrigger asChild>
+              <button className="text-xs text-muted-foreground hover:text-foreground cursor-pointer text-left max-w-[160px] truncate" title={displayNames}>
+                {displayNames}
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-60 max-h-[450px] overflow-y-auto">
+              <DropdownMenuLabel className="text-[11px] text-muted-foreground">
+                {ids.length} categoría{ids.length !== 1 ? 's' : ''}
+              </DropdownMenuLabel>
+              {ids.length > 0 && (
+                <DropdownMenuItem className="text-xs text-muted-foreground" onClick={clearAll}>
+                  ✕ Quitar todas
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuSeparator />
+              {categories.map((cat) => renderCategoryItems(cat, 0))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )
+      },
     },
     {
       accessorKey: 'status',
@@ -290,7 +436,7 @@ export default function AdminProductsPage() {
         </DropdownMenu>
       ),
     },
-  ], [])
+  ], [categories, featuredIds, fmt])
 
   const table = useReactTable({
     data: filteredData,

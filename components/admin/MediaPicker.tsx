@@ -9,7 +9,8 @@ import {
 } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { toast } from 'sonner'
-import { getMediaList, uploadMedia } from '@/lib/admin/media'
+import { getMediaList } from '@/lib/admin/media'
+import { uploadDirect } from '@/lib/storage-client'
 import type { MediaFile } from '@/lib/admin/media'
 
 const BUCKET_URL = `https://${(process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://flshhgzyzhgrnorgkcsx.supabase.co').replace('https://', '')}/storage/v1/object/public/product-images`
@@ -55,11 +56,14 @@ export default function MediaPicker({ open, onClose, onSelect }: MediaPickerProp
   async function handleUpload() {
     const files = fileInputRef.current?.files
     if (!files?.length) return
-    const fd = new FormData()
-    for (const file of Array.from(files)) fd.append('files', file)
-    const res = await uploadMedia(fd)
-    if (res?.error) toast.error(res.error)
-    else toast.success('Uploaded')
+
+    let ok = 0
+    for (const file of Array.from(files)) {
+      const res = await uploadDirect(file)
+      if ('error' in res) toast.error(res.error)
+      else ok++
+    }
+    if (ok > 0) toast.success(`${ok} uploaded`)
     if (fileInputRef.current) fileInputRef.current.value = ''
     load()
   }
@@ -82,12 +86,23 @@ export default function MediaPicker({ open, onClose, onSelect }: MediaPickerProp
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-9 text-sm" />
           </div>
-          <label className="cursor-pointer">
-            <Button type="button" variant="outline" size="sm" className="h-9">
-              <Upload size={14} className="mr-1.5" /> Upload
-            </Button>
-            <input ref={fileInputRef} type="file" multiple accept="image/*,video/*" className="hidden" onChange={handleUpload} />
-          </label>
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept="image/*,video/*"
+            className="hidden"
+            onChange={handleUpload}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-9"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <Upload size={14} className="mr-1.5" /> Upload
+          </Button>
         </div>
 
         <Tabs value={tab} onValueChange={setTab}>

@@ -43,6 +43,29 @@ export async function uploadProductImages(files: File[]): Promise<string[]> {
   return urls
 }
 
+export async function uploadVideo(file: File): Promise<string> {
+  const supabase = createAdminClient()
+  const ext = file.name.split('.').pop() ?? 'mp4'
+  const fileName = `video-${generateId()}.${ext}`
+
+  const { error } = await supabase.storage
+    .from(BUCKET)
+    .upload(fileName, file, {
+      contentType: file.type,
+      cacheControl: '3600',
+    })
+
+  if (error) {
+    throw new Error(`Failed to upload video: ${error.message}`)
+  }
+
+  const { data: publicUrl } = supabase.storage
+    .from(BUCKET)
+    .getPublicUrl(fileName)
+
+  return publicUrl.publicUrl
+}
+
 export async function getExistingCategories() {
   const supabase = createAdminClient()
   const { data } = await supabase.from('categories').select('*').order('name')

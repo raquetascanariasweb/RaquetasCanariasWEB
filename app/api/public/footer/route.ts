@@ -1,6 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 export async function GET() {
   const supabase = createAdminClient()

@@ -1,4 +1,4 @@
-import { create } from 'zustand'
+import { create } from "zustand"
 
 export interface FavoriteItem {
   product_id: string
@@ -19,27 +19,17 @@ interface FavoritesState {
   remove: (productId: string) => void
 }
 
-const stored = typeof window !== 'undefined' ? localStorage.getItem('sportbalin-favorites') : null
-const initialItems: FavoriteItem[] = stored ? JSON.parse(stored) : []
-
-export const useFavoritesStore = create<FavoritesState>((set, get) => ({
-  items: initialItems,
+export const useFavoritesStore = create<FavoritesState>()((set, get) => ({
+  items: [],
   loaded: false,
   count: () => get().items.length,
   isFavorite: (productId) => get().items.some((i) => i.product_id === productId),
-  setItems: (items) => {
-    set({ items, loaded: true })
-    if (typeof window !== 'undefined') localStorage.setItem('sportbalin-favorites', JSON.stringify(items))
-  },
+  setItems: (items) => set({ items, loaded: true }),
   add: (item) => {
     if (get().items.some((i) => i.product_id === item.product_id)) return
-    const newItems = [item, ...get().items]
-    set({ items: newItems })
-    if (typeof window !== 'undefined') localStorage.setItem('sportbalin-favorites', JSON.stringify(newItems))
+    set({ items: [item, ...get().items] })
   },
   remove: (productId) => {
-    const newItems = get().items.filter((i) => i.product_id !== productId)
-    set({ items: newItems })
-    if (typeof window !== 'undefined') localStorage.setItem('sportbalin-favorites', JSON.stringify(newItems))
+    set({ items: get().items.filter((i) => i.product_id !== productId) })
   },
 }))

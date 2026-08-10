@@ -8,7 +8,7 @@ import type { AdminCategory } from './types'
 
 async function checkAdmin() {
   const { userId } = await auth()
-  const adminId = process.env.ADMIN_USER_ID || 'user_3G8ZXADowWQkNZdX65U1djf8JYZ'
+  const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID || 'user_3G8ZXADowWQkNZdX65U1djf8JYZ'
   if (!userId || (adminId && userId !== adminId)) throw new Error('Unauthorized')
 }
 
@@ -47,12 +47,18 @@ export async function getCategories(): Promise<AdminCategory[]> {
     children: [] as AdminCategory[],
   }))
 
-  const roots = all.filter((c) => !c.parent_id)
-  const children = all.filter((c) => c.parent_id)
+  const byId = new Map<string, AdminCategory>()
+  for (const c of all) byId.set(c.id, c)
 
-  for (const child of children) {
-    const parent = roots.find((r) => r.id === child.parent_id)
-    if (parent) parent.children!.push(child)
+  const roots: AdminCategory[] = []
+  for (const c of all) {
+    if (c.parent_id && byId.has(c.parent_id)) {
+      byId.get(c.parent_id)!.children!.push(c)
+    } else if (!c.parent_id) {
+      roots.push(c)
+    } else {
+      roots.push(c)
+    }
   }
 
   return roots

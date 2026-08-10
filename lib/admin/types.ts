@@ -118,6 +118,8 @@ export interface AdminProduct {
   seo_description: string
   category_id: string | null
   category_name?: string
+  category_ids: string[]
+  category_names?: string
   images: { url: string; color: string }[]
   sizes: string[]
   colors: { name: string; hex: string; slug: string }[]
@@ -240,6 +242,11 @@ export interface Banner {
   active: boolean
   text_x: number | null
   text_y: number | null
+  title_color: string | null
+  subtitle_color: string | null
+  video_url: string | null
+  video_start: number | null
+  video_end: number | null
   created_at: string
   updated_at: string
 }
@@ -254,6 +261,8 @@ export interface HomepageHero {
   secondary_cta_text: string | null
   secondary_cta_link: string | null
   overlay_opacity: number
+  title_color: string | null
+  subtitle_color: string | null
   active: boolean
   updated_at: string
 }

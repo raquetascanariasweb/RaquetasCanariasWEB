@@ -65,7 +65,7 @@ export default function ContentPage() {
 
   // ── Hero State ──
   const [hero, setHero] = useState<HomepageHero | null>(null)
-  const [heroForm, setHeroForm] = useState({ headline: '', subheadline: '', cta_text: '', cta_link: '', secondary_cta_text: '', secondary_cta_link: '', overlay_opacity: 0.3, active: true })
+  const [heroForm, setHeroForm] = useState({ headline: '', subheadline: '', cta_text: '', cta_link: '', secondary_cta_text: '', secondary_cta_link: '', overlay_opacity: 0.3, title_color: '#FFFFFF', subtitle_color: '#EBECEE', active: true })
   const [heroBgImage, setHeroBgImage] = useState<File | null>(null)
   const [heroBgPreview, setHeroBgPreview] = useState('')
   const [heroMediaPicker, setHeroMediaPicker] = useState(false)
@@ -123,7 +123,7 @@ export default function ContentPage() {
         getHero(), getBlocks(), getPages(), getNavMenus(), getFooter(), getSeoDefaults(),
       ])
       setHero(h); setBlocks(b); setPages(p); setNavs(n); setFooter(f); setSeo(s)
-      if (h) setHeroForm({ headline: h.headline, subheadline: h.subheadline ?? '', cta_text: h.cta_text ?? '', cta_link: h.cta_link ?? '', secondary_cta_text: h.secondary_cta_text ?? '', secondary_cta_link: h.secondary_cta_link ?? '', overlay_opacity: h.overlay_opacity, active: h.active })
+      if (h) setHeroForm({ headline: h.headline, subheadline: h.subheadline ?? '', cta_text: h.cta_text ?? '', cta_link: h.cta_link ?? '', secondary_cta_text: h.secondary_cta_text ?? '', secondary_cta_link: h.secondary_cta_link ?? '', overlay_opacity: h.overlay_opacity, title_color: h.title_color ?? '#FFFFFF', subtitle_color: h.subtitle_color ?? '#EBECEE', active: h.active })
       if (h) setHeroBgPreview(h.background_image ?? '')
       if (f) setFooterForm({ copyright_text: f.copyright_text ?? '', newsletter_text: f.newsletter_text ?? '' })
       if (f) { setFooterColumns(JSON.stringify(f.columns, null, 2)); setFooterSocials(JSON.stringify(f.social_links, null, 2)) }
@@ -151,6 +151,8 @@ export default function ContentPage() {
       fd.append('secondary_cta_text', heroForm.secondary_cta_text)
       fd.append('secondary_cta_link', heroForm.secondary_cta_link)
       fd.append('overlay_opacity', String(heroForm.overlay_opacity))
+      fd.append('title_color', heroForm.title_color)
+      fd.append('subtitle_color', heroForm.subtitle_color)
       fd.append('active', String(heroForm.active))
       if (heroBgImage) fd.append('image', heroBgImage)
       else if (heroBgPreview) fd.append('background_image', heroBgPreview)
@@ -402,6 +404,20 @@ export default function ContentPage() {
                   <div><Label htmlFor="secondary_cta_text">Secondary CTA Text</Label><Input id="secondary_cta_text" value={heroForm.secondary_cta_text} onChange={(e) => setHeroForm({ ...heroForm, secondary_cta_text: e.target.value })} /></div>
                   <div><Label htmlFor="secondary_cta_link">Secondary CTA Link</Label><Input id="secondary_cta_link" value={heroForm.secondary_cta_link} onChange={(e) => setHeroForm({ ...heroForm, secondary_cta_link: e.target.value })} /></div>
                   <div><Label htmlFor="overlay">Overlay Opacity</Label><Input id="overlay" type="number" min="0" max="1" step="0.1" value={heroForm.overlay_opacity} onChange={(e) => setHeroForm({ ...heroForm, overlay_opacity: parseFloat(e.target.value) || 0 })} /></div>
+                  <div>
+                    <Label htmlFor="title_color">Title Color</Label>
+                    <div className="flex gap-2 mt-1">
+                      <input id="title_color" type="color" value={heroForm.title_color} onChange={(e) => setHeroForm({ ...heroForm, title_color: e.target.value })} className="w-10 h-10 rounded border border-border cursor-pointer" />
+                      <Input value={heroForm.title_color} onChange={(e) => setHeroForm({ ...heroForm, title_color: e.target.value })} placeholder="#FFFFFF" className="flex-1" />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="subtitle_color">Subtitle Color</Label>
+                    <div className="flex gap-2 mt-1">
+                      <input id="subtitle_color" type="color" value={heroForm.subtitle_color} onChange={(e) => setHeroForm({ ...heroForm, subtitle_color: e.target.value })} className="w-10 h-10 rounded border border-border cursor-pointer" />
+                      <Input value={heroForm.subtitle_color} onChange={(e) => setHeroForm({ ...heroForm, subtitle_color: e.target.value })} placeholder="#EBECEE" className="flex-1" />
+                    </div>
+                  </div>
                   <div className="flex items-end">
                     <label className="flex items-center gap-2 pb-1"><input type="checkbox" checked={heroForm.active} onChange={(e) => setHeroForm({ ...heroForm, active: e.target.checked })} className="rounded border-input" /><span className="text-sm">Active</span></label>
                   </div>

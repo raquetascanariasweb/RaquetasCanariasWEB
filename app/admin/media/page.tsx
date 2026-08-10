@@ -11,7 +11,8 @@ import {
 import { toast } from 'sonner'
 import SimplePagination from '@/components/admin/SimplePagination'
 import { getPublicUrl } from '@/lib/supabase/storage'
-import { getMediaList, uploadMedia, deleteMedia } from '@/lib/admin/media'
+import { getMediaList, deleteMedia } from '@/lib/admin/media'
+import { uploadDirect } from '@/lib/storage-client'
 import type { MediaFile } from '@/lib/admin/media'
 
 const PAGE_SIZE = 24
@@ -69,47 +70,26 @@ export default function MediaPage() {
     if (!fileArr.length) { toast.error('Select files'); return }
     setUploading(true)
 
-    let succeeded = 0
-    let failed = 0
-    const MAX_SIZE = 50 * 1024 * 1024
-
-    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif', 'image/svg+xml', 'video/mp4', 'video/webm', 'video/quicktime']
-
     try {
+      let ok = 0
       for (const file of fileArr) {
-        if (file.size > MAX_SIZE) {
-          toast.error(`${file.name} exceeds 50MB limit (${(file.size / 1024 / 1024).toFixed(1)}MB)`)
-          failed++
-          continue
-        }
-        const mime = file.type || `image/${file.name.split('.').pop()?.toLowerCase() === 'png' ? 'png' : 'jpeg'}`
-        if (!ALLOWED_TYPES.includes(mime)) {
-          toast.error(`${file.name}: unsupported type (${mime || 'unknown'})`)
-          failed++
-          continue
-        }
-        const fd = new FormData()
-        fd.append('file', file)
-        fd.append('mime', mime)
-        const res = await uploadMedia(fd)
-        if (res?.error) {
-          toast.error(`${file.name}: ${res.error}`)
-          failed++
-        } else if (res?.storageName) {
+        const res = await uploadDirect(file)
+        if ('error' in res) {
+          toast.error(res.error)
+        } else {
           const optimistic: MediaFile = {
-            name: res.storageName,
-            id: res.storageName,
+            name: res.url.split('/').pop() || file.name,
+            id: res.url.split('/').pop() || file.name,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
             last_accessed_at: new Date().toISOString(),
-            metadata: { size: file.size },
+            metadata: {},
           }
           setMedia((prev) => [optimistic, ...prev])
-          succeeded++
+          ok++
         }
       }
-      if (succeeded > 0) toast.success(`${succeeded} file(s) uploaded`)
-      if (failed > 0) toast.error(`${failed} file(s) failed`)
+      if (ok > 0) toast.success(`${ok} file(s) uploaded`)
       setUploadOpen(false)
       setSelectedFiles([])
     } catch (e: any) {
@@ -162,47 +142,26 @@ export default function MediaPage() {
     if (!files.length) return
     setUploading(true)
 
-    let succeeded = 0
-    let failed = 0
-    const MAX_SIZE = 50 * 1024 * 1024
-
-    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif', 'image/svg+xml', 'video/mp4', 'video/webm', 'video/quicktime']
-
     try {
+      let ok = 0
       for (const file of Array.from(files)) {
-        if (file.size > MAX_SIZE) {
-          toast.error(`${file.name} exceeds 50MB limit (${(file.size / 1024 / 1024).toFixed(1)}MB)`)
-          failed++
-          continue
-        }
-        const mime = file.type || `image/${file.name.split('.').pop()?.toLowerCase() === 'png' ? 'png' : 'jpeg'}`
-        if (!ALLOWED_TYPES.includes(mime)) {
-          toast.error(`${file.name}: unsupported type (${mime || 'unknown'})`)
-          failed++
-          continue
-        }
-        const fd = new FormData()
-        fd.append('file', file)
-        fd.append('mime', mime)
-        const res = await uploadMedia(fd)
-        if (res?.error) {
-          toast.error(`${file.name}: ${res.error}`)
-          failed++
-        } else if (res?.storageName) {
+        const res = await uploadDirect(file)
+        if ('error' in res) {
+          toast.error(res.error)
+        } else {
           const optimistic: MediaFile = {
-            name: res.storageName,
-            id: res.storageName,
+            name: res.url.split('/').pop() || file.name,
+            id: res.url.split('/').pop() || file.name,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
             last_accessed_at: new Date().toISOString(),
-            metadata: { size: file.size },
+            metadata: {},
           }
           setMedia((prev) => [optimistic, ...prev])
-          succeeded++
+          ok++
         }
       }
-      if (succeeded > 0) toast.success(`${succeeded} file(s) uploaded`)
-      if (failed > 0) toast.error(`${failed} file(s) failed`)
+      if (ok > 0) toast.success(`${ok} file(s) uploaded`)
     } catch (e: any) {
       toast.error(e.message || 'Upload failed')
     }

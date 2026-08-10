@@ -4,7 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { uploadProductImages } from '@/lib/supabase/storage'
 
 function checkAdmin(userId: string | null) {
-  const adminId = process.env.ADMIN_USER_ID || 'user_3G8ZXADowWQkNZdX65U1djf8JYZ'
+  const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID || 'user_3G8ZXADowWQkNZdX65U1djf8JYZ'
   return userId && (!adminId || userId === adminId)
 }
 
@@ -51,7 +51,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const { userId } = await auth()
-    const adminId = process.env.ADMIN_USER_ID || 'user_3G8ZXADowWQkNZdX65U1djf8JYZ'
+    const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID || 'user_3G8ZXADowWQkNZdX65U1djf8JYZ'
 
     if (!userId || (adminId && userId !== adminId)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })

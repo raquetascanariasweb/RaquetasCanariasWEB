@@ -6,7 +6,7 @@ import {
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { getSystemHealth, setupStoragePublicBucket, runBannerPositionMigration } from '@/lib/admin/system'
+import { getSystemHealth, setupStoragePublicBucket } from '@/lib/admin/system'
 import type { SystemHealth } from '@/lib/admin/types'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -28,12 +28,6 @@ export default function AdminSystemPage() {
     const res = await setupStoragePublicBucket()
     if (res?.error) toast.error(res.error)
     else { toast.success('Bucket is now public'); load() }
-  }
-
-  async function handleRunMigration() {
-    const res = await runBannerPositionMigration()
-    if (res?.error) toast.error(res.error)
-    else { toast.success('Migration complete â€” text position columns added'); load() }
   }
 
   useEffect(() => { load() }, [])
@@ -142,24 +136,6 @@ export default function AdminSystemPage() {
             {data.storage_bucket_public === false && (
               <Button size="sm" onClick={handleMakeBucketPublic}>Make Public</Button>
             )}
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <Database size={14} className="text-muted-foreground" />
-            Database Migrations
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm">Banner text position (v6)</p>
-              <p className="text-xs text-muted-foreground">Adds text_x / text_y columns to banners table</p>
-            </div>
-            <Button size="sm" variant="outline" onClick={handleRunMigration}>Run Migration</Button>
           </div>
         </CardContent>
       </Card>

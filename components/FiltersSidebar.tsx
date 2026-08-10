@@ -1,26 +1,29 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect, memo } from "react"
+import Link from "next/link"
+import type { Category } from "@/types/product"
 
 interface FiltersSidebarProps {
-  categories: { id: string; name: string; slug: string }[]
+  categories: Category[]
   activeCategorySlug: string | null
   priceMin: string | null
   priceMax: string | null
   inStockOnly: boolean
   searchQuery: string
+  sinCategoria: boolean
   onFilterChange: (key: string, value: string | null) => void
   onClearFilters: () => void
 }
 
-export default function FiltersSidebar({
+const FiltersSidebar = memo(function FiltersSidebar({
   categories,
   activeCategorySlug,
   priceMin,
   priceMax,
   inStockOnly,
   searchQuery,
+  sinCategoria,
   onFilterChange,
   onClearFilters,
 }: FiltersSidebarProps) {
@@ -37,7 +40,7 @@ export default function FiltersSidebar({
     onFilterChange("precio_max", localPriceMax || null)
   }
 
-  const hasActiveFilters = activeCategorySlug || priceMin || priceMax || inStockOnly || searchQuery
+  const hasActiveFilters = activeCategorySlug || priceMin || priceMax || inStockOnly || searchQuery || sinCategoria
 
   const filterContent = (
     <div className="space-y-6">
@@ -59,29 +62,62 @@ export default function FiltersSidebar({
           Categoría
         </label>
         <div className="space-y-0.5">
-          <button
-            onClick={() => onFilterChange("categoria", null)}
-            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+          <Link
+            href="/"
+            className={`block w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
               !activeCategorySlug
                 ? "bg-ember/10 text-ember font-medium"
                 : "text-[#8A8680] hover:bg-linen/80 hover:text-ink"
             }`}
           >
             Todos los productos
-          </button>
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => onFilterChange("categoria", activeCategorySlug === cat.slug ? null : cat.slug)}
-              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                activeCategorySlug === cat.slug
-                  ? "bg-ember/10 text-ember font-medium"
-                  : "text-[#8A8680] hover:bg-linen/80 hover:text-ink"
-              }`}
-            >
-              {cat.name}
-            </button>
-          ))}
+          </Link>
+
+          {categories
+            .filter((c) => !c.parent_id)
+            .map((cat) => {
+              const children = categories.filter((c) => c.parent_id === cat.id)
+              return (
+                <div key={cat.id}>
+                  <Link
+                    href={`/${cat.slug}`}
+                    className={`block w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      activeCategorySlug === cat.slug
+                        ? "bg-ember/10 text-ember"
+                        : children.length > 0
+                          ? "text-ink/80 hover:bg-linen/80 hover:text-ink"
+                          : "text-[#8A8680] hover:bg-linen/80 hover:text-ink"
+                    }`}
+                  >
+                    {cat.name}
+                  </Link>
+                  {children.map((child) => (
+                    <Link
+                      key={child.id}
+                      href={`/${child.slug}`}
+                      className={`block w-full text-left pl-6 pr-3 py-1.5 rounded-lg text-sm transition-colors ${
+                        activeCategorySlug === child.slug
+                          ? "bg-ember/10 text-ember font-medium"
+                          : "text-[#8A8680] hover:bg-linen/80 hover:text-ink"
+                      }`}
+                    >
+                      {child.name}
+                    </Link>
+                  ))}
+                </div>
+              )
+            })}
+
+          <Link
+            href="/?sin_categoria=1"
+            className={`block w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+              sinCategoria
+                ? "bg-ember/10 text-ember font-medium"
+                : "text-[#8A8680] hover:bg-linen/80 hover:text-ink"
+            }`}
+          >
+            Sin categoría
+          </Link>
         </div>
       </div>
 
@@ -137,7 +173,7 @@ export default function FiltersSidebar({
 
   return (
     <>
-      <aside className="hidden lg:block lg:w-56 shrink-0">
+      <aside className="hidden lg:block lg:w-72 shrink-0">
         <div className="sticky top-24">
           {filterContent}
         </div>
@@ -148,11 +184,12 @@ export default function FiltersSidebar({
       </MobileFilters>
     </>
   )
-}
+})
+
+export default FiltersSidebar
 
 function MobileFilters({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false)
-  const router = useRouter()
 
   return (
     <div className="lg:hidden mb-4">

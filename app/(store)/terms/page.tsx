@@ -144,7 +144,7 @@ export default function TermsPage() {
 
       <section className="container-main py-12 sm:py-16">
         <div className="flex flex-col lg:flex-row gap-10 lg:gap-16">
-          <nav className="lg:w-56 shrink-0">
+          <nav className="lg:w-72 shrink-0">
             <div className="flex lg:flex-col gap-1 lg:sticky lg:top-24 overflow-x-auto pb-2 lg:pb-0">
               {sections.map((s) => (
                 <a
@@ -185,12 +185,6 @@ export default function TermsPage() {
           </div>
         </div>
       </section>
-
-      <footer className="border-t border-[#DDD8CC] py-10 text-center text-sm text-[#A09C95]">
-        <div className="container-main">
-          <p>&copy; {new Date().getFullYear()} Sportbalin. Todos los derechos reservados.</p>
-        </div>
-      </footer>
     </main>
   )
 }

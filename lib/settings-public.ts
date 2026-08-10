@@ -22,7 +22,7 @@ export async function getAboutContent(): Promise<Record<string, string>> {
 
 export async function updateAboutContent(images: Record<string, string>) {
   const { userId } = await auth()
-  const adminId = process.env.ADMIN_USER_ID || 'user_3G8ZXADowWQkNZdX65U1djf8JYZ'
+  const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID || 'user_3G8ZXADowWQkNZdX65U1djf8JYZ'
   if (!userId || userId !== adminId) return { error: 'Unauthorized' }
   const supabase = createAdminClient()
   const { error } = await supabase.from('settings').upsert({ key: 'about_page', value: images }, { onConflict: 'key' })

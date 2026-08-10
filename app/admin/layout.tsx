@@ -4,13 +4,13 @@ import AdminLayoutClient from './AdminLayoutClient'
 import { getCurrencyConfig } from '@/lib/admin/currency'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { userId } = await auth()
+  const { userId, redirectToSignIn } = await auth()
 
   const adminUserId =
     process.env.NEXT_PUBLIC_ADMIN_USER_ID || 'user_3G8ZXADowWQkNZdX65U1djf8JYZ'
 
   if (!userId) {
-    redirect('/sign-in')
+    return redirectToSignIn()
   }
 
   if (userId !== adminUserId) {

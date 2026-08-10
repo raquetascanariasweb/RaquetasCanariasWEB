@@ -1,21 +1,28 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import dynamic from 'next/dynamic'
 import {
-  DollarSign, ShoppingCart, Package, TrendingUp, BarChart3,
+  DollarSign, Package, TrendingUp,
   AlertTriangle, CheckCircle, Clock, Ban,
   ArrowRight, Layers, Users, Percent, ChevronRight,
 } from 'lucide-react'
-import {
-  AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer,
-} from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { getQuickDashboard } from '@/lib/admin/orders'
 import type { QuickDashboardData, ActivityEvent } from '@/lib/admin/types'
 import { useAdminCurrency } from './AdminLayoutClient'
 import Link from 'next/link'
+
+const DashboardCharts = dynamic(() => import('@/components/admin/DashboardCharts'), {
+  ssr: false,
+  loading: () => (
+    <div className="grid grid-cols-1 lg:grid-cols-7 gap-4">
+      <div className="lg:col-span-4 h-72 bg-muted rounded-lg animate-pulse" />
+      <div className="lg:col-span-3 h-72 bg-muted rounded-lg animate-pulse" />
+    </div>
+  ),
+})
 
 const timeAgo = (ts: string) => {
   const diff = Date.now() - new Date(ts).getTime()
@@ -28,7 +35,7 @@ const timeAgo = (ts: string) => {
   return `${days}d ago`
 }
 
-const activityIcons: Record<ActivityEvent['type'], any> = {
+const activityIcons: Record<ActivityEvent['type'], React.ComponentType<{ size?: number; className?: string }>> = {
   order_paid: CheckCircle,
   order_pending: Clock,
   order_shipped: TrendingUp,
@@ -47,13 +54,37 @@ const activityColors: Record<ActivityEvent['type'], string> = {
 }
 
 export default function AdminDashboard() {
-  const { formatPrice: fmt, code: currencyCode } = useAdminCurrency()
+  const { formatPrice: fmt } = useAdminCurrency()
   const [data, setData] = useState<QuickDashboardData | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     getQuickDashboard().then(setData).catch(console.error).finally(() => setLoading(false))
   }, [])
+
+  const chartData = useMemo(() => (data?.revenue_chart ?? []).map((d) => ({
+    date: d.date.slice(5),
+    revenue: Math.round(d.revenue_cents / 100),
+    orders: d.orders,
+  })), [data])
+
+  const weeklyChartData = useMemo(() => {
+    const weekMap = new Map<string, { revenue: number; orders: number }>()
+    ;(data?.revenue_chart ?? []).forEach((d) => {
+      const dObj = new Date(d.date)
+      const weekStart = new Date(dObj)
+      weekStart.setDate(dObj.getDate() - dObj.getDay() + 1)
+      const weekKey = weekStart.toISOString().slice(0, 10)
+      const w = weekMap.get(weekKey) ?? { revenue: 0, orders: 0 }
+      w.revenue += Math.round(d.revenue_cents / 100)
+      w.orders += d.orders
+      weekMap.set(weekKey, w)
+    })
+    return Array.from(weekMap.entries()).map(([week, vals]) => ({
+      week: week.slice(5),
+      ...vals,
+    }))
+  }, [data])
 
   if (loading) {
     return (
@@ -76,33 +107,6 @@ export default function AdminDashboard() {
   if (!data) return null
 
   const hasAttention = data.orders_pending > 0 || data.products_out_of_stock > 0 || data.products_low_stock > 0 || data.expired_discounts > 0
-
-  const chartData = data.revenue_chart.map((d) => ({
-    date: d.date.slice(5),
-    revenue: Math.round(d.revenue_cents / 100),
-    orders: d.orders,
-  }))
-
-  const weekMap = new Map<string, { revenue: number; orders: number }>()
-  data.revenue_chart.forEach((d) => {
-    const dObj = new Date(d.date)
-    const weekStart = new Date(dObj)
-    weekStart.setDate(dObj.getDate() - dObj.getDay() + 1)
-    const weekKey = weekStart.toISOString().slice(0, 10)
-    const w = weekMap.get(weekKey) ?? { revenue: 0, orders: 0 }
-    w.revenue += Math.round(d.revenue_cents / 100)
-    w.orders += d.orders
-    weekMap.set(weekKey, w)
-  })
-  const weeklyChartData = Array.from(weekMap.entries()).map(([week, vals]) => ({
-    week: week.slice(5),
-    ...vals,
-  }))
-
-  const topProductsData = data.top_products.map((p) => ({
-    name: p.name.length > 16 ? p.name.slice(0, 16) + '…' : p.name,
-    revenue: Math.round(p.revenue_cents / 100),
-  }))
 
   return (
     <div className="space-y-6 pb-8">
@@ -240,127 +244,39 @@ export default function AdminDashboard() {
         </CardContent>
       </Card>
 
-      {/* ── Charts Row ─────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-7 gap-4">
-        {/* Revenue by Day (left) */}
-        <Card className="lg:col-span-4 border-border/60">
-          <CardHeader className="pb-1">
-            <CardTitle className="text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">
-              Revenue &amp; Orders — por Día
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-1">
-            <div className="h-72">
-              {chartData.every((d) => d.revenue === 0 && d.orders === 0) ? (
-                <div className="flex flex-col items-center justify-center h-full text-sm text-muted-foreground gap-2">
-                  <BarChart3 size={28} className="text-muted-foreground/30" />
-                  No sales data yet. Your revenue will appear here.
-                </div>
-              ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={chartData}>
-                    <defs>
-                      <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                        <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                    <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} />
-                    <YAxis yAxisId="left" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickFormatter={(v) => fmt(v * 100)} tickLine={false} axisLine={false} width={65} />
-                    <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} width={30} allowDecimals={false} />
-                    <Tooltip
-                      contentStyle={{
-                        background: 'hsl(var(--popover))',
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: 8,
-                        fontSize: 12,
-                      }}
-                      formatter={(value: any, name: any) => [name === 'revenue' ? fmt(value * 100) : value, name === 'revenue' ? 'Revenue' : 'Orders']}
-                    />
-                    <Area yAxisId="left" type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={2} fill="url(#revGrad)" />
-                    <Bar yAxisId="right" dataKey="orders" fill="hsl(var(--muted-foreground))" fillOpacity={0.35} radius={[2, 2, 0, 0]} maxBarSize={18} />
-                  </AreaChart>
-                </ResponsiveContainer>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+      <DashboardCharts chartData={chartData} weeklyChartData={weeklyChartData} fmt={fmt} />
 
-        {/* Panel Derecho: Semanal + Stats */}
-        <div className="lg:col-span-3 space-y-4">
-          {/* Revenue by Week */}
-          <Card className="border-border/60">
-            <CardHeader className="pb-1">
-              <CardTitle className="text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">
-                Revenue &amp; Orders — por Semana
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-1">
-              <div className="h-36">
-                {weeklyChartData.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-full text-xs text-muted-foreground gap-1">
-                    No weekly data yet
-                  </div>
-                ) : (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={weeklyChartData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                      <XAxis dataKey="week" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} />
-                      <YAxis yAxisId="left" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickFormatter={(v) => fmt(v * 100)} tickLine={false} axisLine={false} width={65} />
-                      <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} width={30} allowDecimals={false} />
-                      <Tooltip
-                        contentStyle={{
-                          background: 'hsl(var(--popover))',
-                          border: '1px solid hsl(var(--border))',
-                          borderRadius: 8,
-                          fontSize: 12,
-                        }}
-                        formatter={(value: any, name: any) => [name === 'revenue' ? fmt(value * 100) : value, name === 'revenue' ? 'Revenue' : 'Orders']}
-                      />
-                      <Bar yAxisId="left" dataKey="revenue" fill="hsl(var(--primary))" fillOpacity={0.7} radius={[3, 3, 0, 0]} maxBarSize={32} />
-                      <Bar yAxisId="right" dataKey="orders" fill="hsl(var(--muted-foreground))" fillOpacity={0.4} radius={[3, 3, 0, 0]} maxBarSize={32} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Quick Stats */}
-          <Card className="border-border/60">
-            <CardContent className="p-4 space-y-3">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground flex items-center gap-1.5">
-                  <Layers size={12} /> Categories
-                </span>
-                <span className="font-medium tabular-nums">{data.total_categories}</span>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground flex items-center gap-1.5">
-                  <Users size={12} /> Customers
-                </span>
-                <span className="font-medium tabular-nums">{data.total_customers}</span>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground flex items-center gap-1.5">
-                  <Users size={12} /> New this month
-                </span>
-                <span className="font-medium tabular-nums">{data.new_customers_this_month}</span>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground flex items-center gap-1.5">
-                  <Percent size={12} /> Active discounts
-                </span>
-                <span className="font-medium tabular-nums">{data.active_discounts}</span>
-              </div>
-              <Link href="/admin/analytics" className="flex items-center justify-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors pt-1 border-t border-border/50">
-                Full analytics <ArrowRight size={10} />
-              </Link>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+      <Card className="border-border/60 lg:col-span-3">
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-muted-foreground flex items-center gap-1.5">
+              <Layers size={12} /> Categories
+            </span>
+            <span className="font-medium tabular-nums">{data.total_categories}</span>
+          </div>
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-muted-foreground flex items-center gap-1.5">
+              <Users size={12} /> Customers
+            </span>
+            <span className="font-medium tabular-nums">{data.total_customers}</span>
+          </div>
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-muted-foreground flex items-center gap-1.5">
+              <Users size={12} /> New this month
+            </span>
+            <span className="font-medium tabular-nums">{data.new_customers_this_month}</span>
+          </div>
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-muted-foreground flex items-center gap-1.5">
+              <Percent size={12} /> Active discounts
+            </span>
+            <span className="font-medium tabular-nums">{data.active_discounts}</span>
+          </div>
+          <Link href="/admin/analytics" className="flex items-center justify-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors pt-1 border-t border-border/50">
+            Full analytics <ArrowRight size={10} />
+          </Link>
+        </CardContent>
+      </Card>
 
       {/* ── Recent Activity ─────────────────────────── */}
       <Card className="border-border/60">

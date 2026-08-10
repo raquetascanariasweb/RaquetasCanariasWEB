@@ -50,6 +50,24 @@ interface Props {
   onSaved: () => void
 }
 
+function renderCategoryOptions(
+  cats: AdminCategory[],
+  depth = 0
+): React.ReactNode[] {
+  const result: React.ReactNode[] = []
+  for (const cat of cats) {
+    result.push(
+      <SelectItem key={cat.id} value={cat.id} className={depth > 0 ? 'pl-6 text-muted-foreground text-xs' : ''}>
+        {'— '.repeat(depth)}{cat.name}
+      </SelectItem>
+    )
+    if (cat.children?.length) {
+      result.push(...renderCategoryOptions(cat.children, depth + 1))
+    }
+  }
+  return result
+}
+
 export default function ProductFormDialog({ open, product, onClose, onSaved }: Props) {
   const { code: currencyCode } = useAdminCurrency()
   const [saving, setSaving] = useState(false)
@@ -270,21 +288,12 @@ export default function ProductFormDialog({ open, product, onClose, onSaved }: P
                   value={form.watch('category_id') ?? ''}
                   onValueChange={(v) => form.setValue('category_id', v || null)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-64">
                     <SelectItem value="">None</SelectItem>
-                    {categories.flatMap((cat) => [
-                      <SelectItem key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </SelectItem>,
-                      ...(cat.children?.map((child) => (
-                        <SelectItem key={child.id} value={child.id} className="pl-6">
-                          â€” {child.name}
-                        </SelectItem>
-                      )) ?? []),
-                    ])}
+                    {renderCategoryOptions(categories)}
                   </SelectContent>
                 </Select>
               </div>

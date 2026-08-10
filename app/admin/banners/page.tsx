@@ -35,9 +35,13 @@ export default function BannersPage() {
   const [formImageError, setFormImageError] = useState('')
   const [formTextX, setFormTextX] = useState(50)
   const [formTextY, setFormTextY] = useState(50)
+  const [formVideoUrl, setFormVideoUrl] = useState('')
+  const [formVideoStart, setFormVideoStart] = useState('')
+  const [formVideoEnd, setFormVideoEnd] = useState('')
   const [formActive, setFormActive] = useState(true)
   const [saving, setSaving] = useState(false)
   const [mediaPicker, setMediaPicker] = useState(false)
+  const [mediaPickerMode, setMediaPickerMode] = useState<'image' | 'video'>('image')
 
   async function load() {
     try {
@@ -61,6 +65,9 @@ export default function BannersPage() {
     setFormImageError('')
     setFormTextX(b.text_x ?? 50)
     setFormTextY(b.text_y ?? 50)
+    setFormVideoUrl(b.video_url ?? '')
+    setFormVideoStart(b.video_start ? String(b.video_start) : '')
+    setFormVideoEnd(b.video_end ? String(b.video_end) : '')
     setFormActive(b.active)
   }
 
@@ -76,6 +83,9 @@ export default function BannersPage() {
     setFormImageError('')
     setFormTextX(50)
     setFormTextY(50)
+    setFormVideoUrl('')
+    setFormVideoStart('')
+    setFormVideoEnd('')
     setFormActive(true)
     setShowAdd(true)
   }
@@ -83,7 +93,6 @@ export default function BannersPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!formTitle.trim()) { toast.error('Title required'); return }
-    if (!formImage && !formImagePreview) { toast.error('Banner image required'); return }
     setSaving(true)
     const fd = new FormData()
     fd.append('title', formTitle)
@@ -94,6 +103,9 @@ export default function BannersPage() {
     fd.append('active', String(formActive))
     fd.append('text_x', String(formTextX))
     fd.append('text_y', String(formTextY))
+    fd.append('video_url', formVideoUrl)
+    fd.append('video_start', formVideoStart)
+    fd.append('video_end', formVideoEnd)
     if (formImage) fd.append('image', formImage)
     else if (formImagePreview) fd.append('image_url', formImagePreview)
 
@@ -316,6 +328,43 @@ export default function BannersPage() {
                 </div>
               )}
             </div>
+            <div>
+              <Label>Background Video (optional)</Label>
+              <p className="text-xs text-muted-foreground mb-2">Select a video from the media library to use as banner background.</p>
+              <div className="flex items-center gap-3">
+                {formVideoUrl && (
+                  <div className="w-32 h-20 rounded border border-border overflow-hidden flex-shrink-0 bg-black flex items-center justify-center">
+                    <video src={formVideoUrl} className="w-full h-full object-cover" muted />
+                  </div>
+                )}
+                <Button type="button" variant="outline" size="sm" onClick={() => { setMediaPickerMode('video'); setMediaPicker(true) }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mr-1.5"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/><line x1="17" y1="17" x2="22" y2="17"/></svg>
+                  {formVideoUrl ? 'Change video' : 'Select video from media'}
+                </Button>
+              </div>
+            </div>
+            {formVideoUrl && (
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Start (seconds)</Label>
+                  <Input
+                    type="number"
+                    value={formVideoStart}
+                    onChange={(e) => setFormVideoStart(e.target.value)}
+                    placeholder="0"
+                  />
+                </div>
+                <div>
+                  <Label>End (seconds)</Label>
+                  <Input
+                    type="number"
+                    value={formVideoEnd}
+                    onChange={(e) => setFormVideoEnd(e.target.value)}
+                    placeholder="Full video"
+                  />
+                </div>
+              </div>
+            )}
             <label className="flex items-center gap-2">
               <input type="checkbox" checked={formActive} onChange={(e) => setFormActive(e.target.checked)} className="rounded border-input" />
               <span className="text-sm">Active</span>
@@ -328,7 +377,14 @@ export default function BannersPage() {
           <MediaPicker
             open={mediaPicker}
             onClose={() => setMediaPicker(false)}
-            onSelect={(url) => { setFormImagePreview(url); setFormImage(null) }}
+            onSelect={(url) => {
+              if (mediaPickerMode === 'video') {
+                setFormVideoUrl(url)
+              } else {
+                setFormImagePreview(url)
+                setFormImage(null)
+              }
+            }}
           />
         </DialogContent>
       </Dialog>

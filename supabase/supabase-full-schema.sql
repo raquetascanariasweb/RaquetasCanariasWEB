@@ -130,6 +130,8 @@ CREATE TABLE IF NOT EXISTS homepage_hero (
   secondary_cta_text TEXT,
   secondary_cta_link TEXT,
   overlay_opacity REAL DEFAULT 0.5,
+  title_color TEXT,
+  subtitle_color TEXT,
   active BOOLEAN DEFAULT true,
   updated_at TIMESTAMPTZ DEFAULT now()
 );
@@ -210,10 +212,14 @@ CREATE TABLE IF NOT EXISTS banners (
   active BOOLEAN DEFAULT true,
   text_x INTEGER NOT NULL DEFAULT 50,
   text_y INTEGER NOT NULL DEFAULT 50,
+  title_color TEXT,
+  subtitle_color TEXT,
+  video_url TEXT,
+  video_start INTEGER,
+  video_end INTEGER,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );
-
 -- 17. PROMOTIONAL SECTIONS
 CREATE TABLE IF NOT EXISTS promotional_sections (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -287,4 +293,24 @@ CREATE INDEX IF NOT EXISTS idx_promotional_sections_order ON promotional_section
 CREATE INDEX IF NOT EXISTS idx_landing_pages_slug ON landing_pages(slug);
 CREATE INDEX IF NOT EXISTS idx_email_logs_campaign ON email_logs(campaign_id);
 CREATE INDEX IF NOT EXISTS idx_email_campaigns_status ON email_campaigns(status);
+
+-- ════════════════════════════════════════
+-- cart_items — persistent per-user carts
+-- ════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS cart_items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id TEXT NOT NULL,
+  product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  name TEXT NOT NULL DEFAULT '',
+  price_cents INTEGER NOT NULL DEFAULT 0,
+  image TEXT NOT NULL DEFAULT '',
+  size TEXT NOT NULL DEFAULT '',
+  color TEXT NOT NULL DEFAULT '',
+  quantity INTEGER NOT NULL DEFAULT 1,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_cart_items_user_id ON cart_items(user_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_cart_items_user_product_variant ON cart_items(user_id, product_id, size, color);
 CREATE INDEX IF NOT EXISTS idx_user_favorites_user_id ON user_favorites(user_id);

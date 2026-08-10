@@ -8,7 +8,7 @@ const BUCKET = 'product-images'
 
 async function checkAdmin() {
   const { userId } = await auth()
-  const adminId = process.env.ADMIN_USER_ID || 'user_3G8ZXADowWQkNZdX65U1djf8JYZ'
+  const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID || 'user_3G8ZXADowWQkNZdX65U1djf8JYZ'
   if (!userId || userId !== adminId) throw new Error('Unauthorized')
 }
 
@@ -38,38 +38,63 @@ export async function getMediaList(): Promise<MediaFile[]> {
 
 export async function uploadMedia(formData: FormData) {
   try {
-    try {
-      await checkAdmin()
-    } catch {
-      return { error: 'Unauthorized' }
+    await checkAdmin()
+  } catch {
+    return { error: 'Unauthorized' }
+  }
+
+  const supabase = createAdminClient()
+  const files = formData.getAll('files') as File[]
+
+  if (files.length === 0) return { error: 'No file selected' }
+
+  const results: { url: string; name: string; storageName: string }[] = []
+  const errors: string[] = []
+
+  for (const file of files) {
+    if (!file || file.size === 0) {
+      errors.push('Empty file')
+      continue
     }
-    const supabase = createAdminClient()
-    const file = formData.get('file') as File
-    const mimeOverride = formData.get('mime') as string | null
-    if (!file || !(file instanceof Blob)) return { error: 'No file selected' }
 
-    const MAX_SIZE = 50 * 1024 * 1024
-    if (file.size > MAX_SIZE) return { error: `File exceeds 50MB limit (${(file.size / 1024 / 1024).toFixed(1)}MB)` }
+    if (file.size > 200 * 1024 * 1024) {
+      errors.push(`${file.name}: exceeds 200MB limit`)
+      continue
+    }
 
-    const ext = file.name.split('.').pop() ?? 'jpg'
-    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 11)}.${ext}`
-    const contentType = mimeOverride || file.type || `image/${ext === 'png' ? 'png' : 'jpeg'}`
+    try {
+      const ext = file.name.split('.').pop() ?? 'bin'
+      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 11)}.${ext}`
 
-    const { error } = await supabase.storage
-      .from(BUCKET)
-      .upload(fileName, file, {
-        contentType,
-        cacheControl: '31536000',
-        upsert: false,
-      })
+      const { error } = await supabase.storage
+        .from(BUCKET)
+        .upload(fileName, file, {
+          contentType: file.type || 'application/octet-stream',
+          cacheControl: '31536000',
+          upsert: false,
+        })
 
-    if (error) return { error: error.message }
+      if (error) {
+        errors.push(`${file.name}: ${error.message}`)
+      } else {
+        const { data: publicUrl } = supabase.storage.from(BUCKET).getPublicUrl(fileName)
+        results.push({ url: publicUrl.publicUrl, name: file.name, storageName: fileName })
+      }
+    } catch (e: any) {
+      errors.push(`${file.name}: ${e.message || 'Upload failed'}`)
+    }
+  }
 
-    const { data: publicUrl } = supabase.storage.from(BUCKET).getPublicUrl(fileName)
-    revalidatePath('/admin/media')
-    return { url: publicUrl.publicUrl, name: file.name, storageName: fileName, success: true }
-  } catch (e: any) {
-    return { error: e.message || 'An unexpected error occurred during upload' }
+  revalidatePath('/admin/media')
+
+  if (errors.length > 0 && results.length === 0) {
+    return { error: errors.join('. ') }
+  }
+
+  return {
+    success: true,
+    results,
+    errors: errors.length > 0 ? errors.join('. ') : undefined,
   }
 }
 

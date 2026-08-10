@@ -9,7 +9,7 @@ const FROM_EMAIL = 'Sportbalin <hello@sportbalin.com>'
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth()
-    const adminId = process.env.ADMIN_USER_ID || 'user_3G8ZXADowWQkNZdX65U1djf8JYZ'
+    const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID || 'user_3G8ZXADowWQkNZdX65U1djf8JYZ'
     if (!userId || userId !== adminId) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },

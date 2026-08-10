@@ -7,7 +7,7 @@ import { revalidatePath } from 'next/cache'
 import type { AdminProduct, ProductStatus } from './types'
 
 function getAdminId() {
-  return process.env.ADMIN_USER_ID || 'user_3G8ZXADowWQkNZdX65U1djf8JYZ'
+  return process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID || 'user_3G8ZXADowWQkNZdX65U1djf8JYZ'
 }
 
 async function checkAdmin() {
@@ -21,7 +21,7 @@ export async function getProducts(categoryId?: string, search?: string, inStock?
 
   let q = supabase.from('products').select('*, categories(name), product_variants(*)')
 
-  if (categoryId) q = q.eq('category_id', categoryId)
+  if (categoryId) q = q.contains('category_ids', [categoryId])
   if (search) q = q.ilike('name', `%${search}%`)
   if (inStock !== undefined) q = q.eq('in_stock', inStock)
 
@@ -31,6 +31,7 @@ export async function getProducts(categoryId?: string, search?: string, inStock?
     ...p,
     status: p.status ?? 'active',
     category_name: p.categories?.name ?? null,
+    category_ids: p.category_ids ?? (p.category_id ? [p.category_id] : []),
     categories: undefined,
     product_variants: undefined,
     variants: p.product_variants ?? [],
@@ -52,6 +53,7 @@ export async function getProduct(id: string): Promise<AdminProduct | null> {
   return {
     ...p,
     category_name: p.categories?.name ?? null,
+    category_ids: p.category_ids ?? (p.category_id ? [p.category_id] : []),
     variants: p.product_variants ?? [],
   }
 }
@@ -70,7 +72,7 @@ export async function createProduct(formData: FormData) {
   const variants: any[] = JSON.parse((formData.get('variants') as string) || '[]')
   const existingImages: { url: string; color: string }[] = JSON.parse((formData.get('existing_images') as string) || '[]')
 
-  let images: { url: string; color: string }[] = [...existingImages]
+  const images: { url: string; color: string }[] = [...existingImages]
 
   if (files.length > 0) {
     try {
@@ -94,6 +96,10 @@ export async function createProduct(formData: FormData) {
   const supabase = createAdminClient()
   const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
 
+  const categoryId = (formData.get('category_id') as string) || null
+  const categoryIdsStr = (formData.get('category_ids') as string) || ''
+  const categoryIds: string[] = categoryIdsStr ? JSON.parse(categoryIdsStr) : (categoryId ? [categoryId] : [])
+
   const { data: product, error } = await supabase
     .from('products')
     .insert({
@@ -108,7 +114,8 @@ export async function createProduct(formData: FormData) {
       stock_quantity: derivedStockQty,
       seo_title: (formData.get('seo_title') as string) ?? '',
       seo_description: (formData.get('seo_description') as string) ?? '',
-      category_id: (formData.get('category_id') as string) || null,
+      category_id: categoryId,
+      category_ids: categoryIds,
       sizes,
       colors,
       images,
@@ -141,7 +148,7 @@ export async function updateProduct(id: string, formData: FormData) {
   const variants: any[] = JSON.parse((formData.get('variants') as string) || '[]')
   const existingImages: { url: string; color: string }[] = JSON.parse((formData.get('existing_images') as string) || '[]')
 
-  let images = [...existingImages]
+  const images = [...existingImages]
 
   if (files.length > 0) {
     try {
@@ -166,6 +173,9 @@ export async function updateProduct(id: string, formData: FormData) {
 
   const name = formData.get('name') as string
   const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+  const categoryId = (formData.get('category_id') as string) || null
+  const categoryIdsStr = (formData.get('category_ids') as string) || ''
+  const categoryIds: string[] = categoryIdsStr ? JSON.parse(categoryIdsStr) : (categoryId ? [categoryId] : [])
 
   const { error } = await supabase
     .from('products')
@@ -181,7 +191,8 @@ export async function updateProduct(id: string, formData: FormData) {
       stock_quantity: derivedStockQty,
       seo_title: (formData.get('seo_title') as string) ?? '',
       seo_description: (formData.get('seo_description') as string) ?? '',
-      category_id: (formData.get('category_id') as string) || null,
+      category_id: categoryId,
+      category_ids: categoryIds,
       sizes,
       colors,
       images,
@@ -303,16 +314,18 @@ export async function duplicateProduct(id: string) {
   return { product }
 }
 
-export async function quickUpdateProduct(id: string, data: { name?: string; price_cents?: number; status?: ProductStatus }) {
+export async function quickUpdateProduct(id: string, data: { name?: string; price_cents?: number; status?: ProductStatus; category_id?: string | null; category_ids?: string[] }) {
   await checkAdmin()
   const supabase = createAdminClient()
-  const updateData: Record<string, string | number> = {}
+  const updateData: Record<string, string | number | null | string[]> = {}
   if (data.name !== undefined) {
     updateData.name = data.name
     updateData.slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
   }
   if (data.price_cents !== undefined) updateData.price_cents = data.price_cents
   if (data.status !== undefined) updateData.status = data.status
+  if (data.category_id !== undefined) updateData.category_id = data.category_id
+  if (data.category_ids !== undefined) updateData.category_ids = data.category_ids
   const { error } = await supabase.from('products').update(updateData).eq('id', id)
   if (error) return { error: error.message }
   revalidatePath('/admin/products')

@@ -62,6 +62,7 @@ export interface Product {
   price_cents: number
   compare_at_price_cents: number | null
   category_id: string | null
+  category_ids?: string[]
   category_name?: string
   images: VariantImage[]
   sizes: string[]
@@ -74,6 +75,8 @@ export interface Category {
   id: string
   name: string
   slug: string
+  parent_id?: string | null
+  children?: Category[]
 }
 
 export interface CartItem {

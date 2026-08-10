@@ -7,7 +7,7 @@ import type { FeaturedProductEntry } from './types'
 
 async function checkAdmin() {
   const { userId } = await auth()
-  const adminId = process.env.ADMIN_USER_ID || 'user_3G8ZXADowWQkNZdX65U1djf8JYZ'
+  const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID || 'user_3G8ZXADowWQkNZdX65U1djf8JYZ'
   if (!userId || userId !== adminId) throw new Error('Unauthorized')
 }
 
@@ -57,7 +57,53 @@ export async function removeFeaturedProduct(id: string) {
   const { error } = await supabase.from('featured_products').delete().eq('id', id)
   if (error) return { error: error.message }
   revalidatePath('/admin/featured-products')
+  revalidatePath('/admin/products')
   return { success: true }
+}
+
+export async function toggleFeaturedByProductId(productId: string) {
+  await checkAdmin()
+  const supabase = createAdminClient()
+
+  const { data: existing } = await supabase
+    .from('featured_products')
+    .select('id')
+    .eq('product_id', productId)
+    .maybeSingle()
+
+  if (existing) {
+    const { error } = await supabase
+      .from('featured_products')
+      .delete()
+      .eq('id', existing.id)
+    if (error) return { error: error.message }
+    revalidatePath('/')
+    revalidatePath('/admin/featured-products')
+    return { success: true, featured: false }
+  }
+
+  const { count } = await supabase
+    .from('featured_products')
+    .select('*', { count: 'exact', head: true })
+
+  const { error } = await supabase.from('featured_products').insert({
+    product_id: productId,
+    sort_order: (count ?? 0) + 1,
+  })
+
+  if (error) return { error: error.message }
+  revalidatePath('/')
+  revalidatePath('/admin/featured-products')
+  return { success: true, featured: true }
+}
+
+export async function getFeaturedProductIds(): Promise<string[]> {
+  await checkAdmin()
+  const supabase = createAdminClient()
+  const { data } = await supabase
+    .from('featured_products')
+    .select('product_id')
+  return (data ?? []).map((fp: any) => fp.product_id)
 }
 
 export async function reorderFeaturedProducts(ids: string[]) {

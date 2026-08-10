@@ -8,7 +8,7 @@ import type { HomepageHero, EditorialBlock, LandingPage, NavMenu, FooterSettings
 
 async function checkAdmin() {
   const { userId } = await auth()
-  const adminId = process.env.ADMIN_USER_ID || 'user_3G8ZXADowWQkNZdX65U1djf8JYZ'
+  const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID || 'user_3G8ZXADowWQkNZdX65U1djf8JYZ'
   if (!userId || userId !== adminId) throw new Error('Unauthorized')
 }
 
@@ -39,6 +39,8 @@ export async function updateHero(formData: FormData) {
     secondary_cta_text: (formData.get('secondary_cta_text') as string) || null,
     secondary_cta_link: (formData.get('secondary_cta_link') as string) || null,
     overlay_opacity: parseFloat(formData.get('overlay_opacity') as string) || 0.3,
+    title_color: (formData.get('title_color') as string) || null,
+    subtitle_color: (formData.get('subtitle_color') as string) || null,
     active: formData.get('active') !== 'false',
   }
   if (bgImage) update.background_image = bgImage
@@ -49,7 +51,35 @@ export async function updateHero(formData: FormData) {
     : await supabase.from('homepage_hero').insert(update)
 
   if (error) return { error: error.message }
+
+  const bannerData: Record<string, any> = {
+    title: update.headline,
+    subtitle: update.subheadline,
+    link_label: update.cta_text,
+    link_url: update.cta_link,
+    title_color: update.title_color,
+    subtitle_color: update.subtitle_color,
+    active: update.active,
+    text_x: 50,
+    text_y: 50,
+  }
+  if (bgImage) bannerData.image_url = bgImage
+
+  const { data: existingBanner } = await supabase
+    .from('banners')
+    .select('id')
+    .eq('sort_order', 1)
+    .single()
+
+  if (existingBanner) {
+    await supabase.from('banners').update(bannerData).eq('id', existingBanner.id)
+  } else {
+    bannerData.sort_order = 1
+    await supabase.from('banners').insert(bannerData)
+  }
+
   revalidatePath('/admin/content')
+  revalidatePath('/')
   return { success: true }
 }
 

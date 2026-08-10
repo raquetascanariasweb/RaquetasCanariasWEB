@@ -2,13 +2,13 @@
 
 import { auth } from '@clerk/nextjs/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { uploadProductImages } from '@/lib/supabase/storage'
+import { uploadProductImages, uploadVideo } from '@/lib/supabase/storage'
 import { revalidatePath } from 'next/cache'
 import type { Banner } from './types'
 
 async function checkAdmin() {
   const { userId } = await auth()
-  const adminId = process.env.ADMIN_USER_ID || 'user_3G8ZXADowWQkNZdX65U1djf8JYZ'
+  const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID || 'user_3G8ZXADowWQkNZdX65U1djf8JYZ'
   if (!userId || userId !== adminId) throw new Error('Unauthorized')
 }
 
@@ -32,13 +32,23 @@ export async function createBanner(formData: FormData) {
     if (!title) return { error: 'Title required' }
 
     let imageUrl = (formData.get('image_url') as string) || ''
-    const files = formData.getAll('image') as File[]
-    if (files.length > 0 && files[0].size > 0) {
+    const imageFiles = formData.getAll('image') as File[]
+    if (imageFiles.length > 0 && imageFiles[0].size > 0) {
       try {
-        const urls = await uploadProductImages([files[0]])
+        const urls = await uploadProductImages([imageFiles[0]])
         imageUrl = urls[0]
       } catch (e: any) {
         return { error: `Image upload failed: ${e.message}` }
+      }
+    }
+
+    let videoUrl = (formData.get('video_url') as string) || null
+    const videoFiles = formData.getAll('video') as File[]
+    if (videoFiles.length > 0 && videoFiles[0].size > 0) {
+      try {
+        videoUrl = await uploadVideo(videoFiles[0])
+      } catch (e: any) {
+        return { error: `Video upload failed: ${e.message}` }
       }
     }
 
@@ -46,6 +56,8 @@ export async function createBanner(formData: FormData) {
 
     const text_x = parseInt(formData.get('text_x') as string) || 50
     const text_y = parseInt(formData.get('text_y') as string) || 50
+    const videoStart = formData.get('video_start') ? parseInt(formData.get('video_start') as string) || 0 : null
+    const videoEnd = formData.get('video_end') ? parseInt(formData.get('video_end') as string) || null : null
 
     const { error } = await supabase.from('banners').insert({
       title,
@@ -58,6 +70,9 @@ export async function createBanner(formData: FormData) {
       sort_order: (count ?? 0) + 1,
       text_x,
       text_y,
+      video_url: videoUrl,
+      video_start: videoStart,
+      video_end: videoEnd,
     })
 
     if (error) return { error: error.message }
@@ -77,18 +92,30 @@ export async function updateBanner(id: string, formData: FormData) {
     if (!title) return { error: 'Title required' }
 
     let imageUrl = (formData.get('image_url') as string) || ''
-    const files = formData.getAll('image') as File[]
-    if (files.length > 0 && files[0].size > 0) {
+    const imageFiles = formData.getAll('image') as File[]
+    if (imageFiles.length > 0 && imageFiles[0].size > 0) {
       try {
-        const urls = await uploadProductImages([files[0]])
+        const urls = await uploadProductImages([imageFiles[0]])
         imageUrl = urls[0]
       } catch (e: any) {
         return { error: `Image upload failed: ${e.message}` }
       }
     }
 
+    let videoUrl = (formData.get('video_url') as string) || null
+    const videoFiles = formData.getAll('video') as File[]
+    if (videoFiles.length > 0 && videoFiles[0].size > 0) {
+      try {
+        videoUrl = await uploadVideo(videoFiles[0])
+      } catch (e: any) {
+        return { error: `Video upload failed: ${e.message}` }
+      }
+    }
+
     const text_x = parseInt(formData.get('text_x') as string) || 50
     const text_y = parseInt(formData.get('text_y') as string) || 50
+    const videoStart = formData.get('video_start') ? parseInt(formData.get('video_start') as string) || 0 : null
+    const videoEnd = formData.get('video_end') ? parseInt(formData.get('video_end') as string) || null : null
 
     const update: Record<string, any> = {
       title,
@@ -99,8 +126,11 @@ export async function updateBanner(id: string, formData: FormData) {
       active: formData.get('active') !== 'false',
       text_x,
       text_y,
+      video_start: videoStart,
+      video_end: videoEnd,
     }
     if (imageUrl) update.image_url = imageUrl
+    if (videoUrl !== undefined) update.video_url = videoUrl
 
     const { error } = await supabase.from('banners').update(update).eq('id', id)
     if (error) return { error: error.message }
