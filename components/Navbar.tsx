@@ -238,9 +238,9 @@ export default function Navbar({ categories }: { categories: Category[] }) {
             {mounted && itemCount > 0 && <span className="absolute -top-1 -right-1.5 flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-ember text-[10px] font-semibold text-black leading-none">{itemCount > 99 ? "99" : itemCount}</span>}
           </button>
           {isSignedIn ? <UserButton appearance={{ elements: { avatarBox: "w-[22px] h-[22px]", userButtonPopoverCard: "bg-zinc-900 border border-white/10 text-white shadow-xl", userButtonPopoverActionButtonText: "text-gray-400 text-[13px]" } }} />
-          : <Link href="/sign-in" className="hidden lg:inline text-[13px] font-medium text-gray-400 hover:text-white transition-colors">Iniciar sesi�n</Link>}
+          : <Link href="/sign-in" className="hidden lg:inline text-[13px] font-medium text-gray-400 hover:text-white transition-colors">Iniciar sesión</Link>}
           {isAdmin && <Link href="/admin" className="hidden lg:inline text-[11px] font-semibold text-gray-500 hover:text-ember transition-colors">Admin</Link>}
-          <button onClick={() => setMenuOpen(true)} className="lg:hidden text-gray-400" aria-label="Abrir men�"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg></button>
+          <button onClick={() => setMenuOpen(true)} className="lg:hidden text-gray-400" aria-label="Abrir menú"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg></button>
         </div>
       </nav>
       <AnimatePresence>
