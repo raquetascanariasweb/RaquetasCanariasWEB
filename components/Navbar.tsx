@@ -1,12 +1,12 @@
 "use client"
 
-import { useState, useRef, useSyncExternalStore } from "react"
+import { useState, useRef, useEffect, useSyncExternalStore } from "react"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import { useCartStore } from "@/store/cart"
 import { useFavoritesStore } from "@/store/favorites-store"
 import type { Category } from "@/types/product"
-import { useUser, UserButton } from "@clerk/nextjs"
+import { useUser, useClerk } from "@clerk/nextjs"
 
 const SPORT_ORDER = ["padel", "tenis", "squash", "running", "natacion", "fitness"]
 
@@ -180,6 +180,77 @@ function MobileCategoryItem({ category, onClose }: { category: Category; onClose
   )
 }
 
+function UserMenu() {
+  const { user } = useUser()
+  const { signOut } = useClerk()
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    if (open) document.addEventListener("click", handleClick)
+    return () => document.removeEventListener("click", handleClick)
+  }, [open])
+
+  if (!user) return null
+
+  return (
+    <div ref={ref} className="relative hidden lg:block">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-[22px] h-[22px] rounded-full bg-gray-700 overflow-hidden hover:ring-2 hover:ring-ember/50 transition-all"
+      >
+        {user.imageUrl ? (
+          <img src={user.imageUrl} alt="" className="w-full h-full object-cover" />
+        ) : (
+          <span className="flex items-center justify-center w-full h-full text-[10px] font-semibold text-white">
+            {user.firstName?.charAt(0) || "U"}
+          </span>
+        )}
+      </button>
+
+      {open && (
+        <div className="absolute top-full right-0 mt-2 w-48 rounded-xl bg-zinc-900 border border-white/10 shadow-xl shadow-black/40 overflow-hidden z-50">
+          <div className="px-4 py-3 border-b border-white/10">
+            <p className="text-sm font-medium text-white truncate">
+              {user.firstName} {user.lastName}
+            </p>
+            <p className="text-xs text-gray-500 truncate">
+              {user.emailAddresses?.[0]?.emailAddress}
+            </p>
+          </div>
+          <Link
+            href="/orders"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-400 hover:text-white hover:bg-white/[0.04] transition-colors"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+            Mis pedidos
+          </Link>
+          <Link
+            href="/wishlist"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-400 hover:text-white hover:bg-white/[0.04] transition-colors"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            Favoritos
+          </Link>
+          <div className="h-px bg-white/10" />
+          <button
+            onClick={() => { signOut(); setOpen(false) }}
+            className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-gray-400 hover:text-white hover:bg-white/[0.04] transition-colors"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Cerrar sesión
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function Navbar({ categories }: { categories: Category[] }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
@@ -231,15 +302,14 @@ export default function Navbar({ categories }: { categories: Category[] }) {
             <input type="text" placeholder="Buscar" className="bg-transparent text-[13px] text-white placeholder-gray-500 outline-none w-full" onKeyDown={(e) => { if (e.key === "Enter") { const v = (e.target as HTMLInputElement).value.trim(); if (v) window.location.href = `/shop?search=${encodeURIComponent(v)}` } }} />
           </div>
           <button onClick={() => setMobileSearchOpen(!mobileSearchOpen)} className="lg:hidden text-gray-400" aria-label="Buscar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></button>
-          <Link href="/wishlist" className="relative hidden lg:block text-gray-400 hover:text-white transition-colors" aria-label="Favoritos">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-            {mounted && favCount > 0 && <span className="absolute -top-1 -right-1.5 flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-ember text-[10px] font-semibold text-black leading-none">{favCount > 99 ? "99" : favCount}</span>}
-          </Link>
           <button onClick={() => useCartStore.getState().toggleCart()} className="relative text-gray-400 hover:text-white transition-colors" aria-label="Carrito"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/></svg>
             {mounted && itemCount > 0 && <span className="absolute -top-1 -right-1.5 flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-ember text-[10px] font-semibold text-black leading-none">{itemCount > 99 ? "99" : itemCount}</span>}
           </button>
-          {isSignedIn ? <UserButton appearance={{ elements: { avatarBox: "w-[22px] h-[22px]", userButtonPopoverCard: "bg-zinc-900 border border-white/10 text-white shadow-xl", userButtonPopoverActionButtonText: "text-gray-400 text-[13px]" } }} />
-          : <Link href="/sign-in" className="hidden lg:inline text-[13px] font-medium text-gray-400 hover:text-white transition-colors">Iniciar sesión</Link>}
+          {isSignedIn ? (
+            <UserMenu />
+          ) : (
+            <Link href="/sign-in" className="hidden lg:inline text-[13px] font-medium text-gray-400 hover:text-white transition-colors">Iniciar sesión</Link>
+          )}
           {isAdmin && <Link href="/admin" className="hidden lg:inline text-[11px] font-semibold text-gray-500 hover:text-ember transition-colors">Admin</Link>}
           <button onClick={() => setMenuOpen(true)} className="lg:hidden text-gray-400" aria-label="Abrir menú"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg></button>
         </div>
@@ -285,6 +355,11 @@ export default function Navbar({ categories }: { categories: Category[] }) {
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                   Favoritos {favCount > 0 && <span className="text-ember text-sm">({favCount})</span>}
                 </Link>
+                {isSignedIn && (
+                  <Link href="/orders" onClick={() => setMenuOpen(false)} className="block text-base font-semibold text-white">
+                    Mis pedidos
+                  </Link>
+                )}
                 <Link href="/about" onClick={() => setMenuOpen(false)} className="block text-base font-semibold text-white">Sobre nosotros</Link>
                 <Link href="/terms" onClick={() => setMenuOpen(false)} className="block text-base font-semibold text-white">Condiciones de venta</Link>
               </div>

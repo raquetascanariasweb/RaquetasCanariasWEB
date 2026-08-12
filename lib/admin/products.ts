@@ -110,7 +110,6 @@ export async function createProduct(formData: FormData) {
       price_cents: priceCents,
       compare_at_price_cents: formData.get('compare_at_price_cents') ? parseInt(formData.get('compare_at_price_cents') as string) : null,
       sku: (formData.get('sku') as string) ?? '',
-      track_inventory: hasVariants || formData.get('track_inventory') === 'true',
       stock_quantity: derivedStockQty,
       seo_title: (formData.get('seo_title') as string) ?? '',
       seo_description: (formData.get('seo_description') as string) ?? '',
@@ -187,7 +186,6 @@ export async function updateProduct(id: string, formData: FormData) {
       price_cents: parseInt(formData.get('price_cents') as string, 10),
       compare_at_price_cents: formData.get('compare_at_price_cents') ? parseInt(formData.get('compare_at_price_cents') as string) : null,
       sku: (formData.get('sku') as string) ?? '',
-      track_inventory: hasVariants || formData.get('track_inventory') === 'true',
       stock_quantity: derivedStockQty,
       seo_title: (formData.get('seo_title') as string) ?? '',
       seo_description: (formData.get('seo_description') as string) ?? '',
@@ -282,7 +280,6 @@ export async function duplicateProduct(id: string) {
       price_cents: original.price_cents,
       compare_at_price_cents: original.compare_at_price_cents,
       sku: original.sku ? `${original.sku}-COPY` : '',
-      track_inventory: original.track_inventory,
       stock_quantity: original.stock_quantity,
       seo_title: original.seo_title,
       seo_description: original.seo_description,
@@ -305,7 +302,6 @@ export async function duplicateProduct(id: string) {
         color_slug: v.color_slug,
         price_cents: v.price_cents,
         stock_quantity: v.stock_quantity,
-        track_inventory: v.track_inventory,
       }))
     )
     if (vErr) console.error('Variant duplicate error:', vErr)
@@ -314,7 +310,7 @@ export async function duplicateProduct(id: string) {
   return { product }
 }
 
-export async function quickUpdateProduct(id: string, data: { name?: string; price_cents?: number; status?: ProductStatus; category_id?: string | null; category_ids?: string[]; stock_quantity?: number; in_stock?: boolean; track_inventory?: boolean }) {
+export async function quickUpdateProduct(id: string, data: { name?: string; price_cents?: number; status?: ProductStatus; category_id?: string | null; category_ids?: string[]; stock_quantity?: number; in_stock?: boolean }) {
   await checkAdmin()
   const supabase = createAdminClient()
   const updateData: Record<string, string | number | null | string[] | boolean> = {}
@@ -328,9 +324,9 @@ export async function quickUpdateProduct(id: string, data: { name?: string; pric
   if (data.category_ids !== undefined) updateData.category_ids = data.category_ids
   if (data.stock_quantity !== undefined) updateData.stock_quantity = data.stock_quantity
   if (data.in_stock !== undefined) updateData.in_stock = data.in_stock
-  if (data.track_inventory !== undefined) updateData.track_inventory = data.track_inventory
   const { error } = await supabase.from('products').update(updateData).eq('id', id)
   if (error) return { error: error.message }
   revalidatePath('/admin/products')
+  revalidatePath('/')
   return { success: true }
 }

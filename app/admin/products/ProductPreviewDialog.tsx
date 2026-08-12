@@ -110,7 +110,7 @@ export default function ProductPreviewDialog({ open, product, onClose }: Props) 
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span className={`w-2 h-2 rounded-full ${product.in_stock ? 'bg-emerald-500' : 'bg-red-500'}`} />
               {product.in_stock ? 'In Stock' : 'Out of Stock'}
-              {product.track_inventory && <span>({product.stock_quantity} units)</span>}
+              <span>({product.stock_quantity} units)</span>
             </div>
           </div>
         </div>

@@ -32,7 +32,6 @@ const productSchema = z.object({
   price_cents: z.coerce.number().min(0.01, 'Price required'),
   compare_at_price_cents: z.coerce.number().optional().nullable(),
   sku: z.string().optional(),
-  track_inventory: z.boolean().optional(),
   stock_quantity: z.coerce.number().optional(),
   seo_title: z.string().optional(),
   seo_description: z.string().optional(),
@@ -84,11 +83,10 @@ export default function ProductFormDialog({ open, product, onClose, onSaved }: P
   const [mediaPickerColor, setMediaPickerColor] = useState('')
   const [variants, setVariants] = useState<{
     sku: string; size: string; color_slug: string; price_cents: number | null;
-    stock_quantity: number; track_inventory: boolean
+    stock_quantity: number
   }[]>(product?.variants?.map((v) => ({
     sku: v.sku || '', size: v.size || '', color_slug: v.color_slug || '',
     price_cents: v.price_cents, stock_quantity: v.stock_quantity || 0,
-    track_inventory: v.track_inventory || false,
   })) ?? [])
 
   const form = useForm<ProductFormValues>({
@@ -100,7 +98,6 @@ export default function ProductFormDialog({ open, product, onClose, onSaved }: P
       price_cents: product ? product.price_cents / 100 : 0,
       compare_at_price_cents: product?.compare_at_price_cents ? product.compare_at_price_cents / 100 : null,
       sku: product?.sku ?? '',
-      track_inventory: product?.track_inventory ?? false,
       stock_quantity: product?.stock_quantity ?? 0,
       in_stock: product?.in_stock ?? true,
       seo_title: product?.seo_title ?? '',
@@ -148,20 +145,20 @@ export default function ProductFormDialog({ open, product, onClose, onSaved }: P
       for (const size of sizes) {
         for (const color of colors) {
           if (!variants.find((v) => v.size === size && v.color_slug === color.slug)) {
-            newVariants.push({ sku: `${color.slug}-${size}`, size, color_slug: color.slug, price_cents: null, stock_quantity: 0, track_inventory: false })
+            newVariants.push({ sku: `${color.slug}-${size}`, size, color_slug: color.slug, price_cents: null, stock_quantity: 0 })
           }
         }
       }
     } else if (colors.length > 0) {
       for (const color of colors) {
         if (!variants.find((v) => v.color_slug === color.slug && !v.size)) {
-          newVariants.push({ sku: color.slug, size: '', color_slug: color.slug, price_cents: null, stock_quantity: 0, track_inventory: false })
+          newVariants.push({ sku: color.slug, size: '', color_slug: color.slug, price_cents: null, stock_quantity: 0 })
         }
       }
     } else if (sizes.length > 0) {
       for (const size of sizes) {
         if (!variants.find((v) => v.size === size && !v.color_slug)) {
-          newVariants.push({ sku: size.toLowerCase(), size, color_slug: '', price_cents: null, stock_quantity: 0, track_inventory: false })
+          newVariants.push({ sku: size.toLowerCase(), size, color_slug: '', price_cents: null, stock_quantity: 0 })
         }
       }
     }
@@ -198,7 +195,6 @@ export default function ProductFormDialog({ open, product, onClose, onSaved }: P
       fd.append('price_cents', String(Math.round(data.price_cents * 100)))
       if (data.compare_at_price_cents) fd.append('compare_at_price_cents', String(Math.round(data.compare_at_price_cents * 100)))
       fd.append('sku', data.sku ?? '')
-      fd.append('track_inventory', String(!!data.track_inventory))
       fd.append('stock_quantity', String(data.stock_quantity ?? 0))
       fd.append('seo_title', data.seo_title ?? '')
       fd.append('seo_description', data.seo_description ?? '')
@@ -489,15 +485,6 @@ export default function ProductFormDialog({ open, product, onClose, onSaved }: P
                       placeholder="Qty"
                       className="w-16 h-8 text-xs"
                     />
-                    <label className="flex items-center gap-1 text-[10px] whitespace-nowrap">
-                      <input
-                        type="checkbox"
-                        checked={v.track_inventory}
-                        onChange={(e) => updateVariant(i, 'track_inventory', e.target.checked)}
-                        className="rounded"
-                      />
-                      Track
-                    </label>
                     <button type="button" onClick={() => removeVariant(i)} className="p-1 hover:text-destructive">
                       <X size={12} />
                     </button>
@@ -549,22 +536,10 @@ export default function ProductFormDialog({ open, product, onClose, onSaved }: P
                 </div>
               ) : (
                 <>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="track_inventory"
-                      className="rounded border-input"
-                      {...form.register('track_inventory')}
-                    />
-                    <Label htmlFor="track_inventory" className="mb-0">Track inventory</Label>
+                  <div>
+                    <Label htmlFor="stock_quantity">Stock Quantity</Label>
+                    <Input id="stock_quantity" type="number" {...form.register('stock_quantity', { valueAsNumber: true })} />
                   </div>
-
-                  {form.watch('track_inventory') && (
-                    <div>
-                      <Label htmlFor="stock_quantity">Stock Quantity</Label>
-                      <Input id="stock_quantity" type="number" {...form.register('stock_quantity', { valueAsNumber: true })} />
-                    </div>
-                  )}
 
                   <div className="flex items-center gap-2">
                     <input

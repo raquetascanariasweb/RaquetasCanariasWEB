@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import {
-  Search, Plus, Filter, Package, AlertTriangle, Warehouse, ChevronDown,
+  Search, Plus, Filter, Package, AlertTriangle, Warehouse, ChevronDown, Layers,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -25,9 +25,10 @@ export default function AdminInventoryPage() {
   const [lowStockOnly, setLowStockOnly] = useState(false)
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null)
   const [editStock, setEditStock] = useState(0)
-  const [editTracking, setEditTracking] = useState(false)
-  const [editingVariant, setEditingVariant] = useState<{ id: string; sku: string; stock: number; tracking: boolean } | null>(null)
+  const [editingVariant, setEditingVariant] = useState<{ id: string; sku: string; stock: number } | null>(null)
   const [saving, setSaving] = useState(false)
+  const [bulkStock, setBulkStock] = useState(0)
+  const [bulkLoading, setBulkLoading] = useState(false)
 
   async function load() {
     try {
@@ -43,7 +44,6 @@ export default function AdminInventoryPage() {
   function openEdit(item: InventoryItem) {
     setEditingItem(item)
     setEditStock(item.stock_quantity)
-    setEditTracking(item.track_inventory)
   }
 
   async function handleSaveStock() {
@@ -51,7 +51,6 @@ export default function AdminInventoryPage() {
     setSaving(true)
     const res = await updateProductStock(editingItem.id, {
       stock_quantity: editStock,
-      track_inventory: editTracking,
     })
     if (res.error) {
       toast.error(res.error)
@@ -68,7 +67,6 @@ export default function AdminInventoryPage() {
     setSaving(true)
     const res = await updateVariantStock(editingVariant.id, {
       stock_quantity: editingVariant.stock,
-      track_inventory: editingVariant.tracking,
     })
     if (res.error) {
       toast.error(res.error)
@@ -87,10 +85,28 @@ export default function AdminInventoryPage() {
       items = items.filter((i) => i.name.toLowerCase().includes(q) || i.sku.toLowerCase().includes(q))
     }
     if (lowStockOnly) {
-      items = items.filter((i) => i.track_inventory && i.stock_quantity <= 5)
+      items = items.filter((i) => i.stock_quantity <= 5 && i.stock_quantity > 0)
     }
     return items
   }, [data, search, lowStockOnly])
+
+  async function handleBulkStock() {
+    setBulkLoading(true)
+    try {
+      const res = await fetch('/api/admin/products/bulk-stock', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stock_quantity: bulkStock }),
+      })
+      const d = await res.json()
+      if (!res.ok) throw new Error(d.error || 'Failed')
+      toast.success(`Stock actualizado a ${bulkStock} unidades en ${d.updated} productos`)
+      load()
+    } catch (e: any) {
+      toast.error(e.message || 'Error')
+    }
+    setBulkLoading(false)
+  }
 
   if (loading) {
     return <div className="animate-pulse space-y-4">
@@ -100,9 +116,9 @@ export default function AdminInventoryPage() {
     </div>
   }
 
-  const totalStock = data.reduce((s, i) => s + (i.track_inventory ? i.stock_quantity : 0), 0)
-  const lowStockCount = data.filter((i) => i.track_inventory && i.stock_quantity <= 5).length
-  const outOfStockCount = data.filter((i) => i.track_inventory && i.stock_quantity === 0).length
+  const totalStock = data.reduce((s, i) => s + i.stock_quantity, 0)
+  const lowStockCount = data.filter((i) => i.stock_quantity <= 5 && i.stock_quantity > 0).length
+  const outOfStockCount = data.filter((i) => i.stock_quantity === 0).length
 
   return (
     <div className="space-y-4">
@@ -143,6 +159,23 @@ export default function AdminInventoryPage() {
         </Card>
       </div>
 
+      <Card className="border-border/60">
+        <CardContent className="p-4 flex items-center gap-3">
+          <Layers size={16} className="text-muted-foreground shrink-0" />
+          <span className="text-sm font-medium whitespace-nowrap">Set all stock to:</span>
+          <Input
+            type="number"
+            min={0}
+            value={bulkStock}
+            onChange={(e) => setBulkStock(Number(e.target.value))}
+            className="w-20 h-8 text-sm"
+          />
+          <Button size="sm" onClick={handleBulkStock} disabled={bulkLoading}>
+            {bulkLoading ? 'Updating...' : 'Apply to all'}
+          </Button>
+        </CardContent>
+      </Card>
+
       <div className="flex items-center gap-3">
         <div className="relative flex-1 max-w-sm">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -182,7 +215,7 @@ export default function AdminInventoryPage() {
                 <div className="flex items-center gap-4 text-sm shrink-0">
                   <span className="text-muted-foreground w-20 text-right">{fmt(item.price_cents)}</span>
                   <div className="w-24 text-right">
-                    {item.track_inventory ? (
+                    {item.stock_quantity > 0 ? (
                       <span className={item.stock_quantity <= 0 ? 'text-admin-danger' : item.stock_quantity <= 5 ? 'text-admin-warning' : ''}>
                         {item.stock_quantity}
                       </span>
@@ -208,9 +241,9 @@ export default function AdminInventoryPage() {
                         {v.color_slug && <span className="capitalize">{v.color_slug}</span>}
                       </div>
                       <div className="flex items-center gap-3">
-                        <span>{v.track_inventory ? v.stock_quantity : '—'}</span>
+                        <span>{v.stock_quantity}</span>
                         <button
-                          onClick={() => setEditingVariant({ id: v.id, sku: v.sku, stock: v.stock_quantity, tracking: v.track_inventory })}
+                          onClick={() => setEditingVariant({ id: v.id, sku: v.sku, stock: v.stock_quantity })}
                           className="text-muted-foreground hover:text-foreground underline text-[10px]"
                         >
                           Edit
@@ -241,16 +274,6 @@ export default function AdminInventoryPage() {
                 value={editStock}
                 onChange={(e) => setEditStock(parseInt(e.target.value) || 0)}
               />
-            </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="track_inv"
-                checked={editTracking}
-                onChange={(e) => setEditTracking(e.target.checked)}
-                className="rounded border-input"
-              />
-              <Label htmlFor="track_inv" className="mb-0">Track Inventory</Label>
             </div>
           </div>
           <DialogFooter>

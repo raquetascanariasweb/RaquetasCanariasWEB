@@ -28,6 +28,7 @@ export default function ProductActions({ product }: { product: Product }) {
   const isFavorite = useFavoritesStore((s) => s.isFavorite)
   const fav = isFavorite(product.id)
   const image = product.images[0]
+  const maxStock = product.stock_quantity ?? 99
 
   const handleToggleFavorite = useCallback(async () => {
     if (!isSignedIn) {
@@ -64,6 +65,7 @@ export default function ProductActions({ product }: { product: Product }) {
       size: selectedSize,
       color: selectedColor,
       quantity,
+      maxStock,
     })
     openCart()
   }
@@ -134,12 +136,18 @@ export default function ProductActions({ product }: { product: Product }) {
             {quantity}
           </span>
           <button
-            onClick={() => setQuantity(quantity + 1)}
-            className="px-3 py-2.5 text-[#A09C95] hover:text-ink transition-colors"
+            onClick={() => setQuantity(Math.min(maxStock, quantity + 1))}
+            disabled={quantity >= maxStock}
+            className="px-3 py-2.5 text-[#A09C95] hover:text-ink transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           >
             +
           </button>
         </div>
+        {product.stock_quantity > 0 && product.stock_quantity < 100 && (
+          <span className="text-xs text-[#A09C95]">
+            {product.stock_quantity} disponible{product.stock_quantity !== 1 ? "s" : ""}
+          </span>
+        )}
 
         <button
           disabled={!product.in_stock}

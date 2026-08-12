@@ -1,6 +1,59 @@
-import { NextResponse } from 'next/server'
-import { getStripe } from '@/lib/stripe'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { NextResponse } from "next/server"
+import { getStripe } from "@/lib/stripe"
+import { createAdminClient } from "@/lib/supabase/admin"
+import { Resend } from "resend"
+
+const FROM = process.env.RESEND_FROM || "Sportbalin <onboarding@resend.dev>"
+
+function formatPrice(cents: number) {
+  return (cents / 100).toFixed(2)
+}
+
+async function sendConfirmationEmail(sessionId: string, customerEmail: string, order: any) {
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey || !customerEmail) return
+
+  const items = (order.items ?? []) as {
+    product_name: string
+    price_cents: number
+    quantity: number
+    size: string
+    color: string
+  }[]
+
+  const itemsHtml = items
+    .map(
+      (item) =>
+        `<tr>
+          <td style="padding:8px 0;border-bottom:1px solid #eee">${item.product_name}${item.size ? " / Talla: " + item.size : ""}${item.color ? " / Color: " + item.color : ""}</td>
+          <td style="padding:8px 0;border-bottom:1px solid #eee;text-align:center">${item.quantity}</td>
+          <td style="padding:8px 0;border-bottom:1px solid #eee;text-align:right">${formatPrice(item.price_cents * item.quantity)}€</td>
+        </tr>`
+    )
+    .join("")
+
+  const total = items.reduce((s, i) => s + i.price_cents * i.quantity, 0)
+
+  const html = `
+    <div style="max-width:600px;margin:0 auto;font-family:Arial,sans-serif;color:#333">
+      <h1 style="color:#C4E326">¡Gracias por tu pedido!</h1>
+      <p>Hemos recibido tu pedido y lo estamos procesando.</p>
+      <table style="width:100%;border-collapse:collapse;margin:20px 0">
+        <thead><tr style="background:#f5f5f5"><th style="padding:8px;text-align:left">Producto</th><th style="padding:8px;text-align:center">Cant.</th><th style="padding:8px;text-align:right">Total</th></tr></thead>
+        <tbody>${itemsHtml}</tbody>
+        <tfoot><tr><td colspan="2" style="padding:12px 8px;text-align:right;font-weight:bold">Total:</td><td style="padding:12px 8px;text-align:right;font-weight:bold;font-size:18px">${formatPrice(total)}€</td></tr></tfoot>
+      </table>
+      <p style="color:#888;font-size:13px">Si tienes alguna duda, contáctanos en info@sportbalin.com</p>
+    </div>
+  `
+
+  try {
+    const resend = new Resend(apiKey)
+    await resend.emails.send({ from: FROM, to: customerEmail, subject: `Pedido confirmado #${sessionId.slice(-8)}`, html })
+  } catch (e) {
+    console.error("[verify-payment] Email error:", e)
+  }
+}
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -62,6 +115,8 @@ export async function GET(request: Request) {
         console.error('Order update error:', updateError)
         return NextResponse.json({ error: 'Failed to update order' }, { status: 500 })
       }
+
+      await sendConfirmationEmail(sessionId, session.customer_details?.email || "", order)
 
       return NextResponse.json({ status: 'paid' })
     }

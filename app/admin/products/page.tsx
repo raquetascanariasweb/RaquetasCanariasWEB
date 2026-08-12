@@ -49,10 +49,9 @@ const STATUS_CONFIG: Record<ProductStatus, { label: string; className: string }>
 type StockFilter = 'all' | 'in' | 'out' | 'low'
 
 function StockCell({ row }: { row: any }) {
-  const hasInv = row.original.track_inventory
   const qty = row.original.stock_quantity
   const inStock = row.original.in_stock
-  const isLow = hasInv && qty > 0 && qty <= 5
+  const isLow = qty > 0 && qty <= 5
   const [editing, setEditing] = useState(false)
   const [editQty, setEditQty] = useState(qty)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -61,14 +60,13 @@ function StockCell({ row }: { row: any }) {
     if (editing) inputRef.current?.focus()
   }, [editing])
 
-  async function save() {
-    const newStock = editQty
-    const newInStock = newStock > 0
-    const res = await quickUpdateProduct(row.original.id, {
-      stock_quantity: newStock,
-      in_stock: newInStock,
-      track_inventory: true,
-    })
+    async function save() {
+      const newStock = editQty
+      const newInStock = newStock > 0
+      const res = await quickUpdateProduct(row.original.id, {
+        stock_quantity: newStock,
+        in_stock: newInStock,
+      })
     if (res.error) {
       toast.error(res.error)
     } else {
@@ -100,7 +98,7 @@ function StockCell({ row }: { row: any }) {
     <button onClick={(e) => { e.stopPropagation(); setEditQty(qty); setEditing(true) }} className="flex items-center gap-2 cursor-pointer hover:opacity-80">
       <div className={`w-2 h-2 rounded-full ${isLow ? 'bg-admin-warning' : inStock ? 'bg-admin-success' : 'bg-admin-danger'}`} />
       <span className="text-xs">{isLow ? 'Low Stock' : inStock ? 'In Stock' : 'Out of Stock'}</span>
-      {hasInv && <span className="text-[10px] text-muted-foreground">({qty})</span>}
+      <span className="text-[10px] text-muted-foreground">({qty})</span>
       <span className="text-muted-foreground hover:text-foreground underline text-[10px]">Edit</span>
     </button>
   )
@@ -226,7 +224,7 @@ export default function AdminProductsPage() {
       result = result.filter((p) => {
         if (stockFilter === 'in') return p.in_stock
         if (stockFilter === 'out') return !p.in_stock
-        if (stockFilter === 'low') return p.track_inventory && p.stock_quantity > 0 && p.stock_quantity <= 5
+        if (stockFilter === 'low') return p.stock_quantity > 0 && p.stock_quantity <= 5
         return true
       })
     }
@@ -450,7 +448,7 @@ export default function AdminProductsPage() {
       id: 'stock_status',
       accessorFn: (row) => {
         if (!row.in_stock) return 'out'
-        if (row.track_inventory && row.stock_quantity <= 5) return 'low'
+        if (row.stock_quantity <= 5 && row.stock_quantity > 0) return 'low'
         return 'in'
       },
       size: 130,
@@ -563,7 +561,7 @@ export default function AdminProductsPage() {
         </Select>
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
           <SelectTrigger className="w-[200px]"><SelectValue placeholder="Category" /></SelectTrigger>
-          <SelectContent>
+          <SelectContent className="max-h-80 overflow-y-auto">
             <SelectItem value="all">All Categories</SelectItem>
             {categories.map((cat) => (
               <CategorySelectItem key={cat.id} cat={cat} />

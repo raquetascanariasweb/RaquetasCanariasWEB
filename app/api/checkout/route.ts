@@ -82,8 +82,12 @@ export async function POST(request: Request) {
         allowed_countries: ['US', 'CA', 'GB', 'DE', 'FR', 'IT', 'ES', 'NL', 'BE', 'CH', 'AT', 'PT', 'DK', 'SE', 'NO', 'FI', 'IE', 'AU', 'NZ', 'JP', 'AE', 'MX', 'BR', 'CO'],
       },
       metadata: {
-        userId: userId ?? null,
-        items: JSON.stringify(items),
+        userId: userId || "guest",
+        items: JSON.stringify(items.map((item) => ({
+          ...item,
+          product_name: productMap.get(item.product_id)?.name ?? "",
+          price_cents: productMap.get(item.product_id)?.price_cents ?? 0,
+        }))),
       },
     })
   } catch (stripeError: any) {
@@ -95,7 +99,7 @@ export async function POST(request: Request) {
   }
 
   const { error: orderError } = await supabase.from('orders').insert({
-    user_id: userId ?? null,
+    user_id: userId || ("guest_" + crypto.randomUUID()),
     status: 'pending',
     total_cents: subtotalCents,
     stripe_session_id: session.id,

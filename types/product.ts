@@ -53,6 +53,16 @@ export interface VariantImage {
   color: string
 }
 
+export interface ProductVariant {
+  id: string
+  product_id: string
+  sku: string
+  size: string
+  color_slug: string
+  price_cents: number | null
+  stock_quantity: number
+}
+
 export interface Product {
   id: string
   name: string
@@ -68,6 +78,9 @@ export interface Product {
   sizes: string[]
   colors: ColorSwatch[]
   in_stock: boolean
+  stock_quantity: number
+  track_inventory: boolean
+  variants?: ProductVariant[]
   created_at: string
 }
 
@@ -88,6 +101,7 @@ export interface CartItem {
   size: string
   color: string
   quantity: number
+  maxStock?: number
 }
 
 export interface Order {

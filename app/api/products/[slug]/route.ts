@@ -12,7 +12,7 @@ export async function GET(
 
   const { data: product, error } = await supabase
     .from('products')
-    .select('*, categories(name)')
+    .select('*, categories(name), product_variants(*)')
     .eq('slug', slug)
     .single()
 

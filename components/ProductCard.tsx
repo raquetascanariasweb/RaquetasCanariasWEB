@@ -8,6 +8,7 @@ import { useUser } from "@clerk/nextjs"
 import { useCartStore } from "@/store/cart"
 import { useFavoritesStore } from "@/store/favorites-store"
 import { addFavorite, removeFavorite } from "@/services/favorites"
+import { getVariantMaxStock } from "@/lib/utils"
 import type { Product } from "@/types/product"
 
 const cardVariants = {
@@ -23,6 +24,7 @@ function ProductCardInner({ product, index }: { product: Product; index: number 
   const router = useRouter()
   const { isSignedIn } = useUser()
   const addItem = useCartStore((s) => s.addItem)
+  const items = useCartStore((s) => s.items)
   const openCart = useCartStore((s) => s.openCart)
   const addFav = useFavoritesStore((s) => s.add)
   const removeFav = useFavoritesStore((s) => s.remove)
@@ -40,17 +42,28 @@ function ProductCardInner({ product, index }: { product: Product; index: number 
   const handleAddToCart = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
     if (!product.in_stock) return
+
+    const firstSize = product.sizes[0] || ""
+    const firstColorName = product.colors[0]?.name || ""
+    const firstColorSlug = product.colors[0]?.slug || ""
+    const maxStock = getVariantMaxStock(product, firstSize, firstColorSlug)
+    const cartItem = items.find(
+      (i) => i.product_id === product.id && i.size === firstSize && i.color === firstColorName
+    )
+    if (cartItem && cartItem.quantity >= maxStock) return
+
     addItem({
       product_id: product.id,
       name: product.name,
       price_cents: product.price_cents,
       image: image?.url || "",
-      size: product.sizes[0] || "",
-      color: product.colors[0]?.name || "",
+      size: firstSize,
+      color: firstColorName,
       quantity: 1,
+      maxStock,
     })
     openCart()
-  }, [product, image, addItem, openCart])
+  }, [product, image, items, addItem, openCart])
 
   const handleToggleFavorite = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -161,6 +174,9 @@ function ProductCardInner({ product, index }: { product: Product; index: number 
         >
           <span className="relative z-10">Añadir al carrito</span>
         </button>
+        {product.stock_quantity > 0 && product.stock_quantity < 100 && (
+          <p className="text-[11px] text-[#A09C95]">{product.stock_quantity} disponibles</p>
+        )}
       </div>
     </motion.article>
   )

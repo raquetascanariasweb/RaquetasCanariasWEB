@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useCartStore } from "@/store/cart"
+import { useShipping } from "@/hooks/useShipping"
 
 function formatPrice(cents: number) {
   return (cents / 100).toFixed(2)
@@ -10,13 +11,14 @@ function formatPrice(cents: number) {
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, subtotal, clearCart } = useCartStore()
+  const { settings, shippingCost } = useShipping()
   const router = useRouter()
 
   async function handleCheckout() {
     router.push("/checkout")
   }
 
-  const shipping = subtotal() >= 7500 ? 0 : 300
+  const shipping = shippingCost(subtotal())
   const total = subtotal() + shipping
 
   return (
@@ -91,7 +93,8 @@ export default function CartPage() {
                         </span>
                         <button
                           onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          className="w-8 h-8 flex items-center justify-center text-sm text-ink hover:bg-linen/30 transition-colors"
+                          disabled={item.maxStock != null && item.quantity >= item.maxStock}
+                          className="w-8 h-8 flex items-center justify-center text-sm text-ink hover:bg-linen/30 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                         >
                           +
                         </button>
@@ -134,9 +137,9 @@ export default function CartPage() {
                       )}
                     </span>
                   </div>
-                  {subtotal() < 7500 && (
+                  {shipping > 0 && (
                     <p className="text-xs text-linen mt-1">
-                      Añade {formatPrice(7500 - subtotal())}€ más para envío gratis
+                      Añade {formatPrice(settings.free_shipping_threshold * 100 - subtotal())}€ más para envío gratis
                     </p>
                   )}
                   <div className="h-px bg-linen/60 my-3" />

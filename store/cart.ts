@@ -34,12 +34,19 @@ export const useCartStore = create<CartState>()(
         const existing = get().items.find(
           (i) => i.product_id === item.product_id && i.size === item.size && i.color === item.color
         )
+
+        const currentQty = existing ? existing.quantity : 0
+        const maxQty = item.maxStock ?? 99
+        const newQty = currentQty + item.quantity
+
+        if (newQty > maxQty) return
+
         let newItems: CartItem[]
 
         if (existing) {
           newItems = get().items.map((i) =>
             i.product_id === item.product_id && i.size === item.size && i.color === item.color
-              ? { ...i, quantity: i.quantity + item.quantity }
+              ? { ...i, quantity: newQty }
               : i
           )
         } else {
@@ -62,15 +69,18 @@ export const useCartStore = create<CartState>()(
         const item = get().items.find((i) => i.id === id)
         if (!item) return
 
-        if (quantity < 1) {
+        const maxQty = item.maxStock ?? 99
+        const clampedQty = Math.max(1, Math.min(quantity, maxQty))
+
+        if (clampedQty < 1) {
           set({ items: get().items.filter((i) => i.id !== id) })
         } else {
-          set({ items: get().items.map((i) => (i.id === id ? { ...i, quantity } : i)) })
+          set({ items: get().items.map((i) => (i.id === id ? { ...i, quantity: clampedQty } : i)) })
         }
 
         updateServerCartItemQuantity(
           { product_id: item.product_id, size: item.size, color: item.color },
-          quantity
+          clampedQty
         ).catch(() => {})
       },
 

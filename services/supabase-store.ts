@@ -12,7 +12,12 @@ function getSupabaseClient() {
 }
 
 function mapProduct(p: any): Product {
-  return { ...p, category_name: p.categories?.name ?? null, categories: undefined }
+  return {
+    ...p,
+    category_name: p.categories?.name ?? null,
+    categories: undefined,
+    variants: p.product_variants ?? p.variants ?? undefined,
+  }
 }
 
 export const getProducts = cache(async (params?: {
@@ -23,7 +28,7 @@ export const getProducts = cache(async (params?: {
     const supabase = getSupabaseClient()
     let q = supabase
       .from('products')
-      .select('*, categories(name)')
+      .select('*, categories(name), product_variants(*)')
       .eq('status', 'active')
       .order('created_at', { ascending: false })
 
@@ -47,7 +52,7 @@ export const getProductBySlug = cache(async (slug: string): Promise<Product | nu
     const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('products')
-      .select('*, categories(name)')
+      .select('*, categories(name), product_variants(*)')
       .eq('slug', slug)
       .eq('status', 'active')
       .limit(1)
@@ -63,7 +68,7 @@ export const getFeaturedProducts = cache(async (): Promise<Product[]> => {
     const supabase = getSupabaseClient()
     const { data } = await supabase
       .from('featured_products')
-      .select('sort_order, products!inner(*, categories(name))')
+      .select('sort_order, products!inner(*, categories(name), product_variants(*))')
       .order('sort_order', { ascending: true })
     return ((data ?? []) as any[]).map((fp: any) => mapProduct(fp.products))
   } catch {

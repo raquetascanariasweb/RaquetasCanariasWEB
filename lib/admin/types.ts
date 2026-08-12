@@ -91,7 +91,6 @@ export interface TopProduct {
 export interface LowStockProduct {
   name: string
   stock_quantity: number
-  track_inventory: boolean
   in_stock: boolean
 }
 
@@ -112,7 +111,6 @@ export interface AdminProduct {
   price_cents: number
   compare_at_price_cents: number | null
   sku: string
-  track_inventory: boolean
   stock_quantity: number
   seo_title: string
   seo_description: string
@@ -137,7 +135,6 @@ export interface AdminVariant {
   color_slug: string
   price_cents: number | null
   stock_quantity: number
-  track_inventory: boolean
 }
 
 export interface AdminOrder {
@@ -195,7 +192,6 @@ export interface ProductFormData {
   status: ProductStatus
   compare_at_price_cents: number | null
   sku: string
-  track_inventory: boolean
   stock_quantity: number
   seo_title: string
   seo_description: string
@@ -209,8 +205,7 @@ export interface ProductFormData {
     color_slug: string
     price_cents: number | null
     stock_quantity: number
-    track_inventory: boolean
-  }[]
+    }[]
 }
 
 export interface NewsletterSubscriber {
@@ -401,12 +396,11 @@ export interface InventoryItem {
   name: string
   slug: string
   sku: string
-  track_inventory: boolean
   stock_quantity: number
   in_stock: boolean
   price_cents: number
   category_name: string | null
-  variants: { id: string; sku: string; size: string; color_slug: string; stock_quantity: number; track_inventory: boolean }[]
+  variants: { id: string; sku: string; size: string; color_slug: string; stock_quantity: number }[]
   created_at: string
 }
 

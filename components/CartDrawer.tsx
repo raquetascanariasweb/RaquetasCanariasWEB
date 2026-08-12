@@ -5,6 +5,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
 import { useCartStore } from "@/store/cart"
+import { useShipping } from "@/hooks/useShipping"
 
 function formatPrice(cents: number) {
   return (cents / 100).toFixed(2)
@@ -12,6 +13,7 @@ function formatPrice(cents: number) {
 
 export default function CartDrawer() {
   const { items, isOpen, closeCart, removeItem, updateQuantity, subtotal } = useCartStore()
+  const { shippingCost } = useShipping()
 
   useEffect(() => {
     if (isOpen) {
@@ -27,7 +29,7 @@ export default function CartDrawer() {
     window.location.href = "/checkout"
   }
 
-  const shipping = subtotal() >= 7500 ? 0 : 300
+  const shipping = shippingCost(subtotal())
   const total = subtotal() + shipping
 
   return (
@@ -104,7 +106,8 @@ export default function CartDrawer() {
                             <span className="w-6 text-center text-xs text-white">{item.quantity}</span>
                             <button
                               onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                              className="w-6 h-6 flex items-center justify-center text-xs text-white/60 hover:text-white transition-colors"
+                              disabled={item.maxStock != null && item.quantity >= item.maxStock}
+                              className="w-6 h-6 flex items-center justify-center text-xs text-white/60 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                             >+</button>
                           </div>
                           <button

@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
 import { useCartStore } from '@/store/cart'
+import { useShipping } from '@/hooks/useShipping'
 import { formatPrice } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,7 +16,8 @@ import { toast } from 'sonner'
 
 export default function CheckoutPage() {
   const { items, updateQuantity, removeItem, subtotal, totalItems } = useCartStore()
-  const { user } = useUser()
+  const { settings, shippingCost } = useShipping()
+  const { user, isSignedIn } = useUser()
   const router = useRouter()
   const searchParams = useSearchParams()!
   const [loading, setLoading] = useState(false)
@@ -44,7 +46,7 @@ export default function CheckoutPage() {
   }, [user])
 
   const subtotalCents = subtotal()
-  const shipping = subtotalCents >= 7500 ? 0 : 499
+  const shipping = shippingCost(subtotalCents)
   const total = subtotalCents + shipping
 
   const canceled = searchParams.get('canceled') === '1'
@@ -71,25 +73,32 @@ export default function CheckoutPage() {
   }
 
   const handleCheckout = async () => {
-    if (!form.name || !form.address || !form.city) {
-      setError('Por favor completa nombre, dirección y ciudad')
-      return
+    if (!isSignedIn) {
+      if (!form.name || !form.address || !form.city) {
+        setError('Por favor completa nombre, dirección y ciudad')
+        return
+      }
     }
     setLoading(true)
     setError(null)
     try {
+      const body: {
+        items: { product_id: string; size: string; color: string; quantity: number }[]
+        shippingAddress?: typeof form
+      } = {
+        items: items.map((i) => ({
+          product_id: i.product_id,
+          size: i.size,
+          color: i.color,
+          quantity: i.quantity,
+        })),
+      }
+      if (!isSignedIn) body.shippingAddress = form
+
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          items: items.map((i) => ({
-            product_id: i.product_id,
-            size: i.size,
-            color: i.color,
-            quantity: i.quantity,
-          })),
-          shippingAddress: form,
-        }),
+        body: JSON.stringify(body),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Error al procesar el pago')
@@ -115,7 +124,8 @@ export default function CheckoutPage() {
           <div className="lg:col-span-7 space-y-8">
             <h1 className="text-2xl sm:text-3xl font-bold text-ink">Checkout</h1>
 
-            {/* Shipping form */}
+            {/* Shipping form — only for guests */}
+            {!isSignedIn && (
             <div className="space-y-4">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-ink/60">Dirección de envío</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -170,6 +180,7 @@ export default function CheckoutPage() {
                 />
               </div>
             </div>
+            )}
 
             {/* Cart items */}
             <div className="space-y-3">
@@ -242,9 +253,9 @@ export default function CheckoutPage() {
                   <span className="text-linen">Envío</span>
                   <span className="text-ink">{mounted ? (shipping === 0 ? 'Gratis' : formatPrice(shipping)) : '...'}</span>
                 </div>
-                {mounted && subtotalCents < 7500 && subtotalCents > 0 && (
+                {mounted && subtotalCents > 0 && subtotalCents < settings.free_shipping_threshold * 100 && (
                   <p className="text-xs text-linen/70">
-                    Añade {formatPrice(7500 - subtotalCents)} más para envío gratis
+                    Añade {formatPrice(settings.free_shipping_threshold * 100 - subtotalCents)} más para envío gratis
                   </p>
                 )}
                 <div className="border-t border-[#E5E0D8] pt-3 flex justify-between font-semibold text-base">

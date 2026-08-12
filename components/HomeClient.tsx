@@ -254,6 +254,55 @@ function SaleProductCard({ product, index }: { product: Product; index: number }
   )
 }
 
+function SaleCarousel({ products }: { products: Product[] }) {
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  function scroll(dir: "left" | "right") {
+    if (!scrollRef.current) return
+    const amount = scrollRef.current.clientWidth * 0.7
+    scrollRef.current.scrollBy({
+      left: dir === "left" ? -amount : amount,
+      behavior: "smooth",
+    })
+  }
+
+  return (
+    <section className="py-10 sm:py-14 px-4 sm:px-8 max-w-[1800px] mx-auto relative">
+      <SectionHeader
+        title="En Rebajas"
+        subtitle="Aprovecha los mejores descuentos"
+      />
+
+      <div className="relative group">
+        <button
+          onClick={() => scroll("left")}
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/90 shadow-lg border border-[#DDD8CC] flex items-center justify-center text-ink/70 hover:text-ink hover:bg-white transition-all opacity-0 group-hover:opacity-100 -ml-2"
+          aria-label="Desplazar izquierda"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+
+        <div
+          ref={scrollRef}
+          className="flex gap-4 overflow-x-auto pb-2 scrollbar-none -mx-4 sm:-mx-8 px-4 sm:px-8 scroll-smooth"
+        >
+          {products.map((product, i) => (
+            <SaleProductCard key={product.id} product={product} index={i} />
+          ))}
+        </div>
+
+        <button
+          onClick={() => scroll("right")}
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/90 shadow-lg border border-[#DDD8CC] flex items-center justify-center text-ink/70 hover:text-ink hover:bg-white transition-all opacity-0 group-hover:opacity-100 -mr-2"
+          aria-label="Desplazar derecha"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+      </div>
+    </section>
+  )
+}
+
 export default function HomeClient({
   saleProducts,
   newestProducts,
@@ -330,17 +379,7 @@ export default function HomeClient({
 
       {/* Rebajas */}
       {saleProducts.length > 0 && (
-        <section className="py-10 sm:py-14 px-4 sm:px-8 max-w-[1800px] mx-auto">
-          <SectionHeader
-            title="En Rebajas"
-            subtitle="Aprovecha los mejores descuentos"
-          />
-          <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-none -mx-4 sm:-mx-8 px-4 sm:px-8">
-            {saleProducts.map((product, i) => (
-              <SaleProductCard key={product.id} product={product} index={i} />
-            ))}
-          </div>
-        </section>
+        <SaleCarousel products={saleProducts} />
       )}
 
       {/* Destacados / Más vendidos */}
