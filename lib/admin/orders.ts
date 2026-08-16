@@ -46,7 +46,7 @@ export async function bulkUpdateOrdersStatus(ids: string[], status: OrderStatus)
 
   for (const order of orders ?? []) {
     if (status === 'paid' && !order.payment_verified_at) {
-      const items: StockItem[] = ((order.items ?? []) as any[]).map((i) => ({
+      const items: StockItem[] = ((order.items ?? []) as any[]).map((i: any) => ({
         product_id: i.product_id,
         quantity: i.quantity,
         size: i.size,
@@ -79,7 +79,7 @@ export async function updateOrderStatus(id: string, status: OrderStatus) {
   if (error) return { error: error.message }
 
   if (becomingPaid) {
-    const items: StockItem[] = (order.items ?? []).map((i) => ({
+    const items: StockItem[] = (order.items ?? []).map((i: any) => ({
       product_id: i.product_id,
       quantity: i.quantity,
       size: i.size,
