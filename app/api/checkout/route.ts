@@ -247,9 +247,10 @@ export async function POST(request: Request) {
       metadata: {
         userId: userId || "guest",
         items: JSON.stringify(items.map((item) => ({
-          ...item,
-          product_name: productMap.get(item.product_id)?.name ?? "",
-          price_cents: productMap.get(item.product_id)?.price_cents ?? 0,
+          product_id: item.product_id,
+          quantity: item.quantity,
+          size: item.size || "",
+          color: item.color || ""
         }))),
         ...(discountCode ? { discount_code: discountCode } : {}),
         ...(giftCardCode ? { gift_card_code: giftCardCode } : {}),
