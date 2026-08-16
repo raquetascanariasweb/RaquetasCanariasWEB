@@ -1,6 +1,27 @@
 import Link from "next/link"
 
-export default function AboutPage() {
+interface Socials {
+  facebook: string
+  instagram: string
+  twitter: string
+  pinterest: string
+  tiktok: string
+  youtube: string
+  linkedin: string
+}
+
+async function getSocials(): Promise<Socials> {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/public/socials`, { next: { revalidate: 60 } })
+    if (!res.ok) return { facebook: '', instagram: '', twitter: '', pinterest: '', tiktok: '', youtube: '', linkedin: '' }
+    return (await res.json()) as Socials
+  } catch {
+    return { facebook: '', instagram: '', twitter: '', pinterest: '', tiktok: '', youtube: '', linkedin: '' }
+  }
+}
+
+export default async function AboutPage() {
+  const socials = await getSocials()
   return (
     <main className="flex-1 pt-16 sm:pt-18">
       <section className="bg-gradient-to-br from-slate via-[#1a1a1a] to-black py-20 sm:py-28">
@@ -107,17 +128,19 @@ export default function AboutPage() {
                   </svg>
                   <span>WhatsApp</span>
                 </a>
-                <a
-                  href="https://www.facebook.com/SPORTBALIN"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 p-3 rounded-xl bg-linen/60 border border-[#DDD8CC] text-ink hover:bg-linen transition-colors"
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-ember shrink-0">
-                    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
-                  </svg>
-                  <span>/SPORTBALIN</span>
-                </a>
+                {socials.facebook && (
+                  <a
+                    href={socials.facebook}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-3 rounded-xl bg-linen/60 border border-[#DDD8CC] text-ink hover:bg-linen transition-colors"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-ember shrink-0">
+                      <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+                    </svg>
+                    <span>Facebook</span>
+                  </a>
+                )}
               </div>
             </div>
           </div>

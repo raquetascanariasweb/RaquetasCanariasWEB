@@ -35,7 +35,7 @@ export default function QuickEditDialog({ open, product, onClose, onSaved }: Pro
     if (res.error) {
       toast.error(res.error)
     } else {
-      toast.success('Product updated')
+      toast.success('Producto actualizado')
       onSaved()
     }
     setSaving(false)
@@ -45,33 +45,33 @@ export default function QuickEditDialog({ open, product, onClose, onSaved }: Pro
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Quick Edit: {product?.name}</DialogTitle>
+          <DialogTitle>Edición rápida: {product?.name}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label>Name</Label>
+            <Label>Nombre</Label>
             <Input value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           <div>
-            <Label>Price ($)</Label>
+            <Label>Precio ($)</Label>
             <Input type="number" step="0.01" value={priceDollars} onChange={(e) => setPriceDollars(parseFloat(e.target.value) || 0)} />
           </div>
           <div>
-            <Label>Status</Label>
+            <Label>Estado</Label>
             <Select value={status} onValueChange={(v: ProductStatus) => setStatus(v)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="draft">Draft</SelectItem>
-                <SelectItem value="archived">Archived</SelectItem>
+                <SelectItem value="active">Activo</SelectItem>
+                <SelectItem value="draft">Borrador</SelectItem>
+                <SelectItem value="archived">Archivado</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-            <Button type="submit" disabled={saving}>{saving ? 'Saving...' : 'Save'}</Button>
+            <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
+            <Button type="submit" disabled={saving}>{saving ? 'Guardando...' : 'Guardar'}</Button>
           </div>
         </form>
       </DialogContent>

@@ -1,11 +1,17 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
+import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { uploadProductImages } from '@/lib/supabase/storage'
+import { escapeLike } from '@/lib/utils'
+
+const DeleteProductSchema = z.object({
+  id: z.string().uuid(),
+})
 
 function checkAdmin(userId: string | null) {
-  const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID || 'user_3G8ZXADowWQkNZdX65U1djf8JYZ'
-  return userId && (!adminId || userId === adminId)
+  const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID
+  return userId === adminId
 }
 
 export async function GET(request: Request) {
@@ -27,7 +33,7 @@ export async function GET(request: Request) {
     }
 
     if (search) {
-      query = query.ilike('name', `%${search}%`)
+      query = query.ilike('name', `%${escapeLike(search)}%`)
     }
 
     const { data, error } = await query
@@ -51,9 +57,9 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const { userId } = await auth()
-    const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID || 'user_3G8ZXADowWQkNZdX65U1djf8JYZ'
+    const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID
 
-    if (!userId || (adminId && userId !== adminId)) {
+    if (!userId || userId !== adminId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
@@ -143,10 +149,11 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
-    const { id } = await request.json()
-    if (!id) {
+    const parsed = DeleteProductSchema.safeParse(await request.json())
+    if (!parsed.success) {
       return NextResponse.json({ error: 'Product id is required' }, { status: 400 })
     }
+    const { id } = parsed.data
 
     const supabase = createAdminClient()
     const { error } = await supabase.from('products').delete().eq('id', id)

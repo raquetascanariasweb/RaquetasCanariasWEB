@@ -4,7 +4,7 @@ import { useEffect, useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { useUser } from "@clerk/nextjs"
-import { getUserOrders } from "@/services/orders"
+import { getUserOrders, lookupGuestOrder } from "@/services/orders"
 import type { Order } from "@/services/orders"
 
 function formatPrice(cents: number) {
@@ -78,39 +78,16 @@ function OrderCard({ order }: { order: Order }) {
 }
 
 function OrderHistory() {
-  const { isSignedIn, isLoaded } = useUser()
+  const { isLoaded } = useUser()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!isLoaded) return
-    if (!isSignedIn) {
-      setLoading(false)
-      return
-    }
     getUserOrders()
       .then(setOrders)
       .finally(() => setLoading(false))
-  }, [isSignedIn, isLoaded])
-
-  if (!isSignedIn) {
-    return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="w-16 h-16 rounded-full bg-linen/30 flex items-center justify-center mb-4">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-linen">
-            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" /><polyline points="10 17 15 12 10 7" /><line x1="15" y1="12" x2="3" y2="12" />
-          </svg>
-        </div>
-        <h2 className="text-lg font-medium text-ink">Inicia sesión para ver tus pedidos</h2>
-        <Link
-          href="/sign-in?redirect_url=/orders"
-          className="mt-4 px-6 py-2.5 rounded-xl bg-ember text-black font-semibold text-sm hover:bg-ember/90 transition-colors"
-        >
-          Iniciar sesión
-        </Link>
-      </div>
-    )
-  }
+  }, [isLoaded])
 
   if (loading) {
     return (
@@ -160,15 +137,11 @@ function OrderHistory() {
 function OrderConfirmation() {
   const searchParams = useSearchParams()!
   const sessionId = searchParams.get("session_id")
-  const [status, setStatus] = useState<"loading" | "paid" | "pending" | "error">("loading")
-  const [error, setError] = useState("")
+  const [status, setStatus] = useState<"loading" | "paid" | "pending" | "error">(sessionId ? "loading" : "error")
+  const [error, setError] = useState(sessionId ? "" : "No se encontró el ID de la sesión.")
 
   useEffect(() => {
-    if (!sessionId) {
-      setStatus("error")
-      setError("No se encontró el ID de la sesión.")
-      return
-    }
+    if (!sessionId) return
 
     async function verify() {
       try {
@@ -238,20 +211,114 @@ function OrderConfirmation() {
   )
 }
 
+function GuestOrderLookup() {
+  const [reference, setReference] = useState("")
+  const [email, setEmail] = useState("")
+  const [orders, setOrders] = useState<Order[] | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
+
+  async function handleLookup(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    setError("")
+    setOrders(null)
+    const result = await lookupGuestOrder(reference, email)
+    if (result.length === 0) {
+      setError("No encontramos ningún pedido con esa referencia y ese email.")
+    } else {
+      setOrders(result)
+    }
+    setLoading(false)
+  }
+
+  return (
+    <div className="max-w-md mx-auto">
+      <div className="flex flex-col items-center text-center mb-6">
+        <div className="w-16 h-16 rounded-full bg-linen/30 flex items-center justify-center mb-4">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-linen">
+            <rect x="3" y="4" width="18" height="16" rx="2" /><circle cx="12" cy="10" r="3" /><path d="M7 20v-1a5 5 0 0 1 10 0v1" />
+          </svg>
+        </div>
+        <h2 className="text-lg font-medium text-ink">Consulta un pedido como invitado</h2>
+        <p className="text-sm text-linen mt-1">
+          Si compraste sin cuenta, busca tu pedido con la referencia que te mostramos al pagar y tu email.
+        </p>
+      </div>
+
+      <form onSubmit={handleLookup} className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-ink mb-1.5" htmlFor="order-reference">
+            Referencia del pedido
+          </label>
+          <input
+            id="order-reference"
+            type="text"
+            required
+            minLength={4}
+            placeholder="Ej: 1a2b3c4d"
+            value={reference}
+            onChange={(e) => setReference(e.target.value)}
+            className="w-full px-3 py-2.5 rounded-xl border border-[#DDD8CC] bg-white text-sm text-ink outline-none focus:border-ember transition-colors"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-ink mb-1.5" htmlFor="order-email">
+            Email de la compra
+          </label>
+          <input
+            id="order-email"
+            type="email"
+            required
+            placeholder="tucorreo@ejemplo.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full px-3 py-2.5 rounded-xl border border-[#DDD8CC] bg-white text-sm text-ink outline-none focus:border-ember transition-colors"
+          />
+        </div>
+        {error && (
+          <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-3 py-2">{error}</p>
+        )}
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full px-6 py-2.5 rounded-xl bg-ember text-black font-semibold text-sm hover:bg-ember/90 transition-colors disabled:opacity-60"
+        >
+          {loading ? "Buscando..." : "Buscar mi pedido"}
+        </button>
+      </form>
+
+      {orders && orders.length > 0 && (
+        <div className="mt-8 space-y-4">
+          {orders.map((order) => (
+            <OrderCard key={order.id} order={order} />
+          ))}
+        </div>
+      )}
+
+      <div className="mt-10 text-center">
+        <p className="text-sm text-linen">¿Tienes una cuenta?</p>
+        <Link
+          href="/sign-in?redirect_url=/orders"
+          className="mt-1 inline-block text-sm font-medium text-ember hover:underline"
+        >
+          Inicia sesión para ver todos tus pedidos
+        </Link>
+      </div>
+    </div>
+  )
+}
+
 function OrdersContent() {
   const { isSignedIn } = useUser()
 
   return (
     <>
       <OrderConfirmation />
-      {isSignedIn && (
-        <>
-          <h1 className="font-display text-2xl sm:text-3xl font-bold text-ink mb-6">
-            Mis Pedidos
-          </h1>
-          <OrderHistory />
-        </>
-      )}
+      <h1 className="font-display text-2xl sm:text-3xl font-bold text-ink mb-6">
+        Mis Pedidos
+      </h1>
+      {isSignedIn ? <OrderHistory /> : <GuestOrderLookup />}
     </>
   )
 }

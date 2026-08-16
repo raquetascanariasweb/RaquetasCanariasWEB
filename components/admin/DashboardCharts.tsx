@@ -21,7 +21,7 @@ function DailyRevenueChart({ chartData, fmt }: { chartData: ChartDataPoint[]; fm
     return (
       <div className="flex flex-col items-center justify-center h-full text-sm text-muted-foreground gap-2">
         <BarChart3 size={28} className="text-muted-foreground/30" />
-        No sales data yet. Your revenue will appear here.
+        Aún no hay datos de ventas. Tu facturación aparecerá aquí.
       </div>
     )
   }
@@ -46,7 +46,7 @@ function DailyRevenueChart({ chartData, fmt }: { chartData: ChartDataPoint[]; fm
             borderRadius: 8,
             fontSize: 12,
           }}
-          formatter={(value: any, name: any) => [name === "revenue" ? fmt(value * 100) : value, name === "revenue" ? "Revenue" : "Orders"]}
+          formatter={(value: any, name: any) => [name === "revenue" ? fmt(value * 100) : value, name === "revenue" ? "Ingresos" : "Pedidos"]}
         />
         <Area yAxisId="left" type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={2} fill="url(#revGrad)" />
         <Bar yAxisId="right" dataKey="orders" fill="hsl(var(--muted-foreground))" fillOpacity={0.35} radius={[2, 2, 0, 0]} maxBarSize={18} />
@@ -59,7 +59,7 @@ function WeeklyBarChart({ data, fmt }: { data: WeeklyDataPoint[]; fmt: (v: numbe
   if (data.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-xs text-muted-foreground gap-1">
-        No weekly data yet
+        No hay datos semanales todavía
       </div>
     )
   }
@@ -78,7 +78,7 @@ function WeeklyBarChart({ data, fmt }: { data: WeeklyDataPoint[]; fmt: (v: numbe
             borderRadius: 8,
             fontSize: 12,
           }}
-          formatter={(value: any, name: any) => [name === "revenue" ? fmt(value * 100) : value, name === "revenue" ? "Revenue" : "Orders"]}
+          formatter={(value: any, name: any) => [name === "revenue" ? fmt(value * 100) : value, name === "revenue" ? "Ingresos" : "Pedidos"]}
         />
         <Bar yAxisId="left" dataKey="revenue" fill="hsl(var(--primary))" fillOpacity={0.7} radius={[3, 3, 0, 0]} maxBarSize={32} />
         <Bar yAxisId="right" dataKey="orders" fill="hsl(var(--muted-foreground))" fillOpacity={0.4} radius={[3, 3, 0, 0]} maxBarSize={32} />

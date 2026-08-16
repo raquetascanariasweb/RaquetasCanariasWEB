@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useEffect, useState, useMemo } from 'react'
 import {
@@ -18,8 +18,8 @@ import { toast } from 'sonner'
 import { useAdminCurrency } from '../AdminLayoutClient'
 
 const DISCOUNT_TYPES = [
-  { value: 'percentage', label: 'Percentage' },
-  { value: 'fixed_amount', label: 'Fixed Amount' },
+  { value: 'percentage', label: 'Porcentaje' },
+  { value: 'fixed_amount', label: 'Importe fijo' },
 ]
 
 export default function AdminDiscountsPage() {
@@ -53,6 +53,7 @@ export default function AdminDiscountsPage() {
     setLoading(false)
   }
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount via async load()
   useEffect(() => { load() }, [])
 
   function resetForm() {
@@ -87,8 +88,8 @@ export default function AdminDiscountsPage() {
   }
 
   async function handleSave() {
-    if (!form.code.trim()) return toast.error('Code required')
-    if (!form.value || form.value <= 0) return toast.error('Value must be positive')
+    if (!form.code.trim()) return toast.error('El cÃ³digo es obligatorio')
+    if (!form.value || form.value <= 0) return toast.error('El valor debe ser positivo')
     setSaving(true)
     try {
       const payload = {
@@ -108,7 +109,7 @@ export default function AdminDiscountsPage() {
       if (res.error) {
         toast.error(res.error)
       } else {
-        toast.success(editing ? 'Discount updated' : 'Discount created')
+        toast.success(editing ? 'Descuento actualizado' : 'Descuento creado')
         setShowForm(false)
         load()
       }
@@ -121,21 +122,21 @@ export default function AdminDiscountsPage() {
   async function handleDelete(id: string) {
     const res = await deleteDiscount(id)
     if (res.error) toast.error(res.error)
-    else { toast.success('Discount deleted'); setDeleteId(null); load() }
+    else { toast.success('Descuento eliminado'); setDeleteId(null); load() }
   }
 
   async function handleBulkDelete() {
     if (selected.size === 0) return
     const res = await bulkDeleteDiscounts(Array.from(selected))
     if (res.error) toast.error(res.error)
-    else { toast.success(`${selected.size} discounts deleted`); setSelected(new Set()); load() }
+    else { toast.success(`${selected.size} descuentos eliminados`); setSelected(new Set()); load() }
   }
 
   async function handleBulkToggle(active: boolean) {
     if (selected.size === 0) return
     const res = await bulkUpdateDiscounts(Array.from(selected), { active })
     if (res.error) toast.error(res.error)
-    else { toast.success(`${selected.size} discounts updated`); setSelected(new Set()); load() }
+    else { toast.success(`${selected.size} descuentos actualizados`); setSelected(new Set()); load() }
   }
 
   function toggleSelect(id: string) {
@@ -164,32 +165,32 @@ export default function AdminDiscountsPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-serif tracking-wider text-foreground">Discounts</h1>
-          <p className="text-sm text-muted-foreground mt-1">Create and manage promotional discounts</p>
+          <h1 className="text-2xl font-display tracking-wider text-foreground">Descuentos</h1>
+          <p className="text-sm text-muted-foreground mt-1">Crea y gestiona descuentos promocionales</p>
         </div>
         <Button onClick={() => { resetForm(); setShowForm(true) }}>
-          <Plus size={16} className="mr-2" /> Add Discount
+          <Plus size={16} className="mr-2" /> AÃ±adir descuento
         </Button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">Total Discounts</CardTitle>
+            <CardTitle className="text-xs font-medium text-muted-foreground">Total de descuentos</CardTitle>
             <Percent size={14} className="text-muted-foreground/60" />
           </CardHeader>
           <CardContent><div className="text-xl font-semibold">{data.length}</div></CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">Active</CardTitle>
+            <CardTitle className="text-xs font-medium text-muted-foreground">Activos</CardTitle>
             <Tag size={14} className="text-admin-success" />
           </CardHeader>
           <CardContent><div className="text-xl font-semibold text-admin-success">{activeCount}</div></CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">Total Uses</CardTitle>
+            <CardTitle className="text-xs font-medium text-muted-foreground">Usos totales</CardTitle>
             <Calendar size={14} className="text-muted-foreground/60" />
           </CardHeader>
           <CardContent><div className="text-xl font-semibold">{totalUses.toLocaleString('en-US')}</div></CardContent>
@@ -200,19 +201,19 @@ export default function AdminDiscountsPage() {
         <div className="flex items-center gap-3">
           <div className="relative max-w-xs">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder="Search codes..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-9 text-sm" />
+            <Input placeholder="Buscar cÃ³digos..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-9 text-sm" />
           </div>
         </div>
         {selected.size > 0 && (
           <div className="flex items-center gap-2">
             <Button size="sm" variant="outline" onClick={() => handleBulkToggle(true)} className="h-8 text-xs">
-              <ToggleRight size={14} className="mr-1" /> Activate
+              <ToggleRight size={14} className="mr-1" /> Activar
             </Button>
             <Button size="sm" variant="outline" onClick={() => handleBulkToggle(false)} className="h-8 text-xs">
-              <ToggleLeft size={14} className="mr-1" /> Deactivate
+              <ToggleLeft size={14} className="mr-1" /> Desactivar
             </Button>
             <Button size="sm" variant="destructive" onClick={handleBulkDelete} className="h-8 text-xs">
-              Delete {selected.size}
+              Eliminar {selected.size}
             </Button>
           </div>
         )}
@@ -222,19 +223,19 @@ export default function AdminDiscountsPage() {
         <CardContent className="p-0">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border">
+              <tr>
                 <th className="w-8 py-3 px-2"><input type="checkbox" className="rounded border-input" /></th>
-                <th className="text-left py-3 px-4 font-medium text-muted-foreground text-xs uppercase tracking-wider">Code</th>
-                <th className="text-left py-3 px-4 font-medium text-muted-foreground text-xs uppercase tracking-wider">Value</th>
-                <th className="text-left py-3 px-4 font-medium text-muted-foreground text-xs uppercase tracking-wider">Min Purchase</th>
-                <th className="text-center py-3 px-4 font-medium text-muted-foreground text-xs uppercase tracking-wider">Uses</th>
-                <th className="text-center py-3 px-4 font-medium text-muted-foreground text-xs uppercase tracking-wider">Status</th>
-                <th className="text-right py-3 px-4 font-medium text-muted-foreground text-xs uppercase tracking-wider">Actions</th>
+                <th className="text-left py-3 px-4 font-medium text-muted-foreground text-xs uppercase tracking-wider">CÃ³digo</th>
+                <th className="text-left py-3 px-4 font-medium text-muted-foreground text-xs uppercase tracking-wider">Valor</th>
+                <th className="text-left py-3 px-4 font-medium text-muted-foreground text-xs uppercase tracking-wider">Compra mÃ­nima</th>
+                <th className="text-center py-3 px-4 font-medium text-muted-foreground text-xs uppercase tracking-wider">Usos</th>
+                <th className="text-center py-3 px-4 font-medium text-muted-foreground text-xs uppercase tracking-wider">Estado</th>
+                <th className="text-right py-3 px-4 font-medium text-muted-foreground text-xs uppercase tracking-wider">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody>
               {filtered.length === 0 && (
-                <tr><td colSpan={7} className="text-center text-muted-foreground py-12">No discounts found</td></tr>
+                <tr><td colSpan={7} className="text-center text-muted-foreground py-12">No se encontraron descuentos</td></tr>
               )}
               {filtered.map((d) => (
                 <tr key={d.id} className="hover:bg-accent/5">
@@ -259,20 +260,20 @@ export default function AdminDiscountsPage() {
                     </Badge>
                   </td>
                   <td className="py-3 px-4 text-muted-foreground">
-                    {d.min_purchase_cents > 0 ? fmt(d.min_purchase_cents) : '—'}
+                    {d.min_purchase_cents > 0 ? fmt(d.min_purchase_cents) : 'â€”'}
                   </td>
                   <td className="py-3 px-4 text-center">
                     <span className="text-xs">{d.used_count}{d.max_uses ? ` / ${d.max_uses}` : ''}</span>
                   </td>
                   <td className="py-3 px-4 text-center">
                     <Badge variant={d.active ? 'default' : 'secondary'} className="text-[10px]">
-                      {d.active ? 'Active' : 'Inactive'}
+                      {d.active ? 'Activo' : 'Inactivo'}
                     </Badge>
                   </td>
                   <td className="py-3 px-4 text-right">
                     <div className="flex items-center justify-end gap-1">
-                      <Button variant="ghost" size="sm" onClick={() => openEdit(d)} className="h-7 text-xs">Edit</Button>
-                      <Button variant="ghost" size="sm" onClick={() => setDeleteId(d.id)} className="h-7 text-xs text-destructive">Delete</Button>
+                      <Button variant="ghost" size="sm" onClick={() => openEdit(d)} className="h-7 text-xs">Editar</Button>
+                      <Button variant="ghost" size="sm" onClick={() => setDeleteId(d.id)} className="h-7 text-xs text-destructive">Eliminar</Button>
                     </div>
                   </td>
                 </tr>
@@ -285,15 +286,15 @@ export default function AdminDiscountsPage() {
       <Dialog open={showForm} onOpenChange={(o) => !o && setShowForm(false)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editing ? 'Edit Discount' : 'New Discount'}</DialogTitle>
+            <DialogTitle>{editing ? 'Editar descuento' : 'Nuevo descuento'}</DialogTitle>
             <DialogDescription>
-              {editing ? 'Update discount details.' : 'Create a new discount code.'}
+              {editing ? 'Actualiza los detalles del descuento.' : 'Crea un nuevo cÃ³digo de descuento.'}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 max-h-[60vh] overflow-y-auto">
             <div className="grid grid-cols-2 gap-3">
               <div className="col-span-2">
-                <Label htmlFor="d_code">Code *</Label>
+                <Label htmlFor="d_code">CÃ³digo *</Label>
                 <Input
                   id="d_code"
                   value={form.code}
@@ -303,7 +304,7 @@ export default function AdminDiscountsPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="d_type">Type</Label>
+                <Label htmlFor="d_type">Tipo</Label>
                 <select
                   id="d_type"
                   className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
@@ -315,7 +316,7 @@ export default function AdminDiscountsPage() {
               </div>
               <div>
                 <Label htmlFor="d_value">
-                  Value {form.type === 'percentage' ? '(%)' : '(cents)'}
+                  Valor {form.type === 'percentage' ? '(%)' : '(cÃ©ntimos)'}
                 </Label>
                 <Input
                   id="d_value"
@@ -326,7 +327,7 @@ export default function AdminDiscountsPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="d_min">Min Purchase (cents)</Label>
+                <Label htmlFor="d_min">Compra mÃ­nima (cÃ©ntimos)</Label>
                 <Input
                   id="d_min"
                   type="number"
@@ -336,18 +337,18 @@ export default function AdminDiscountsPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="d_max">Max Uses</Label>
+                <Label htmlFor="d_max">Usos mÃ¡ximos</Label>
                 <Input
                   id="d_max"
                   type="number"
                   min={0}
                   value={form.max_uses ?? ''}
                   onChange={(e) => setForm({ ...form, max_uses: e.target.value ? parseInt(e.target.value) : null })}
-                  placeholder="Unlimited"
+                  placeholder="Ilimitado"
                 />
               </div>
               <div>
-                <Label htmlFor="d_starts">Starts At</Label>
+                <Label htmlFor="d_starts">Comienza el</Label>
                 <Input
                   id="d_starts"
                   type="datetime-local"
@@ -356,7 +357,7 @@ export default function AdminDiscountsPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="d_expires">Expires At</Label>
+                <Label htmlFor="d_expires">Expira el</Label>
                 <Input
                   id="d_expires"
                   type="datetime-local"
@@ -365,7 +366,7 @@ export default function AdminDiscountsPage() {
                 />
               </div>
               <div className="col-span-2">
-                <Label htmlFor="d_desc">Description (internal)</Label>
+                <Label htmlFor="d_desc">DescripciÃ³n (interna)</Label>
                 <Input
                   id="d_desc"
                   value={form.description}
@@ -380,14 +381,14 @@ export default function AdminDiscountsPage() {
                   onChange={(e) => setForm({ ...form, active: e.target.checked })}
                   className="rounded border-input"
                 />
-                <Label htmlFor="d_active" className="mb-0">Active</Label>
+                <Label htmlFor="d_active" className="mb-0">Activo</Label>
               </div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowForm(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setShowForm(false)}>Cancelar</Button>
             <Button onClick={handleSave} disabled={saving}>
-              {saving ? 'Saving...' : editing ? 'Update' : 'Create'}
+              {saving ? 'Guardando...' : editing ? 'Actualizar' : 'Crear'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -396,12 +397,12 @@ export default function AdminDiscountsPage() {
       <Dialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Discount</DialogTitle>
-            <DialogDescription>This action cannot be undone.</DialogDescription>
+            <DialogTitle>Eliminar descuento</DialogTitle>
+            <DialogDescription>Esta acciÃ³n no se puede deshacer.</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteId(null)}>Cancel</Button>
-            <Button variant="destructive" onClick={() => deleteId && handleDelete(deleteId)}>Delete</Button>
+            <Button variant="outline" onClick={() => setDeleteId(null)}>Cancelar</Button>
+            <Button variant="destructive" onClick={() => deleteId && handleDelete(deleteId)}>Eliminar</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

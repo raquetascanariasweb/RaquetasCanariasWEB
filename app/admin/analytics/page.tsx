@@ -43,6 +43,7 @@ export default function AdminAnalyticsPage() {
     setLoading(false)
   }
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount via async load()
   useEffect(() => { load() }, [])
 
   if (loading) {
@@ -67,7 +68,7 @@ export default function AdminAnalyticsPage() {
 
   if (!data) return null
 
-  // ── Data transformations ──
+  // â”€â”€ Data transformations â”€â”€
 
   const revenueChartData = data.revenue_by_day.map((d) => ({
     date: d.date.slice(5),
@@ -85,7 +86,7 @@ export default function AdminAnalyticsPage() {
   })
 
   const topProductsData = data.top_products.slice(0, 5).map((p) => ({
-    name: p.name.length > 18 ? p.name.slice(0, 18) + '…' : p.name,
+    name: p.name.length > 18 ? p.name.slice(0, 18) + 'â€¦' : p.name,
     revenue: Math.round(p.revenue_cents / 100),
     qty: p.quantity,
   }))
@@ -96,7 +97,7 @@ export default function AdminAnalyticsPage() {
   }))
 
   const productsByCatData = data.products_by_category.map((p) => ({
-    name: p.category.length > 18 ? p.category.slice(0, 18) + '…' : p.category,
+    name: p.category.length > 18 ? p.category.slice(0, 18) + 'â€¦' : p.category,
     count: p.count,
   }))
 
@@ -105,36 +106,36 @@ export default function AdminAnalyticsPage() {
     count: s.count,
   }))
 
-  // ── KPI section helpers ──
+  // â”€â”€ KPI section helpers â”€â”€
 
   type KpiGroup = { label: string; value: string; icon: any; color?: string; sub?: string }[]
 
   const revenueKpis: KpiGroup = [
-    { label: 'Total Revenue', value: fmt(data.total_revenue_cents), icon: DollarSign, color: COLORS.gold },
-    { label: 'Total Orders', value: data.total_orders.toLocaleString('en-US'), icon: ShoppingCart, color: COLORS.blue },
-    { label: 'Avg Order Value', value: fmt(data.avg_order_value_cents), icon: TrendingUp, color: COLORS.green },
-    { label: 'Products Sold', value: data.products_sold.toLocaleString('en-US'), icon: Package, color: COLORS.orange },
+    { label: 'Ingresos totales', value: fmt(data.total_revenue_cents), icon: DollarSign, color: COLORS.gold },
+    { label: 'Pedidos totales', value: data.total_orders.toLocaleString('es-ES'), icon: ShoppingCart, color: COLORS.blue },
+    { label: 'Ticket medio', value: fmt(data.avg_order_value_cents), icon: TrendingUp, color: COLORS.green },
+    { label: 'Productos vendidos', value: data.products_sold.toLocaleString('es-ES'), icon: Package, color: COLORS.orange },
   ]
 
   const catalogKpis: KpiGroup = [
-    { label: 'Active Products', value: data.active_products.toLocaleString('en-US'), icon: Package, sub: `${data.draft_products} draft, ${data.archived_products} archived` },
-    { label: 'Categories', value: data.total_categories.toLocaleString('en-US'), icon: Layers, color: COLORS.blue },
-    { label: 'Total Products', value: data.total_products.toLocaleString('en-US'), icon: Archive, color: COLORS.purple },
-    { label: 'Featured Products', value: data.featured_products_count.toLocaleString('en-US'), icon: Heart, color: COLORS.red },
+    { label: 'Productos activos', value: data.active_products.toLocaleString('es-ES'), icon: Package, sub: `${data.draft_products} borradores, ${data.archived_products} archivados` },
+    { label: 'CategorÃ­as', value: data.total_categories.toLocaleString('es-ES'), icon: Layers, color: COLORS.blue },
+    { label: 'Productos totales', value: data.total_products.toLocaleString('es-ES'), icon: Archive, color: COLORS.purple },
+    { label: 'Productos destacados', value: data.featured_products_count.toLocaleString('es-ES'), icon: Heart, color: COLORS.red },
   ]
 
   const audienceKpis: KpiGroup = [
-    { label: 'Total Customers', value: data.total_customers.toLocaleString('en-US'), icon: Users, sub: `${data.repeat_customers} repeat (30d)` },
-    { label: 'Active Subscribers', value: data.active_subscribers.toLocaleString('en-US'), icon: Mail, sub: `${data.total_subscribers} total` },
-    { label: 'Active Discounts', value: data.active_discounts.toLocaleString('en-US'), icon: Percent, sub: `${data.total_discounts} total` },
-    { label: 'Active Gift Cards', value: data.active_gift_cards.toLocaleString('en-US'), icon: Gift, sub: `${data.total_gift_cards} total` },
+    { label: 'Clientes totales', value: data.total_customers.toLocaleString('es-ES'), icon: Users, sub: `${data.repeat_customers} repetidos (Ãºltimos 30 dÃ­as)` },
+    { label: 'Suscriptores activos', value: data.active_subscribers.toLocaleString('es-ES'), icon: Mail, sub: `${data.total_subscribers} en total` },
+    { label: 'Descuentos activos', value: data.active_discounts.toLocaleString('es-ES'), icon: Percent, sub: `${data.total_discounts} en total` },
+    { label: 'Tarjetas regalo activas', value: data.active_gift_cards.toLocaleString('es-ES'), icon: Gift, sub: `${data.total_gift_cards} en total` },
   ]
 
   const cmsKpis: KpiGroup = [
-    { label: 'Active Banners', value: data.active_banners.toLocaleString('en-US'), icon: Image, sub: `${data.total_banners} total` },
-    { label: 'Active Blocks', value: data.active_content_blocks.toLocaleString('en-US'), icon: FileText, sub: `${data.total_content_blocks} total` },
-    { label: 'Published Pages', value: data.published_landing_pages.toLocaleString('en-US'), icon: BookOpen, sub: `${data.total_landing_pages} total` },
-    { label: 'Sent Campaigns', value: data.sent_campaigns.toLocaleString('en-US'), icon: Megaphone, sub: `${data.total_campaigns} total` },
+    { label: 'Banners activos', value: data.active_banners.toLocaleString('es-ES'), icon: Image, sub: `${data.total_banners} en total` },
+    { label: 'Bloques activos', value: data.active_content_blocks.toLocaleString('es-ES'), icon: FileText, sub: `${data.total_content_blocks} en total` },
+    { label: 'PÃ¡ginas publicadas', value: data.published_landing_pages.toLocaleString('es-ES'), icon: BookOpen, sub: `${data.total_landing_pages} en total` },
+    { label: 'CampaÃ±as enviadas', value: data.sent_campaigns.toLocaleString('es-ES'), icon: Megaphone, sub: `${data.total_campaigns} en total` },
   ]
 
   function renderKpiRow(items: KpiGroup, cols: number = 4) {
@@ -173,31 +174,31 @@ export default function AdminAnalyticsPage() {
     <div className="space-y-8 pb-12">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-serif tracking-wider text-foreground">Analytics</h1>
+        <h1 className="text-2xl font-display tracking-wider text-foreground">AnalÃ­tica</h1>
         <p className="text-sm text-muted-foreground mt-1 flex items-center gap-2">
           <BarChart3 size={14} className="text-muted-foreground/50" />
-          Real-time store overview — all metrics from your Supabase data
+          Real-time store overview â€” todas las mÃ©tricas de tus datos de Supabase
         </p>
       </div>
 
       {/* Section: Revenue & Orders */}
       <div>
-        <h2 className="text-sm font-semibold text-foreground/80 mb-3 uppercase tracking-wider">Revenue &amp; Orders</h2>
+        <h2 className="text-sm font-semibold text-foreground/80 mb-3 uppercase tracking-wider">Ingresos y pedidos</h2>
         {renderKpiRow(revenueKpis)}
       </div>
 
       {/* Charts Row 1 */}
       <div className="grid grid-cols-1 lg:grid-cols-7 gap-6">
-        {/* Revenue Trend — wider */}
+        {/* Revenue Trend â€” wider */}
         <Card className="lg:col-span-4">
           <CardHeader className="pb-0">
             <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Revenue Trend
+              EvoluciÃ³n de ingresos
             </CardTitle>
           </CardHeader>
           <CardContent className="h-72 pt-4">
             {revenueChartData.length === 0 ? (
-              <div className="flex items-center justify-center h-full text-muted-foreground text-sm">No data</div>
+              <div className="flex items-center justify-center h-full text-muted-foreground text-sm">Sin datos</div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={revenueChartData}>
@@ -217,7 +218,7 @@ export default function AdminAnalyticsPage() {
                       borderRadius: 8,
                       fontSize: 12,
                     }}
-                    formatter={(value: any) => [fmt(Number(value) * 100), 'Revenue']}
+                    formatter={(value: any) => [fmt(Number(value) * 100), 'Ingresos']}
                   />
                   <Area type="monotone" dataKey="revenue" stroke={COLORS.gold} strokeWidth={2} fill="url(#revGrad)" />
                 </AreaChart>
@@ -226,16 +227,16 @@ export default function AdminAnalyticsPage() {
           </CardContent>
         </Card>
 
-        {/* Orders by Status — doughnut */}
+        {/* Orders by Status â€” doughnut */}
         <Card className="lg:col-span-3">
           <CardHeader className="pb-0">
             <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Orders by Status
+              Pedidos por estado
             </CardTitle>
           </CardHeader>
           <CardContent className="h-72 pt-4">
             {statusChartData.length === 0 ? (
-              <div className="flex items-center justify-center h-full text-muted-foreground text-sm">No data</div>
+              <div className="flex items-center justify-center h-full text-muted-foreground text-sm">Sin datos</div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -259,7 +260,7 @@ export default function AdminAnalyticsPage() {
                       borderRadius: 8,
                       fontSize: 12,
                     }}
-                    formatter={(value: any, name: any) => [`${value} orders`, name]}
+                    formatter={(value: any, name: any) => [`${value} pedidos`, name]}
                   />
                   <Legend
                     verticalAlign="bottom"
@@ -282,7 +283,7 @@ export default function AdminAnalyticsPage() {
         <Card>
           <CardHeader className="pb-0">
             <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Orders by Hour of Day
+              Pedidos por hora del dÃ­a
             </CardTitle>
           </CardHeader>
           <CardContent className="h-64 pt-4">
@@ -298,7 +299,7 @@ export default function AdminAnalyticsPage() {
                     borderRadius: 8,
                     fontSize: 12,
                   }}
-                  formatter={(value: any) => [`${value} orders`, 'Orders']}
+                  formatter={(value: any) => [`${value} pedidos`, 'Pedidos']}
                 />
                 <Bar dataKey="count" fill={COLORS.blue} radius={[2, 2, 0, 0]} maxBarSize={20} />
               </BarChart>
@@ -310,12 +311,12 @@ export default function AdminAnalyticsPage() {
         <Card>
           <CardHeader className="pb-0">
             <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Top Products by Revenue
+              Productos mÃ¡s vendidos por ingresos
             </CardTitle>
           </CardHeader>
           <CardContent className="h-64 pt-4">
             {topProductsData.length === 0 ? (
-              <div className="flex items-center justify-center h-full text-muted-foreground text-sm">No data</div>
+              <div className="flex items-center justify-center h-full text-muted-foreground text-sm">Sin datos</div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={topProductsData} layout="vertical">
@@ -329,7 +330,7 @@ export default function AdminAnalyticsPage() {
                       borderRadius: 8,
                       fontSize: 12,
                     }}
-                    formatter={(value: any) => [fmt(Number(value) * 100), 'Revenue']}
+                    formatter={(value: any) => [fmt(Number(value) * 100), 'Ingresos']}
                   />
                   <Bar dataKey="revenue" fill={COLORS.gold} radius={[0, 4, 4, 0]} maxBarSize={24} />
                 </BarChart>
@@ -341,22 +342,22 @@ export default function AdminAnalyticsPage() {
 
       {/* Section: Catalog */}
       <div>
-        <h2 className="text-sm font-semibold text-foreground/80 mb-3 uppercase tracking-wider">Catalog</h2>
+        <h2 className="text-sm font-semibold text-foreground/80 mb-3 uppercase tracking-wider">CatÃ¡logo</h2>
         {renderKpiRow(catalogKpis)}
       </div>
 
-      {/* Charts Row 3 — Catalog */}
+      {/* Charts Row 3 â€” Catalog */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Products by Category */}
         <Card>
           <CardHeader className="pb-0">
             <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Products by Category
+              Productos por categorÃ­a
             </CardTitle>
           </CardHeader>
           <CardContent className="h-64 pt-4">
             {productsByCatData.length === 0 ? (
-              <div className="flex items-center justify-center h-full text-muted-foreground text-sm">No data</div>
+              <div className="flex items-center justify-center h-full text-muted-foreground text-sm">Sin datos</div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={productsByCatData} layout="vertical">
@@ -371,7 +372,7 @@ export default function AdminAnalyticsPage() {
                       fontSize: 12,
                     }}
                   />
-                  <Bar dataKey="count" fill={COLORS.purple} radius={[0, 4, 4, 0]} maxBarSize={24} name="Products" />
+                  <Bar dataKey="count" fill={COLORS.purple} radius={[0, 4, 4, 0]} maxBarSize={24} name="Productos" />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -382,12 +383,12 @@ export default function AdminAnalyticsPage() {
         <Card>
           <CardHeader className="pb-0">
             <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Customer Acquisition
+              AdquisiciÃ³n de clientes
             </CardTitle>
           </CardHeader>
           <CardContent className="h-64 pt-4">
             {customerChartData.length === 0 ? (
-              <div className="flex items-center justify-center h-full text-muted-foreground text-sm">No data</div>
+              <div className="flex items-center justify-center h-full text-muted-foreground text-sm">Sin datos</div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={customerChartData}>
@@ -407,7 +408,7 @@ export default function AdminAnalyticsPage() {
                       borderRadius: 8,
                       fontSize: 12,
                     }}
-                    formatter={(value: any) => [`${value} customers`, 'New']}
+                    formatter={(value: any) => [`${value} clientes`, 'Nuevos']}
                   />
                   <Area type="monotone" dataKey="customers" stroke={COLORS.green} strokeWidth={2} fill="url(#custGrad)" />
                 </AreaChart>
@@ -419,33 +420,33 @@ export default function AdminAnalyticsPage() {
 
       {/* Section: Audience & Marketing */}
       <div>
-        <h2 className="text-sm font-semibold text-foreground/80 mb-3 uppercase tracking-wider">Audience &amp; Marketing</h2>
+        <h2 className="text-sm font-semibold text-foreground/80 mb-3 uppercase tracking-wider">Audiencia y marketing</h2>
         {renderKpiRow(audienceKpis)}
       </div>
 
       {/* Section: CMS */}
       <div>
-        <h2 className="text-sm font-semibold text-foreground/80 mb-3 uppercase tracking-wider">Content &amp; CMS</h2>
+        <h2 className="text-sm font-semibold text-foreground/80 mb-3 uppercase tracking-wider">Contenido y CMS</h2>
         {renderKpiRow(cmsKpis)}
       </div>
 
       {/* Bottom: Top Products Detail Table */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-medium text-foreground">Top Products Detail</CardTitle>
+          <CardTitle className="text-sm font-medium text-foreground">Detalle de productos mÃ¡s vendidos</CardTitle>
         </CardHeader>
         <CardContent>
           {data.top_products.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">No product data yet. Start selling to see your top products.</p>
+            <p className="text-sm text-muted-foreground py-8 text-center">AÃºn no hay datos de productos. Empieza a vender para ver tus productos mÃ¡s vendidos.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-border">
+                  <tr>
                     <th className="text-left py-3 px-2 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">#</th>
-                    <th className="text-left py-3 px-2 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Product</th>
-                    <th className="text-right py-3 px-2 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Units Sold</th>
-                    <th className="text-right py-3 px-2 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Revenue</th>
+                    <th className="text-left py-3 px-2 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Producto</th>
+                    <th className="text-right py-3 px-2 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Unidades vendidas</th>
+                    <th className="text-right py-3 px-2 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Ingresos</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -453,7 +454,7 @@ export default function AdminAnalyticsPage() {
                     <tr key={i} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
                       <td className="py-3 px-2 text-muted-foreground text-xs">{i + 1}</td>
                       <td className="py-3 px-2 font-medium">{p.name}</td>
-                      <td className="py-3 px-2 text-right">{p.quantity.toLocaleString('en-US')}</td>
+                      <td className="py-3 px-2 text-right">{p.quantity.toLocaleString('es-ES')}</td>
                       <td className="py-3 px-2 text-right font-medium">{fmt(p.revenue_cents)}</td>
                     </tr>
                   ))}
@@ -465,8 +466,8 @@ export default function AdminAnalyticsPage() {
       </Card>
 
       {/* Footer note */}
-      <div className="text-center text-[10px] text-muted-foreground/40 uppercase tracking-wider pt-4 border-t border-border/40">
-        Data refreshes on page load &mdash; all metrics from live Supabase data
+      <div className="text-center text-[10px] text-muted-foreground/40 uppercase tracking-wider pt-4">
+        Los datos se actualizan al cargar la pÃ¡gina &mdash; todas las mÃ©tricas de datos en vivo de Supabase
       </div>
     </div>
   )

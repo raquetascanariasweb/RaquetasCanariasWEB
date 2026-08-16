@@ -7,8 +7,8 @@ import type { NewsletterSubscriber } from './types'
 
 async function checkAdmin() {
   const { userId } = await auth()
-  const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID || 'user_3G8ZXADowWQkNZdX65U1djf8JYZ'
-  if (!userId || (adminId && userId !== adminId)) throw new Error('Unauthorized')
+  const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID
+  if (!userId || userId !== adminId) throw new Error('Unauthorized')
 }
 
 export async function getSubscribers(): Promise<NewsletterSubscriber[]> {

@@ -1,5 +1,6 @@
 import { Suspense } from "react"
 import { getProducts, getFeaturedProducts, getCategories } from "@/services/supabase-store"
+import { getNewsTicker } from "@/lib/settings-public"
 import HomeClient from "@/components/HomeClient"
 import type { Product, Category } from "@/types/product"
 
@@ -29,10 +30,11 @@ function HomeSkeleton() {
 }
 
 async function HomeContent() {
-  const [products, featured, categories] = await Promise.all([
-    getProducts(),
+  const [products, featured, categories, newsTicker] = await Promise.all([
+    getProducts({ limit: 100 }),
     getFeaturedProducts(),
     getCategories(),
+    getNewsTicker(),
   ])
 
   const saleProducts = products
@@ -51,6 +53,7 @@ async function HomeContent() {
       newestProducts={newestProducts}
       topProducts={topProducts}
       categories={rootCategories}
+      newsTicker={newsTicker}
     />
   )
 }

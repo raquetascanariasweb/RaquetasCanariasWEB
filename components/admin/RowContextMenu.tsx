@@ -42,13 +42,13 @@ export default function RowContextMenu({ actions, children }: Props) {
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div
-            className="fixed z-50 w-44 rounded-md border border-border bg-popover p-1 shadow-lg"
+            className="fixed z-50 w-44 rounded-md border border-admin-border bg-admin-surface p-1 shadow-lg"
             style={{ left: pos.x, top: pos.y }}
           >
             {actions.map((action, i) => (
               <button
                 key={i}
-                className={`w-full flex items-center gap-2 px-2 py-1.5 text-xs rounded-sm hover:bg-accent ${
+                className={`w-full flex items-center gap-2 px-2 py-1.5 text-xs rounded-sm hover:bg-white/5 ${
                   action.destructive ? 'text-destructive hover:text-destructive' : 'text-popover-foreground'
                 }`}
                 onClick={(e) => { e.stopPropagation(); action.onClick(); setOpen(false) }}

@@ -13,9 +13,9 @@ interface Props {
 export default function SimplePagination({ page, totalPages, totalItems, onPageChange }: Props) {
   return (
     <div className="flex items-center justify-between text-xs text-muted-foreground mt-2">
-      <span>{totalItems} item(s)</span>
+      <span>{totalItems} elemento(s)</span>
       <div className="flex items-center gap-2">
-        <span>Page {page + 1} of {Math.max(1, totalPages)}</span>
+        <span>Página {page + 1} de {Math.max(1, totalPages)}</span>
         <div className="flex gap-1">
           <Button variant="outline" size="sm" className="h-7 w-7 p-0" onClick={() => onPageChange(page - 1)} disabled={page <= 0}>
             <ChevronLeft size={12} />

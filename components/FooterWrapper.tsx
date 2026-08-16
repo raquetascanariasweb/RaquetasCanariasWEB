@@ -8,6 +8,7 @@ interface FooterData {
   newsletter_text?: string
   columns?: { title: string; links: { label: string; url: string }[] }[]
   social_links?: { platform: string; url: string }[]
+  contact?: { email: string; phone: string; address: string }
 }
 
 export default function FooterWrapper() {
@@ -52,6 +53,32 @@ export default function FooterWrapper() {
               </ul>
             </div>
           ))}
+          {footer.contact && (footer.contact.email || footer.contact.phone || footer.contact.address) && (
+            <div>
+              <h4 className="text-sm font-semibold text-ink mb-4">Contacto</h4>
+              <ul className="space-y-2">
+                {footer.contact.email && (
+                  <li>
+                    <a href={`mailto:${footer.contact.email}`} className="text-sm text-ink/60 hover:text-ink transition-colors">
+                      {footer.contact.email}
+                    </a>
+                  </li>
+                )}
+                {footer.contact.phone && (
+                  <li>
+                    <a href={`tel:${footer.contact.phone.replace(/\s/g, '')}`} className="text-sm text-ink/60 hover:text-ink transition-colors">
+                      {footer.contact.phone}
+                    </a>
+                  </li>
+                )}
+                {footer.contact.address && (
+                  <li>
+                    <span className="text-sm text-ink/60">{footer.contact.address}</span>
+                  </li>
+                )}
+              </ul>
+            </div>
+          )}
           {footer.newsletter_text && (
             <div>
               <h4 className="text-sm font-semibold text-ink mb-4">Newsletter</h4>

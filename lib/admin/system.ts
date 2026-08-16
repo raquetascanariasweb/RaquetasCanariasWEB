@@ -6,8 +6,8 @@ import type { SystemHealth } from './types'
 
 async function checkAdmin() {
   const { userId } = await auth()
-  const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID || 'user_3G8ZXADowWQkNZdX65U1djf8JYZ'
-  if (!userId || (adminId && userId !== adminId)) throw new Error('Unauthorized')
+  const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID
+  if (!userId || userId !== adminId) throw new Error('Unauthorized')
 }
 
 export async function getSystemHealth(): Promise<SystemHealth> {
@@ -27,14 +27,14 @@ export async function getSystemHealth(): Promise<SystemHealth> {
   } catch { /* ignore */ }
 
   const envChecks = [
-    { key: 'NEXT_PUBLIC_SUPABASE_URL', label: 'Supabase URL', configured: !!process.env.NEXT_PUBLIC_SUPABASE_URL },
-    { key: 'NEXT_PUBLIC_SUPABASE_ANON_KEY', label: 'Supabase Anon Key', configured: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY },
-    { key: 'SUPABASE_SERVICE_ROLE_KEY', label: 'Supabase Service Role', configured: !!process.env.SUPABASE_SERVICE_ROLE_KEY },
-    { key: 'NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY', label: 'Clerk Publishable Key', configured: !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY },
-    { key: 'CLERK_SECRET_KEY', label: 'Clerk Secret Key', configured: !!process.env.CLERK_SECRET_KEY },
-    { key: 'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY', label: 'Stripe Publishable Key', configured: !!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY },
-    { key: 'STRIPE_SECRET_KEY', label: 'Stripe Secret Key', configured: !!process.env.STRIPE_SECRET_KEY },
-    { key: 'STRIPE_WEBHOOK_SECRET', label: 'Stripe Webhook Secret', configured: !!process.env.STRIPE_WEBHOOK_SECRET },
+    { key: 'NEXT_PUBLIC_SUPABASE_URL', label: 'URL de Supabase', configured: !!process.env.NEXT_PUBLIC_SUPABASE_URL },
+    { key: 'NEXT_PUBLIC_SUPABASE_ANON_KEY', label: 'Clave anónima de Supabase', configured: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY },
+    { key: 'SUPABASE_SERVICE_ROLE_KEY', label: 'Rol de servicio de Supabase', configured: !!process.env.SUPABASE_SERVICE_ROLE_KEY },
+    { key: 'NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY', label: 'Clave pública de Clerk', configured: !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY },
+    { key: 'CLERK_SECRET_KEY', label: 'Clave secreta de Clerk', configured: !!process.env.CLERK_SECRET_KEY },
+    { key: 'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY', label: 'Clave pública de Stripe', configured: !!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY },
+    { key: 'STRIPE_SECRET_KEY', label: 'Clave secreta de Stripe', configured: !!process.env.STRIPE_SECRET_KEY },
+    { key: 'STRIPE_WEBHOOK_SECRET', label: 'Secreto de webhook de Stripe', configured: !!process.env.STRIPE_WEBHOOK_SECRET },
   ]
 
   return {
@@ -60,26 +60,23 @@ export async function setupStoragePublicBucket() {
 
 export async function runBannerPositionMigration() {
   await checkAdmin()
-  const sql = `
-    ALTER TABLE banners ADD COLUMN IF NOT EXISTS text_x INTEGER NOT NULL DEFAULT 50;
-    ALTER TABLE banners ADD COLUMN IF NOT EXISTS text_y INTEGER NOT NULL DEFAULT 50;
-  `
+  const supabase = createAdminClient()
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/sql`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        apikey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
-        Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`,
-      },
-      body: JSON.stringify({ query: sql }),
-    })
-    if (!res.ok) {
-      const text = await res.text()
-      return { error: `Migration failed (${res.status}): ${text}` }
+    const { error } = await supabase
+      .from('banners')
+      .select('text_x, text_y')
+      .limit(1)
+    if (!error) {
+      return { success: true }
     }
-    return { success: true }
+    if (error.code === 'PGRST204') {
+      return {
+        error:
+          'Las columnas text_x/text_y no existen en la tabla banners. Ejecuta la migración en el editor SQL de Supabase: ALTER TABLE banners ADD COLUMN IF NOT EXISTS text_x INTEGER NOT NULL DEFAULT 50; ALTER TABLE banners ADD COLUMN IF NOT EXISTS text_y INTEGER NOT NULL DEFAULT 50;',
+      }
+    }
+    return { error: error.message }
   } catch (e: any) {
-    return { error: e?.message || 'Migration request failed' }
+    return { error: e?.message || 'La verificación de la migración falló' }
   }
 }

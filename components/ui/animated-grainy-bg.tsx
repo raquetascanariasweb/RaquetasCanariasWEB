@@ -234,7 +234,7 @@ export function AnimatedGrainyBg({
     const ctx = canvas.getContext("2d")
     if (!ctx) return
 
-    let animating = true
+    const animating = true
 
     let running = true
 

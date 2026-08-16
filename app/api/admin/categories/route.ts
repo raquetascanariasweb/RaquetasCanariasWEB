@@ -1,12 +1,21 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
+import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/admin'
+
+const CategoryNameSchema = z.object({
+  name: z.string().trim().min(1).max(100),
+})
+
+const CategoryIdSchema = z.object({
+  id: z.string().uuid(),
+})
 
 export async function GET() {
   try {
     const { userId } = await auth()
-    const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID || 'user_3G8ZXADowWQkNZdX65U1djf8JYZ'
-    if (!userId || (adminId && userId !== adminId)) {
+    const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID
+    if (!userId || userId !== adminId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
@@ -40,15 +49,16 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const { userId } = await auth()
-    const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID || 'user_3G8ZXADowWQkNZdX65U1djf8JYZ'
-    if (!userId || (adminId && userId !== adminId)) {
+    const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID
+    if (!userId || userId !== adminId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
-    const { name } = await request.json()
-    if (!name?.trim()) {
+    const parsed = CategoryNameSchema.safeParse(await request.json())
+    if (!parsed.success) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 })
     }
+    const { name } = parsed.data
 
     const slug = name
       .toLowerCase()
@@ -79,15 +89,16 @@ export async function POST(request: Request) {
 export async function DELETE(request: Request) {
   try {
     const { userId } = await auth()
-    const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID || 'user_3G8ZXADowWQkNZdX65U1djf8JYZ'
-    if (!userId || (adminId && userId !== adminId)) {
+    const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID
+    if (!userId || userId !== adminId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
-    const { id } = await request.json()
-    if (!id) {
+    const parsed = CategoryIdSchema.safeParse(await request.json())
+    if (!parsed.success) {
       return NextResponse.json({ error: 'Category id is required' }, { status: 400 })
     }
+    const { id } = parsed.data
 
     const supabase = createAdminClient()
 

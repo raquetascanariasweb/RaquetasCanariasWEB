@@ -5,6 +5,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { useCartStore } from "@/store/cart"
+import DOMPurify from "dompurify"
 import ProductCard from "@/components/ProductCard"
 import type { Product, Category } from "@/types/product"
 
@@ -176,6 +177,54 @@ function HeroBanner() {
   )
 }
 
+function NewsTicker({ enabled, text }: { enabled: boolean; text: string }) {
+  const copyRef = useRef<HTMLDivElement>(null)
+  const [copies, setCopies] = useState(20)
+  const isActive = enabled && !!text
+
+  useEffect(() => {
+    if (!isActive) return
+    const measure = () => {
+      const copy = copyRef.current
+      if (!copy) return
+      const copyWidth = copy.offsetWidth
+      const viewportWidth = document.documentElement.clientWidth
+      if (copyWidth > 0) {
+        const needed = Math.max(4, Math.ceil((viewportWidth * 2) / copyWidth) + 2)
+        setCopies(needed % 2 === 0 ? needed : needed + 1)
+      }
+    }
+    measure()
+    const t = window.setTimeout(measure, 60)
+    window.addEventListener("resize", measure)
+    return () => {
+      window.clearTimeout(t)
+      window.removeEventListener("resize", measure)
+    }
+  }, [isActive])
+
+  if (!isActive) return null
+
+  return (
+    <div className="relative overflow-hidden bg-ink">
+      <div
+        className="flex w-max items-center"
+        style={{ animation: "ticker-scroll 30s linear infinite" }}
+      >
+        {Array.from({ length: copies }).map((_, i) => (
+          <div
+            key={i}
+            ref={i === 0 ? copyRef : undefined}
+            className="flex shrink-0 items-center gap-8 whitespace-nowrap px-6 py-2.5 text-sm text-white/90"
+            dangerouslySetInnerHTML={{ __html: text }}
+            aria-hidden={i > 0}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function SectionHeader({
   title,
   subtitle,
@@ -308,11 +357,13 @@ export default function HomeClient({
   newestProducts,
   topProducts,
   categories,
+  newsTicker,
 }: {
   saleProducts: Product[]
   newestProducts: Product[]
   topProducts: Product[]
   categories: Category[]
+  newsTicker: { enabled: boolean; text: string }
 }) {
   const [blocks, setBlocks] = useState<any[]>([])
 
@@ -331,7 +382,7 @@ export default function HomeClient({
       case "custom_html":
         return (
           <section className="py-10 sm:py-14 px-4 sm:px-8 max-w-[1800px] mx-auto">
-            <div dangerouslySetInnerHTML={{ __html: content.html || "" }} />
+            <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content.html || "") }} />
           </section>
         )
       case "richtext":
@@ -339,7 +390,7 @@ export default function HomeClient({
           <section className="py-10 sm:py-14 px-4 sm:px-8 max-w-[1800px] mx-auto">
             <div className="max-w-3xl mx-auto">
               {block.title && <h2 className="text-2xl font-bold text-ink mb-4">{block.title}</h2>}
-              <div className="prose prose-sm max-w-none text-ink/70" dangerouslySetInnerHTML={{ __html: content.html || content.text || "" }} />
+              <div className="prose prose-sm max-w-none text-ink/70" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content.html || content.text || "") }} />
             </div>
           </section>
         )
@@ -357,7 +408,7 @@ export default function HomeClient({
         return (
           <section className="py-10 sm:py-14 px-4 sm:px-8 max-w-[1800px] mx-auto">
             <blockquote className="max-w-2xl mx-auto text-center">
-              <p className="text-xl sm:text-2xl font-serif italic text-ink/80">"{content.quote || content.text}"</p>
+              <p className="text-xl sm:text-2xl font-serif italic text-ink/80">&ldquo;{content.quote || content.text}&rdquo;</p>
               {content.author && <cite className="block mt-3 text-sm text-ink/50 not-italic">— {content.author}</cite>}
             </blockquote>
           </section>
@@ -371,6 +422,9 @@ export default function HomeClient({
     <div className="bg-paper">
       {/* Hero */}
       <HeroBanner />
+
+      {/* News ticker */}
+      <NewsTicker enabled={newsTicker.enabled} text={newsTicker.text} />
 
       {/* Editorial Blocks */}
       {blocks.map((block, i) => (

@@ -7,7 +7,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const { userId, redirectToSignIn } = await auth()
 
   const adminUserId =
-    process.env.NEXT_PUBLIC_ADMIN_USER_ID || 'user_3G8ZXADowWQkNZdX65U1djf8JYZ'
+    process.env.NEXT_PUBLIC_ADMIN_USER_ID
 
   if (!userId) {
     return redirectToSignIn()

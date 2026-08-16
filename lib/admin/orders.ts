@@ -9,11 +9,13 @@ import type {
   TopProduct, LowStockProduct, RecentCustomerEntry,
   QuickDashboardData, ActivityEvent,
 } from './types'
+import { sendOrderStatusNotification } from './notifications'
+import { decrementStockWithFallback, type StockItem } from '@/lib/stock'
 
 async function checkAdmin() {
   const { userId } = await auth()
-  const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID || 'user_3G8ZXADowWQkNZdX65U1djf8JYZ'
-  if (!userId || (adminId && userId !== adminId)) throw new Error('Unauthorized')
+  const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID
+  if (!userId || userId !== adminId) throw new Error('Unauthorized')
 }
 
 export async function bulkDeleteOrders(ids: string[]) {
@@ -28,8 +30,68 @@ export async function bulkDeleteOrders(ids: string[]) {
 export async function bulkUpdateOrdersStatus(ids: string[], status: OrderStatus) {
   await checkAdmin()
   const supabase = createAdminClient()
-  const { error } = await supabase.from('orders').update({ status }).in('id', ids)
+  const { data: orders } = await supabase.from('orders').select('*').in('id', ids)
+
+  const becomingPaidIds = (orders ?? [])
+    .filter((o) => status === 'paid' && !o.payment_verified_at)
+    .map((o) => o.id)
+
+  const updateData: Record<string, unknown> = { status }
+  if (becomingPaidIds.length > 0) {
+    updateData.payment_verified_at = new Date().toISOString()
+  }
+
+  const { error } = await supabase.from('orders').update(updateData).in('id', ids)
   if (error) return { error: error.message }
+
+  for (const order of orders ?? []) {
+    if (status === 'paid' && !order.payment_verified_at) {
+      const items: StockItem[] = ((order.items ?? []) as any[]).map((i) => ({
+        product_id: i.product_id,
+        quantity: i.quantity,
+        size: i.size,
+        color: i.color,
+      }))
+      const { error: stockError } = await decrementStockWithFallback(supabase, items)
+      if (stockError) {
+        console.error(`[bulkUpdateOrdersStatus] Stock decrement failed for ${order.id}:`, stockError)
+      }
+    }
+    await sendOrderStatusNotification(order as AdminOrder, status)
+  }
+  revalidatePath('/admin/orders')
+  return { success: true }
+}
+
+export async function updateOrderStatus(id: string, status: OrderStatus) {
+  await checkAdmin()
+  const supabase = createAdminClient()
+  const { data: order, error: fetchError } = await supabase.from('orders').select('*').eq('id', id).single()
+  if (fetchError || !order) return { error: 'Order not found' }
+
+  const becomingPaid = status === 'paid' && !order.payment_verified_at
+  const updateData: Record<string, unknown> = { status }
+  if (becomingPaid) {
+    updateData.payment_verified_at = new Date().toISOString()
+  }
+
+  const { error } = await supabase.from('orders').update(updateData).eq('id', id)
+  if (error) return { error: error.message }
+
+  if (becomingPaid) {
+    const items: StockItem[] = (order.items ?? []).map((i) => ({
+      product_id: i.product_id,
+      quantity: i.quantity,
+      size: i.size,
+      color: i.color,
+    }))
+    const { error: stockError } = await decrementStockWithFallback(supabase, items)
+    if (stockError) {
+      console.error(`[updateOrderStatus] Stock decrement failed for ${id}:`, stockError)
+    }
+  }
+
+  await sendOrderStatusNotification(order as AdminOrder, status)
   revalidatePath('/admin/orders')
   return { success: true }
 }
@@ -50,13 +112,32 @@ export async function getOrder(id: string): Promise<AdminOrder | null> {
   return data as AdminOrder | null
 }
 
-export async function updateOrderStatus(id: string, status: OrderStatus) {
+export async function createOrder(data: {
+  user_id: string
+  items: { product_id: string; product_name: string; quantity: number; price_cents: number; size: string; color: string }[]
+  notes?: string
+}) {
   await checkAdmin()
   const supabase = createAdminClient()
-  const { error } = await supabase.from('orders').update({ status }).eq('id', id)
+
+  const totalCents = data.items.reduce((sum, item) => sum + (item.price_cents || 0) * item.quantity, 0)
+
+  const { data: order, error } = await supabase
+    .from('orders')
+    .insert({
+      user_id: data.user_id,
+      status: 'pending',
+      total_cents: totalCents,
+      items: data.items,
+      notes: data.notes ?? '',
+      shipping_address: null,
+    })
+    .select()
+    .single()
+
   if (error) return { error: error.message }
   revalidatePath('/admin/orders')
-  return { success: true }
+  return { order }
 }
 
 export async function updateOrderNotes(id: string, notes: string) {

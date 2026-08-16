@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useEffect, useState, useMemo, useRef } from 'react'
 import {
@@ -67,7 +67,7 @@ export default function NewsletterPage() {
     const res = await deleteSubscriber(id)
     if (res.error) { toast.error(res.error) }
     else {
-      toast.success('Subscriber removed')
+      toast.success('Suscriptor eliminado')
       setData((prev) => prev.filter((s) => s.id !== id))
     }
   }
@@ -76,7 +76,7 @@ export default function NewsletterPage() {
     const res = await bulkDeleteSubscribers(selectedIds)
     if (res.error) { toast.error(res.error) }
     else {
-      toast.success(`${selectedIds.length} subscribers removed`)
+      toast.success(`${selectedIds.length} suscriptores eliminados`)
       setData((prev) => prev.filter((s) => !selectedIds.includes(s.id)))
       setRowSelection({})
     }
@@ -85,12 +85,12 @@ export default function NewsletterPage() {
 
   async function handleAddSubscriber(e: React.FormEvent) {
     e.preventDefault()
-    if (!newEmail.trim()) return toast.error('Email required')
+    if (!newEmail.trim()) return toast.error('El email es obligatorio')
     setAddingSubscriber(true)
     const res = await createSubscriber(newEmail)
     if (res.error) { toast.error(res.error) }
     else {
-      toast.success('Subscriber added')
+      toast.success('Suscriptor añadido')
       setNewEmail('')
       setShowAddSubscriber(false)
       load()
@@ -103,7 +103,7 @@ export default function NewsletterPage() {
     const res = await updateSubscriberStatus(sub.id, newStatus)
     if (res.error) { toast.error(res.error) }
     else {
-      toast.success(`Subscriber ${newStatus === 'active' ? 'reactivated' : 'unsubscribed'}`)
+      toast.success(`Suscriptor ${newStatus === 'active' ? 'reactivado' : 'dado de baja'}`)
       setData((prev) => prev.map((s) => s.id === sub.id ? { ...s, status: newStatus, unsubscribed_at: newStatus === 'unsubscribed' ? new Date().toISOString() : null } : s))
     }
   }
@@ -155,16 +155,16 @@ export default function NewsletterPage() {
       accessorKey: 'name',
       header: ({ column }) => (
         <button onClick={() => column.toggleSorting()} className="flex items-center gap-1 text-xs font-medium">
-          Name <ArrowUpDown size={12} />
+          Nombre <ArrowUpDown size={12} />
         </button>
       ),
-      cell: ({ getValue }) => <span className="text-sm text-muted-foreground">{String(getValue() ?? 'â€”')}</span>,
+      cell: ({ getValue }) => <span className="text-sm text-muted-foreground">{String(getValue() ?? '—')}</span>,
     },
     {
       accessorKey: 'status',
       header: ({ column }) => (
         <button onClick={() => column.toggleSorting()} className="flex items-center gap-1 text-xs font-medium">
-          Status <ArrowUpDown size={12} />
+          Estado <ArrowUpDown size={12} />
         </button>
       ),
       cell: ({ getValue }) => {
@@ -180,7 +180,7 @@ export default function NewsletterPage() {
       accessorKey: 'subscribed_at',
       header: ({ column }) => (
         <button onClick={() => column.toggleSorting()} className="flex items-center gap-1 text-xs font-medium">
-          Subscribed <ArrowUpDown size={12} />
+          Suscripción <ArrowUpDown size={12} />
         </button>
       ),
       cell: ({ getValue }) => (
@@ -194,7 +194,7 @@ export default function NewsletterPage() {
       cell: ({ row }) => (
         <div className="flex gap-1">
           <Button variant="ghost" size="sm" onClick={() => handleToggleStatus(row.original)} className="h-7 text-[10px]">
-            {row.original.status === 'active' ? 'Unsub' : 'Reactivate'}
+            {row.original.status === 'active' ? 'Baja' : 'Reactivar'}
           </Button>
         </div>
       ),
@@ -232,57 +232,57 @@ export default function NewsletterPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-serif tracking-wider text-foreground">Newsletter</h1>
-          <p className="text-sm text-muted-foreground mt-1">Manage email subscribers</p>
+          <h1 className="text-2xl font-display tracking-wider text-foreground">Newsletter</h1>
+          <p className="text-sm text-muted-foreground mt-1">Gestiona los suscriptores del email</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" className="gap-1 h-8 text-xs" onClick={() => setShowShortcuts(true)}>
-            <Keyboard size={14} /> Shortcuts
+            <Keyboard size={14} /> Atajos
           </Button>
           <Button variant="default" size="sm" className="gap-1 h-8 text-xs" onClick={() => setShowAddSubscriber(true)}>
-            <Plus size={14} /> Add Subscriber
+            <Plus size={14} /> Añadir suscriptor
           </Button>
-          <Button variant="outline" onClick={exportCsv} className="gap-2"><Download size={14} /> Export CSV</Button>
+          <Button variant="outline" onClick={exportCsv} className="gap-2"><Download size={14} /> Exportar CSV</Button>
         </div>
       </div>
 
       <div className="grid grid-cols-3 gap-4">
-        <Card><CardContent className="p-4 flex items-center gap-3">
+        <Card><CardContent className="p-4 pt-4 flex items-center gap-3">
           <Mail size={20} className="text-admin-success" />
-          <div><p className="text-2xl font-semibold">{activeCount}</p><p className="text-xs text-muted-foreground">Active Subscribers</p></div>
+          <div><p className="text-2xl font-semibold">{activeCount}</p><p className="text-xs text-muted-foreground">Suscriptores activos</p></div>
         </CardContent></Card>
-        <Card><CardContent className="p-4 flex items-center gap-3">
+        <Card><CardContent className="p-4 pt-4 flex items-center gap-3">
           <Mail size={20} className="text-muted-foreground" />
-          <div><p className="text-2xl font-semibold">{totalCount}</p><p className="text-xs text-muted-foreground">Total Subscribers</p></div>
+          <div><p className="text-2xl font-semibold">{totalCount}</p><p className="text-xs text-muted-foreground">Total de suscriptores</p></div>
         </CardContent></Card>
-        <Card><CardContent className="p-4 flex items-center gap-3">
+        <Card><CardContent className="p-4 pt-4 flex items-center gap-3">
           <Mail size={20} className="text-admin-warning" />
-          <div><p className="text-2xl font-semibold">{totalCount - activeCount}</p><p className="text-xs text-muted-foreground">Unsubscribed</p></div>
+          <div><p className="text-2xl font-semibold">{totalCount - activeCount}</p><p className="text-xs text-muted-foreground">Dados de baja</p></div>
         </CardContent></Card>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative flex-1 max-w-sm">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input ref={searchRef} placeholder="Search by email or name..." value={globalFilter} onChange={(e) => setGlobalFilter(e.target.value)} className="pl-9" />
+          <Input ref={searchRef} placeholder="Buscar por email o nombre..." value={globalFilter} onChange={(e) => setGlobalFilter(e.target.value)} className="pl-9" />
         </div>
         <DataTableViewOptions table={table} />
         <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as 'all' | 'active' | 'unsubscribed')}>
           <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="unsubscribed">Unsubscribed</SelectItem>
+            <SelectItem value="all">Todos los estados</SelectItem>
+            <SelectItem value="active">Activo</SelectItem>
+            <SelectItem value="unsubscribed">Dados de baja</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       {selectedCount > 0 && (
         <div className="flex items-center gap-2 px-3 py-2 bg-accent/30 rounded-lg border border-border">
-          <span className="text-sm font-medium">{selectedCount} selected</span>
+          <span className="text-sm font-medium">{selectedCount} seleccionados</span>
           <div className="flex-1" />
           <Button variant="destructive" size="sm" className="h-8 text-xs gap-1" onClick={() => setBulkDeleteOpen(true)}>
-            <Trash2 size={12} /> Delete
+            <Trash2 size={12} /> Eliminar
           </Button>
         </div>
       )}
@@ -302,8 +302,8 @@ export default function NewsletterPage() {
             <TableBody>
               {table.getRowModel().rows.map((row) => (
                 <RowContextMenu key={row.id} actions={[
-                  { label: row.original.status === 'active' ? 'Unsubscribe' : 'Reactivate', icon: <Mail size={14} />, onClick: () => handleToggleStatus(row.original) },
-                  { label: 'Delete', icon: <Trash2 size={14} />, onClick: () => handleDelete(row.original.id), destructive: true },
+                  { label: row.original.status === 'active' ? 'Dar de baja' : 'Reactivar', icon: <Mail size={14} />, onClick: () => handleToggleStatus(row.original) },
+                  { label: 'Eliminar', icon: <Trash2 size={14} />, onClick: () => handleDelete(row.original.id), destructive: true },
                 ]}>
                   <TableRow data-state={row.getIsSelected() && 'selected'}>
                     {row.getVisibleCells().map((cell) => (
@@ -313,7 +313,7 @@ export default function NewsletterPage() {
                 </RowContextMenu>
               ))}
               {table.getRowModel().rows.length === 0 && (
-                <TableRow><TableCell colSpan={columns.length} className="text-center text-muted-foreground py-12">No subscribers found</TableCell></TableRow>
+                <TableRow><TableCell colSpan={columns.length} className="text-center text-muted-foreground py-12">No se encontraron suscriptores</TableCell></TableRow>
               )}
             </TableBody>
           </Table>
@@ -326,8 +326,8 @@ export default function NewsletterPage() {
         <DialogContent>
           <form onSubmit={handleAddSubscriber}>
             <DialogHeader>
-              <DialogTitle>Add Subscriber</DialogTitle>
-              <DialogDescription>Manually add an email to the subscriber list.</DialogDescription>
+              <DialogTitle>Añadir suscriptor</DialogTitle>
+              <DialogDescription>Añade manualmente un email a la lista de suscriptores.</DialogDescription>
             </DialogHeader>
             <div className="py-4">
               <Input
@@ -339,9 +339,9 @@ export default function NewsletterPage() {
               />
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setShowAddSubscriber(false)}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => setShowAddSubscriber(false)}>Cancelar</Button>
               <Button type="submit" disabled={addingSubscriber}>
-                {addingSubscriber ? 'Adding...' : 'Add Subscriber'}
+                {addingSubscriber ? 'Añadiendo...' : 'Añadir suscriptor'}
               </Button>
             </DialogFooter>
           </form>
@@ -350,21 +350,21 @@ export default function NewsletterPage() {
 
       <Dialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Remove {selectedCount} Subscribers</DialogTitle><DialogDescription>Are you sure? This cannot be undone.</DialogDescription></DialogHeader>
+          <DialogHeader><DialogTitle>Eliminar {selectedCount} suscriptores</DialogTitle><DialogDescription>¿Estás seguro? Esta acción no se puede deshacer.</DialogDescription></DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setBulkDeleteOpen(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleBulkDelete}>Remove {selectedCount}</Button>
+            <Button variant="outline" onClick={() => setBulkDeleteOpen(false)}>Cancelar</Button>
+            <Button variant="destructive" onClick={handleBulkDelete}>Eliminar {selectedCount}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       <Dialog open={showShortcuts} onOpenChange={setShowShortcuts}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Keyboard Shortcuts</DialogTitle><DialogDescription>Available shortcuts for the newsletter page.</DialogDescription></DialogHeader>
+          <DialogHeader><DialogTitle>Atajos de teclado</DialogTitle><DialogDescription>Atajos disponibles para la página de Newsletter.</DialogDescription></DialogHeader>
           <div className="space-y-2 text-sm">
-            <div className="flex justify-between"><span className="text-muted-foreground">Focus search</span><kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">Ctrl+K</kbd></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Close dialogs</span><kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">Esc</kbd></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Show shortcuts</span><kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">?</kbd></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Enfocar búsqueda</span><kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">Ctrl+K</kbd></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Cerrar diálogos</span><kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">Esc</kbd></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Mostrar atajos</span><kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">?</kbd></div>
           </div>
         </DialogContent>
       </Dialog>

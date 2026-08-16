@@ -3,26 +3,26 @@ export type OrderStatus = 'draft' | 'pending' | 'paid' | 'processing' | 'shipped
 export type ProductStatus = 'active' | 'draft' | 'archived'
 
 export const PRODUCT_STATUS_OPTIONS: { value: ProductStatus; label: string }[] = [
-  { value: 'active', label: 'Active' },
-  { value: 'draft', label: 'Draft' },
-  { value: 'archived', label: 'Archived' },
+  { value: 'active', label: 'Activo' },
+  { value: 'draft', label: 'Borrador' },
+  { value: 'archived', label: 'Archivado' },
 ]
 
 export const PRODUCT_STATUS_LABELS: Record<ProductStatus, string> = {
-  active: 'Active',
-  draft: 'Draft',
-  archived: 'Archived',
+  active: 'Activo',
+  draft: 'Borrador',
+  archived: 'Archivado',
 }
 
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
-  draft: 'Draft',
-  pending: 'Pending',
-  paid: 'Paid',
-  processing: 'Processing',
-  shipped: 'Shipped',
-  delivered: 'Delivered',
-  cancelled: 'Cancelled',
-  refunded: 'Refunded',
+  draft: 'Borrador',
+  pending: 'Pendiente',
+  paid: 'Pagado',
+  processing: 'En preparación',
+  shipped: 'Enviado',
+  delivered: 'Entregado',
+  cancelled: 'Cancelado',
+  refunded: 'Reembolsado',
 }
 
 export const ORDER_STATUS_FLOW: OrderStatus[] = [
@@ -142,6 +142,7 @@ export interface AdminOrder {
   user_id: string
   status: OrderStatus
   total_cents: number
+  payment_method: string | null
   stripe_session_id: string | null
   stripe_payment_intent: string | null
   payment_verified_at: string | null
@@ -215,14 +216,6 @@ export interface NewsletterSubscriber {
   status: 'active' | 'unsubscribed'
   subscribed_at: string
   unsubscribed_at: string | null
-}
-
-export interface FeaturedProductEntry {
-  id: string
-  product_id: string
-  sort_order: number
-  created_at: string
-  product?: AdminProduct
 }
 
 export interface Banner {
@@ -345,20 +338,6 @@ export const BLOCK_TYPES = [
   { value: 'divider', label: 'Divider' },
   { value: 'custom_html', label: 'Custom HTML' },
 ]
-
-export interface PromotionalSection {
-  id: string
-  title: string
-  description: string | null
-  layout: 'grid' | 'carousel' | 'banner' | 'split'
-  background_color: string
-  text_color: string
-  sort_order: number
-  active: boolean
-  product_ids: string[]
-  created_at: string
-  updated_at: string
-}
 
 export interface AdminDiscount {
   id: string
@@ -497,11 +476,11 @@ export interface BrandSettings { brand_name: string; brand_tagline: string; bran
 export interface LogoSettings { logo_url: string; logo_alt: string; favicon_url: string }
 export interface ColorSettings { primary: string; secondary: string; accent: string; background: string; text: string }
 export interface TypographySettings { heading_font: string; body_font: string; base_font_size: number }
-export interface PaymentSettings { stripe_publishable_key: string; stripe_secret_key: string; stripe_webhook_secret: string; paypal_client_id: string; test_mode: boolean }
+export interface PaymentSettings { stripe_publishable_key: string; stripe_secret_key: string; stripe_webhook_secret: string; paypal_client_id: string; test_mode: boolean; bizum_enabled: boolean; bizum_phone: string }
 export interface ShippingSettings { free_shipping_threshold: number; default_weight_unit: string; handling_fee: number; shipping_zones: string }
 export interface TaxSettings { default_tax_rate: number; tax_inclusive_pricing: boolean; charge_tax_on_shipping: boolean; tax_jurisdictions: string }
 export interface EmailTemplateSettings { order_confirmation_subject: string; order_confirmation_body: string; shipping_confirmation_subject: string; shipping_confirmation_body: string }
-export interface NotificationSettings { order_confirmed: boolean; order_shipped: boolean; order_delivered: boolean; low_stock_alert: boolean; new_subscriber: boolean; webhook_url: string }
+export interface NotificationSettings { order_confirmed: boolean; order_shipped: boolean; order_delivered: boolean; low_stock_alert: boolean; new_subscriber: boolean; notification_email: string | null }
 export interface SeoSettings { global_title: string; global_description: string; og_image: string; google_analytics_id: string; facebook_pixel_id: string; robots_txt: string; custom_head_scripts: string }
 export interface DomainSettings { primary_domain: string; redirect_www: boolean; force_https: boolean; custom_domains: string }
 export interface LegalSettings { privacy_policy: string; terms_of_service: string; refund_policy: string; shipping_policy: string; cookie_policy: string }

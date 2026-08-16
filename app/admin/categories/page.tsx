@@ -36,6 +36,7 @@ export default function AdminCategoriesPage() {
     setLoading(false)
   }
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount via async load()
   useEffect(() => { load() }, [])
 
   function openAdd(parentId = '') {
@@ -60,7 +61,7 @@ export default function AdminCategoriesPage() {
   }
 
   async function handleSave() {
-    if (!form.name.trim()) return toast.error('Name required')
+    if (!form.name.trim()) return toast.error('El nombre es obligatorio')
     setSaving(true)
     try {
       let image = imagePreview
@@ -83,7 +84,7 @@ export default function AdminCategoriesPage() {
       if (res.error) {
         toast.error(res.error)
       } else {
-        toast.success(editing ? 'Category updated' : 'Category created')
+        toast.success(editing ? 'Categoría actualizada' : 'Categoría creada')
         setShowAdd(false)
         load()
       }
@@ -98,7 +99,7 @@ export default function AdminCategoriesPage() {
     if (res.error) {
       toast.error(res.error)
     } else {
-      toast.success('Category deleted')
+      toast.success('Categoría eliminada')
       setDeleteId(null)
       load()
     }
@@ -124,15 +125,15 @@ export default function AdminCategoriesPage() {
               <div className="flex items-center gap-2">
                 <span className="font-medium text-sm">{cat.name}</span>
                 {cat.is_collection && (
-                  <Badge variant="outline" className="text-[10px]">Collection</Badge>
+                  <Badge variant="outline" className="text-[10px]">Colección</Badge>
                 )}
               </div>
               <p className="text-xs text-muted-foreground">/{cat.slug}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Badge variant="secondary" className="text-xs">{cat.product_count} products</Badge>
-            <button onClick={() => openAdd(cat.id)} className="text-muted-foreground hover:text-foreground p-1" title="Add subcategory">
+            <Badge variant="secondary" className="text-xs">{cat.product_count} productos</Badge>
+            <button onClick={() => openAdd(cat.id)} className="text-muted-foreground hover:text-foreground p-1" title="Añadir subcategoría">
               <Plus size={14} />
             </button>
             <button onClick={() => openEdit(cat)} className="text-muted-foreground hover:text-foreground p-1">
@@ -149,7 +150,7 @@ export default function AdminCategoriesPage() {
   }
 
   function flattenCategories(cats: AdminCategory[], depth = 0): { id: string; name: string; depth: number }[] {
-    let result: { id: string; name: string; depth: number }[] = []
+    const result: { id: string; name: string; depth: number }[] = []
     for (const cat of cats) {
       result.push({ id: cat.id, name: cat.name, depth })
       if (cat.children?.length) {
@@ -169,15 +170,15 @@ export default function AdminCategoriesPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-serif tracking-wider text-foreground">Categories</h1>
-        <Button onClick={() => openAdd()}><Plus size={16} className="mr-2" /> Add Category</Button>
+        <h1 className="text-2xl font-display tracking-wider text-foreground">Categorías</h1>
+        <Button onClick={() => openAdd()}><Plus size={16} className="mr-2" /> Nueva categoría</Button>
       </div>
 
       <Card>
         <CardContent className="p-0 divide-y divide-border">
           {data.length === 0 && (
             <div className="text-center text-muted-foreground py-12">
-              No categories yet
+              Aún no hay categorías
             </div>
           )}
           {data.map((cat) => renderCategory(cat))}
@@ -187,15 +188,15 @@ export default function AdminCategoriesPage() {
       <Dialog open={showAdd} onOpenChange={(o) => !o && setShowAdd(false)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editing ? 'Edit Category' : 'New Category'}</DialogTitle>
+            <DialogTitle>{editing ? 'Editar categoría' : 'Nueva categoría'}</DialogTitle>
             <DialogDescription>
-              {editing ? 'Update category details.' : 'Create a new category or subcategory.'}
+              {editing ? 'Actualiza los detalles de la categoría.' : 'Crea una nueva categoría o subcategoría.'}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div>
-              <Label htmlFor="cat_name">Name *</Label>
+              <Label htmlFor="cat_name">Nombre *</Label>
               <Input
                 id="cat_name"
                 value={form.name}
@@ -204,13 +205,13 @@ export default function AdminCategoriesPage() {
             </div>
 
             <div>
-              <Label>Parent Category (optional)</Label>
+              <Label>Categoría principal (opcional)</Label>
               <select
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 value={form.parent_id}
                 onChange={(e) => setForm({ ...form, parent_id: e.target.value })}
               >
-                <option value="">None (top-level)</option>
+                <option value="">Ninguna (nivel superior)</option>
                 {flattenCategories(data).map((cat) => (
                   <option key={cat.id} value={cat.id}>
                     {'— '.repeat(cat.depth)}{cat.name}
@@ -220,7 +221,7 @@ export default function AdminCategoriesPage() {
             </div>
 
             <div>
-              <Label htmlFor="cat_description">Description</Label>
+              <Label htmlFor="cat_description">Descripción</Label>
               <textarea
                 id="cat_description"
                 rows={2}
@@ -231,7 +232,7 @@ export default function AdminCategoriesPage() {
             </div>
 
             <div>
-              <Label>Category Image</Label>
+              <Label>Imagen de la categoría</Label>
               <div className="mt-1 flex items-center gap-3">
                 {imagePreview && (
                   <div className="w-16 h-16 rounded border border-border overflow-hidden">
@@ -239,7 +240,7 @@ export default function AdminCategoriesPage() {
                   </div>
                 )}
                 <label className="flex-1 h-10 rounded border border-dashed border-input flex items-center justify-center cursor-pointer hover:bg-accent/10 text-xs text-muted-foreground">
-                  {imageFile ? imageFile.name : 'Upload Image'}
+                  {imageFile ? imageFile.name : 'Subir imagen'}
                   <input
                     type="file"
                     accept="image/*"
@@ -264,14 +265,14 @@ export default function AdminCategoriesPage() {
                 onChange={(e) => setForm({ ...form, is_collection: e.target.checked })}
                 className="rounded border-input"
               />
-              <Label htmlFor="is_collection" className="mb-0">Mark as Collection</Label>
+              <Label htmlFor="is_collection" className="mb-0">Marcar como colección</Label>
             </div>
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAdd(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setShowAdd(false)}>Cancelar</Button>
             <Button onClick={handleSave} disabled={saving}>
-              {saving ? 'Saving...' : editing ? 'Update' : 'Create'}
+              {saving ? 'Guardando...' : editing ? 'Actualizar' : 'Crear'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -280,14 +281,14 @@ export default function AdminCategoriesPage() {
       <Dialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Category</DialogTitle>
+            <DialogTitle>Eliminar categoría</DialogTitle>
             <DialogDescription>
-              Products in this category will be uncategorized. Subcategories will be deleted.
+              Los productos de esta categoría quedarán sin categorizar. Las subcategorías se eliminarán.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteId(null)}>Cancel</Button>
-            <Button variant="destructive" onClick={() => deleteId && handleDelete(deleteId)}>Delete</Button>
+            <Button variant="outline" onClick={() => setDeleteId(null)}>Cancelar</Button>
+            <Button variant="destructive" onClick={() => deleteId && handleDelete(deleteId)}>Eliminar</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

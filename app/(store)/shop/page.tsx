@@ -1,5 +1,6 @@
 import { Suspense } from "react"
-import { getProducts, getCategories } from "@/services/supabase-store"
+import { getProductsPage, getCategories } from "@/services/supabase-store"
+import type { ProductsPageParams } from "@/services/supabase-store"
 import ProductCatalog from "@/components/ProductCatalog"
 
 function ShopSkeleton() {
@@ -29,25 +30,59 @@ function ShopSkeleton() {
   )
 }
 
-async function ShopContent() {
-  const [products, categories] = await Promise.all([
-    getProducts(),
+type SearchParams = { [key: string]: string | string[] | undefined }
+
+function parsePage(value: string | string[] | undefined): number {
+  const n = parseInt(Array.isArray(value) ? value[0] : (value ?? "1"), 10)
+  return Number.isFinite(n) && n > 0 ? n : 1
+}
+
+function buildParams(searchParams: SearchParams): ProductsPageParams {
+  const params: ProductsPageParams = {
+    page: parsePage(searchParams.page),
+  }
+  const search = Array.isArray(searchParams.search) ? searchParams.search[0] : searchParams.search
+  if (search) params.search = search
+  if (searchParams.sin_categoria === "1") params.uncategorized = true
+  const precioMin = Array.isArray(searchParams.precio_min) ? searchParams.precio_min[0] : searchParams.precio_min
+  const precioMax = Array.isArray(searchParams.precio_max) ? searchParams.precio_max[0] : searchParams.precio_max
+  if (precioMin) {
+    const cents = Math.round(Number(precioMin) * 100)
+    if (Number.isFinite(cents)) params.priceMinCents = cents
+  }
+  if (precioMax) {
+    const cents = Math.round(Number(precioMax) * 100)
+    if (Number.isFinite(cents)) params.priceMaxCents = cents
+  }
+  if (searchParams.stock === "1") params.inStockOnly = true
+  const orden = Array.isArray(searchParams.orden) ? searchParams.orden[0] : searchParams.orden
+  if (orden === "precio_asc") params.sort = "price_asc"
+  else if (orden === "precio_desc") params.sort = "price_desc"
+  return params
+}
+
+async function ShopContent({ searchParams }: { searchParams: SearchParams }) {
+  const [result, categories] = await Promise.all([
+    getProductsPage(buildParams(searchParams)),
     getCategories(),
   ])
 
   return (
     <ProductCatalog
-      products={products}
+      products={result.products}
       categories={categories}
       activeCategorySlug={null}
+      total={result.total}
+      page={result.page}
+      totalPages={result.totalPages}
     />
   )
 }
 
-export default function ShopPage() {
+export default async function ShopPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   return (
     <Suspense fallback={<ShopSkeleton />}>
-      <ShopContent />
+      <ShopContent searchParams={await searchParams} />
     </Suspense>
   )
 }

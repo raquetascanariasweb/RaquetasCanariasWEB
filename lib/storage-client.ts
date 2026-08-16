@@ -31,7 +31,8 @@ export async function uploadDirect(file: File): Promise<{ url: string; name: str
 
     const { data } = supabase.storage.from(BUCKET).getPublicUrl(fileName)
     return { url: data.publicUrl, name: file.name }
-  } catch (e: any) {
-    return { error: e.message || 'Upload failed' }
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : 'Upload failed'
+    return { error: msg }
   }
 }

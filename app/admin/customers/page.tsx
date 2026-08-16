@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useEffect, useState, useMemo, useRef } from 'react'
 import {
@@ -60,14 +60,14 @@ export default function AdminCustomersPage() {
     } catch { setCustomerOrders([]) }
   }
 
-  const formatDate = (d: string) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  const formatDate = (d: string) => new Date(d).toLocaleDateString('es-ES', { month: 'short', day: 'numeric', year: 'numeric' })
 
   const columns: ColumnDef<AdminCustomer>[] = useMemo(() => [
     {
       accessorKey: 'email',
       header: ({ column }) => (
         <button onClick={() => column.toggleSorting()} className="flex items-center gap-1 text-xs font-medium">
-          Customer <ArrowUpDown size={12} />
+          Cliente <ArrowUpDown size={12} />
         </button>
       ),
       cell: ({ row }) => (
@@ -79,7 +79,7 @@ export default function AdminCustomersPage() {
             <p className="text-sm font-medium">
               {row.original.first_name || row.original.last_name
                 ? `${row.original.first_name} ${row.original.last_name}`
-                : 'Unknown'}
+                : 'Desconocido'}
             </p>
             {row.original.email && <p className="text-xs text-muted-foreground">{row.original.email}</p>}
           </div>
@@ -90,7 +90,7 @@ export default function AdminCustomersPage() {
       accessorKey: 'order_count',
       header: ({ column }) => (
         <button onClick={() => column.toggleSorting()} className="flex items-center gap-1 text-xs font-medium">
-          Orders <ArrowUpDown size={12} />
+          Pedidos <ArrowUpDown size={12} />
         </button>
       ),
       cell: ({ getValue }) => <span className="text-sm">{String(getValue())}</span>,
@@ -99,26 +99,27 @@ export default function AdminCustomersPage() {
       accessorKey: 'total_spent',
       header: ({ column }) => (
         <button onClick={() => column.toggleSorting()} className="flex items-center gap-1 text-xs font-medium">
-          Total Spent <ArrowUpDown size={12} />
+          Total gastado <ArrowUpDown size={12} />
         </button>
       ),
       cell: ({ getValue }) => <span className="font-mono text-sm">{fmt(Number(getValue()))}</span>,
     },
     {
       accessorKey: 'created_at',
-      header: 'Joined',
+      header: 'Alta',
       cell: ({ getValue }) => <span className="text-xs text-muted-foreground">{formatDate(String(getValue()))}</span>,
     },
     {
       id: 'actions',
       cell: ({ row }) => (
         <Button variant="ghost" size="sm" onClick={() => viewCustomer(row.original)}>
-          <Eye size={14} className="mr-1" /> View
+          <Eye size={14} className="mr-1" /> Ver
         </Button>
       ),
     },
   ], [])
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- uso idiomático de TanStack Table (useReactTable)
   const table = useReactTable({
     data,
     columns,
@@ -140,16 +141,16 @@ export default function AdminCustomersPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-serif tracking-wider text-foreground">Customers</h1>
+        <h1 className="text-2xl font-display tracking-wider text-foreground">Clientes</h1>
         <Button variant="outline" size="sm" className="gap-1 h-8 text-xs" onClick={() => setShowShortcuts(true)}>
-          <Keyboard size={14} /> Shortcuts
+          <Keyboard size={14} /> Atajos
         </Button>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative max-w-sm flex-1">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input ref={searchRef} placeholder="Search customers..." value={globalFilter} onChange={(e) => setGlobalFilter(e.target.value)} className="pl-9" />
+          <Input ref={searchRef} placeholder="Buscar clientes..." value={globalFilter} onChange={(e) => setGlobalFilter(e.target.value)} className="pl-9" />
         </div>
         <DataTableViewOptions table={table} />
       </div>
@@ -169,8 +170,8 @@ export default function AdminCustomersPage() {
             <TableBody>
               {table.getRowModel().rows.map((row) => (
                 <RowContextMenu key={row.id} actions={[
-                  { label: 'View Details', icon: <Eye size={14} />, onClick: () => viewCustomer(row.original) },
-                  { label: 'Send Email', icon: <Mail size={14} />, onClick: () => row.original.email && window.open(`mailto:${row.original.email}`) },
+                  { label: 'Ver detalles', icon: <Eye size={14} />, onClick: () => viewCustomer(row.original) },
+                  { label: 'Enviar correo', icon: <Mail size={14} />, onClick: () => row.original.email && window.open(`mailto:${row.original.email}`) },
                 ]}>
                   <TableRow data-state={row.getIsSelected() && 'selected'}>
                     {row.getVisibleCells().map((cell) => (
@@ -180,7 +181,7 @@ export default function AdminCustomersPage() {
                 </RowContextMenu>
               ))}
               {table.getRowModel().rows.length === 0 && (
-                <TableRow><TableCell colSpan={columns.length} className="text-center text-muted-foreground py-12">No customers found</TableCell></TableRow>
+                <TableRow><TableCell colSpan={columns.length} className="text-center text-muted-foreground py-12">No se encontraron clientes</TableCell></TableRow>
               )}
             </TableBody>
           </Table>
@@ -191,11 +192,11 @@ export default function AdminCustomersPage() {
 
       <Dialog open={showShortcuts} onOpenChange={setShowShortcuts}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Keyboard Shortcuts</DialogTitle><DialogDescription>Available shortcuts for the customers page.</DialogDescription></DialogHeader>
+          <DialogHeader><DialogTitle>Atajos de teclado</DialogTitle><DialogDescription>Atajos disponibles para la página de clientes.</DialogDescription></DialogHeader>
           <div className="space-y-2 text-sm">
-            <div className="flex justify-between"><span className="text-muted-foreground">Focus search</span><kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">Ctrl+K</kbd></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Close dialogs</span><kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">Esc</kbd></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Show shortcuts</span><kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">?</kbd></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Enfocar la búsqueda</span><kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">Ctrl+K</kbd></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Cerrar diálogos</span><kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">Esc</kbd></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Mostrar atajos</span><kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">?</kbd></div>
           </div>
         </DialogContent>
       </Dialog>
@@ -206,7 +207,7 @@ export default function AdminCustomersPage() {
             <DialogTitle>
               {selectedCustomer?.first_name || selectedCustomer?.last_name
                 ? `${selectedCustomer?.first_name} ${selectedCustomer?.last_name}`
-                : 'Customer'}
+                : 'Cliente'}
             </DialogTitle>
           </DialogHeader>
           {selectedCustomer && (
@@ -219,22 +220,22 @@ export default function AdminCustomersPage() {
                   ) : <p className="text-muted-foreground">N/A</p>}
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Total Spent</p>
+                  <p className="text-xs text-muted-foreground">Total gastado</p>
                   <p className="font-mono text-lg">{fmt(selectedCustomer.total_spent)}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Orders</p>
+                  <p className="text-xs text-muted-foreground">Pedidos</p>
                   <p>{selectedCustomer.order_count}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Customer Since</p>
+                  <p className="text-xs text-muted-foreground">Cliente desde</p>
                   <p>{formatDate(selectedCustomer.created_at)}</p>
                 </div>
               </div>
               <div>
-                <h3 className="text-sm font-medium mb-2 flex items-center gap-1"><ShoppingBag size={14} /> Order History</h3>
+                <h3 className="text-sm font-medium mb-2 flex items-center gap-1"><ShoppingBag size={14} /> Historial de pedidos</h3>
                 {customerOrders.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No orders yet</p>
+                  <p className="text-sm text-muted-foreground">Sin pedidos todavía</p>
                 ) : (
                   <div className="space-y-2">
                     {customerOrders.map((order) => (

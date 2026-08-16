@@ -27,12 +27,12 @@ const DashboardCharts = dynamic(() => import('@/components/admin/DashboardCharts
 const timeAgo = (ts: string) => {
   const diff = Date.now() - new Date(ts).getTime()
   const mins = Math.floor(diff / 60000)
-  if (mins < 1) return 'just now'
-  if (mins < 60) return `${mins}m ago`
+  if (mins < 1) return 'ahora mismo'
+  if (mins < 60) return `hace ${mins} min`
   const hrs = Math.floor(mins / 60)
-  if (hrs < 24) return `${hrs}h ago`
+  if (hrs < 24) return `hace ${hrs} h`
   const days = Math.floor(hrs / 24)
-  return `${days}d ago`
+  return `hace ${days} d`
 }
 
 const activityIcons: Record<ActivityEvent['type'], React.ComponentType<{ size?: number; className?: string }>> = {
@@ -113,24 +113,24 @@ export default function AdminDashboard() {
       {/* ── Header ─────────────────────────────────── */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-serif tracking-wider text-foreground">Dashboard</h1>
+          <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">Dashboard</h1>
           <p className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-admin-success" />
-            Store active &middot; last updated {timeAgo(new Date().toISOString())}
+            Tienda activa &middot; última actualización {timeAgo(new Date().toISOString())}
           </p>
         </div>
         <Button variant="ghost" size="sm" onClick={() => window.location.reload()} className="text-xs text-muted-foreground hover:text-foreground">
-          Refresh
+          Refrescar
         </Button>
       </div>
 
       {/* ── Pulse Strip ────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Card className="border-border/60 bg-card/80 backdrop-blur">
-          <CardContent className="p-5">
+          <CardContent className="p-5 pt-5">
             <div className="flex items-start justify-between mb-3">
               <span className="text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
-                Revenue Today
+                Ingresos hoy
               </span>
               <DollarSign size={15} className="text-admin-success/70" />
             </div>
@@ -138,16 +138,16 @@ export default function AdminDashboard() {
               {fmt(data.revenue_today_cents)}
             </div>
             <p className="text-[10px] text-muted-foreground mt-1">
-              {data.orders_today} order{data.orders_today !== 1 ? 's' : ''} today
+              {data.orders_today} pedido{data.orders_today !== 1 ? 's' : ''} hoy
             </p>
           </CardContent>
         </Card>
 
         <Card className={`border-border/60 bg-card/80 backdrop-blur ${data.orders_pending > 0 ? 'ring-1 ring-admin-warning/20' : ''}`}>
-          <CardContent className="p-5">
+          <CardContent className="p-5 pt-5">
             <div className="flex items-start justify-between mb-3">
               <span className="text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
-                Pending Orders
+                Pedidos pendientes
               </span>
               <Clock size={15} className={data.orders_pending > 0 ? 'text-admin-warning' : 'text-muted-foreground/50'} />
             </div>
@@ -155,16 +155,16 @@ export default function AdminDashboard() {
               {data.orders_pending}
             </div>
             <p className="text-[10px] text-muted-foreground mt-1">
-              {data.orders_pending > 0 ? 'Needs your attention' : 'All caught up'}
+              {data.orders_pending > 0 ? 'Requieren tu atención' : 'Todo al día'}
             </p>
           </CardContent>
         </Card>
 
         <Card className="border-border/60 bg-card/80 backdrop-blur">
-          <CardContent className="p-5">
+          <CardContent className="p-5 pt-5">
             <div className="flex items-start justify-between mb-3">
               <span className="text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
-                Revenue This Month
+                Ingresos este mes
               </span>
               <TrendingUp size={15} className="text-muted-foreground/50" />
             </div>
@@ -172,16 +172,16 @@ export default function AdminDashboard() {
               {fmt(data.revenue_this_month_cents)}
             </div>
             <p className="text-[10px] text-muted-foreground mt-1">
-              AOV {fmt(data.avg_order_value_cents)}
+              Ticket medio {fmt(data.avg_order_value_cents)}
             </p>
           </CardContent>
         </Card>
 
         <Card className={`border-border/60 bg-card/80 backdrop-blur ${data.products_out_of_stock + data.products_low_stock > 0 ? 'ring-1 ring-admin-danger/20' : ''}`}>
-          <CardContent className="p-5">
+          <CardContent className="p-5 pt-5">
             <div className="flex items-start justify-between mb-3">
               <span className="text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
-                Inventory
+                Inventario
               </span>
               <Package size={15} className={data.products_out_of_stock + data.products_low_stock > 0 ? 'text-admin-danger' : 'text-muted-foreground/50'} />
             </div>
@@ -189,7 +189,7 @@ export default function AdminDashboard() {
               {data.active_products}<span className="text-base font-normal text-muted-foreground">/{data.total_products}</span>
             </div>
             <p className="text-[10px] text-muted-foreground mt-1">
-              active &middot; {data.products_out_of_stock} out, {data.products_low_stock} low
+              activos &middot; {data.products_out_of_stock} agotados, {data.products_low_stock} bajos
             </p>
           </CardContent>
         </Card>
@@ -197,44 +197,44 @@ export default function AdminDashboard() {
 
       {/* ── Needs Attention ────────────────────────── */}
       <Card className={`overflow-hidden border-border/60 transition-all ${hasAttention ? 'shadow-lg shadow-admin-warning/5' : ''}`}>
-        <CardContent className={`p-5 ${hasAttention ? '' : 'py-4'}`}>
+        <CardContent className={`p-5 ${hasAttention ? 'pt-5' : 'py-4'}`}>
           {!hasAttention ? (
             <div className="flex items-center gap-3 text-emerald-500/80">
               <CheckCircle size={16} />
-              <span className="text-sm font-medium">Everything looks good. No issues need your attention.</span>
+              <span className="text-sm font-medium">Todo en orden. No hay nada que requiera tu atención.</span>
             </div>
           ) : (
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <AlertTriangle size={14} className="text-admin-warning" />
-                <span className="text-xs font-semibold uppercase tracking-[0.15em] text-admin-warning">Needs Attention</span>
+                <span className="text-xs font-semibold uppercase tracking-[0.15em] text-admin-warning">Requiere atención</span>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {data.orders_pending > 0 && (
                   <Link href="/admin/orders" className="group flex items-center gap-3 p-3 rounded-md bg-admin-warning/5 border border-admin-warning/15 hover:bg-admin-warning/10 transition-colors">
                     <span className="text-lg font-bold text-admin-warning">{data.orders_pending}</span>
-                    <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">Pending orders</span>
+                    <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">Pedidos pendientes</span>
                     <ChevronRight size={12} className="ml-auto text-admin-warning/40 group-hover:text-admin-warning transition-colors" />
                   </Link>
                 )}
                 {data.products_out_of_stock > 0 && (
                   <Link href="/admin/inventory" className="group flex items-center gap-3 p-3 rounded-md bg-admin-danger/5 border border-admin-danger/15 hover:bg-admin-danger/10 transition-colors">
                     <span className="text-lg font-bold text-admin-danger">{data.products_out_of_stock}</span>
-                    <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">Out of stock</span>
+                    <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">Agotados</span>
                     <ChevronRight size={12} className="ml-auto text-admin-danger/40 group-hover:text-admin-danger transition-colors" />
                   </Link>
                 )}
                 {data.products_low_stock > 0 && (
                   <Link href="/admin/inventory" className="group flex items-center gap-3 p-3 rounded-md bg-admin-warning/5 border border-admin-warning/15 hover:bg-admin-warning/10 transition-colors">
                     <span className="text-lg font-bold text-admin-warning">{data.products_low_stock}</span>
-                    <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">Low stock</span>
+                    <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">Stock bajo</span>
                     <ChevronRight size={12} className="ml-auto text-admin-warning/40 group-hover:text-admin-warning transition-colors" />
                   </Link>
                 )}
                 {data.expired_discounts > 0 && (
                   <Link href="/admin/discounts" className="group flex items-center gap-3 p-3 rounded-md bg-admin-danger/5 border border-admin-danger/15 hover:bg-admin-danger/10 transition-colors">
                     <span className="text-lg font-bold text-admin-danger">{data.expired_discounts}</span>
-                    <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">Expired discounts</span>
+                    <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">Descuentos caducados</span>
                     <ChevronRight size={12} className="ml-auto text-admin-danger/40 group-hover:text-admin-danger transition-colors" />
                   </Link>
                 )}
@@ -247,33 +247,33 @@ export default function AdminDashboard() {
       <DashboardCharts chartData={chartData} weeklyChartData={weeklyChartData} fmt={fmt} />
 
       <Card className="border-border/60 lg:col-span-3">
-        <CardContent className="p-4 space-y-3">
+        <CardContent className="p-4 pt-4 space-y-3">
           <div className="flex items-center justify-between text-xs">
             <span className="text-muted-foreground flex items-center gap-1.5">
-              <Layers size={12} /> Categories
+              <Layers size={12} /> Categorías
             </span>
             <span className="font-medium tabular-nums">{data.total_categories}</span>
           </div>
           <div className="flex items-center justify-between text-xs">
             <span className="text-muted-foreground flex items-center gap-1.5">
-              <Users size={12} /> Customers
+              <Users size={12} /> Clientes
             </span>
             <span className="font-medium tabular-nums">{data.total_customers}</span>
           </div>
           <div className="flex items-center justify-between text-xs">
             <span className="text-muted-foreground flex items-center gap-1.5">
-              <Users size={12} /> New this month
+              <Users size={12} /> Nuevos este mes
             </span>
             <span className="font-medium tabular-nums">{data.new_customers_this_month}</span>
           </div>
           <div className="flex items-center justify-between text-xs">
             <span className="text-muted-foreground flex items-center gap-1.5">
-              <Percent size={12} /> Active discounts
+              <Percent size={12} /> Descuentos activos
             </span>
             <span className="font-medium tabular-nums">{data.active_discounts}</span>
           </div>
           <Link href="/admin/analytics" className="flex items-center justify-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors pt-1 border-t border-border/50">
-            Full analytics <ArrowRight size={10} />
+            Analítica completa <ArrowRight size={10} />
           </Link>
         </CardContent>
       </Card>
@@ -282,13 +282,13 @@ export default function AdminDashboard() {
       <Card className="border-border/60">
         <CardHeader className="pb-2">
           <CardTitle className="text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">
-            Recent Activity
+            Actividad reciente
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
           {data.recent_activity.length === 0 ? (
             <p className="text-xs text-muted-foreground py-6 text-center">
-              No recent activity. Activity will appear as your store grows.
+              Sin actividad reciente. La actividad aparecerá a medida que tu tienda crezca.
             </p>
           ) : (
             <div className="divide-y divide-border/50">

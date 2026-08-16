@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 @theme inline {
   --color-paper: #EBECEE;
@@ -6,6 +7,18 @@
   --color-ember: #C4E326;
   --color-linen: #8A8C8F;
   --color-slate: #000000;
+
+  /* Admin dark semantic tokens */
+  --color-admin-bg: #0d0d0d;
+  --color-admin-surface: #1a1a1a;
+  --color-admin-border: #2d2d2d;
+  --color-admin-text: #f0f0f0;
+  --color-admin-muted: #666666;
+  --color-admin-slate: #6b6d70;
+  --color-admin-success: #22c55e;
+  --color-admin-warning: #f59e0b;
+  --color-admin-danger: #dc2626;
+  --color-admin-info: #38bdf8;
 
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
@@ -57,11 +70,11 @@
 }
 
 [data-theme="dark"] {
-  --background: 0 0% 0%;
+  --background: 0 0% 5%;
   --foreground: 210 5% 90%;
-  --card: 0 0% 4%;
+  --card: 0 0% 10%;
   --card-foreground: 210 5% 90%;
-  --popover: 0 0% 4%;
+  --popover: 0 0% 10%;
   --popover-foreground: 210 5% 90%;
   --primary: 68 80% 52%;
   --primary-foreground: 0 0% 0%;
@@ -73,8 +86,8 @@
   --accent-foreground: 0 0% 0%;
   --destructive: 0 65% 50%;
   --destructive-foreground: 0 0% 100%;
-  --border: 0 0% 15%;
-  --input: 0 0% 15%;
+  --border: 0 0% 18%;
+  --input: 0 0% 18%;
   --ring: 68 80% 52%;
 }
 
@@ -128,5 +141,14 @@
   scrollbar-width: none;
   &::-webkit-scrollbar {
     display: none;
+  }
+}
+
+@keyframes ticker-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
   }
 }

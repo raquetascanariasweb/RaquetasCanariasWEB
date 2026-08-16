@@ -1,15 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
+import { z } from 'zod'
 import { Resend } from 'resend'
 import { render } from '@react-email/components'
 import BaseEmail from '@/emails/BaseEmail'
 
 const FROM_EMAIL = 'Sportbalin <hello@sportbalin.com>'
 
+const SendEmailSchema = z.object({
+  to: z.string().trim().email(),
+  subject: z.string().trim().min(1).max(200),
+  content: z.string().trim().min(1).max(10000),
+  previewText: z.string().trim().max(200).optional(),
+  ctaText: z.string().trim().max(100).optional(),
+  ctaUrl: z.string().trim().url().optional(),
+  recipientName: z.string().trim().max(200).optional(),
+})
+
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth()
-    const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID || 'user_3G8ZXADowWQkNZdX65U1djf8JYZ'
+    const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID
     if (!userId || userId !== adminId) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -18,36 +29,16 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { to, subject, content, previewText, ctaText, ctaUrl, recipientName } = body
-
-    if (!to || typeof to !== 'string' || !to.trim()) {
+    const parsed = SendEmailSchema.safeParse(body)
+    if (!parsed.success) {
+      const message = parsed.error.issues[0]?.message ?? 'Invalid request body.'
       return NextResponse.json(
-        { success: false, error: 'Missing or invalid recipient email (to).' },
+        { success: false, error: message },
         { status: 400 }
       )
     }
 
-    if (!subject || typeof subject !== 'string' || !subject.trim()) {
-      return NextResponse.json(
-        { success: false, error: 'Missing or invalid subject.' },
-        { status: 400 }
-      )
-    }
-
-    if (!content || typeof content !== 'string' || !content.trim()) {
-      return NextResponse.json(
-        { success: false, error: 'Missing or invalid content.' },
-        { status: 400 }
-      )
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(to.trim())) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid recipient email format.' },
-        { status: 400 }
-      )
-    }
+    const { to, subject, content, previewText, ctaText, ctaUrl, recipientName } = parsed.data
 
     const apiKey = process.env.RESEND_API_KEY
     if (!apiKey) {
@@ -61,7 +52,7 @@ export async function POST(request: NextRequest) {
       BaseEmail({
         title: subject,
         previewText: previewText || subject,
-        content: content.trim(),
+        content,
         ctaText,
         ctaUrl,
         recipientName,
@@ -71,8 +62,8 @@ export async function POST(request: NextRequest) {
     const resend = new Resend(apiKey)
     const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,
-      to: to.trim(),
-      subject: subject.trim(),
+      to,
+      subject,
       html,
     })
 

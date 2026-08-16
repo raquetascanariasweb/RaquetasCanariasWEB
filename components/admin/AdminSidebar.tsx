@@ -1,325 +1,306 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { usePathname } from 'next/navigation'
+import * as React from 'react'
 import Link from 'next/link'
-import { motion, AnimatePresence } from 'framer-motion'
-import type { LucideIcon } from 'lucide-react'
+import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard,
-  Package,
-  Layers,
-  Archive,
-  Warehouse,
-  ShoppingCart,
-  FileEdit,
-  Percent,
-  Gift,
-  Users,
-  Mail,
-  Heart,
-  Image,
-  Sparkles,
   BarChart3,
-  FileText,
-  Settings,
-  Shield,
   ChevronDown,
   ChevronLeft,
-  Megaphone,
+  ChevronRight,
   FolderOpen,
+  Image,
+  Library,
+  Mail,
+  Menu,
+  Package,
+  Settings,
+  ShoppingCart,
+  Users,
+  Warehouse,
+  Percent,
+  Gift,
+  Megaphone,
+  LineChart,
+  Shield,
   ExternalLink,
+  Activity,
 } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from '@/components/ui/sheet'
 
-type NavLeaf = {
+interface NavSection {
+  label: string
   href: string
-  label: string
-  icon: LucideIcon
+  icon: React.ElementType
 }
 
-type NavSection = {
+interface NavGroupDef {
   label: string
-  children: NavLeaf[]
+  icon: React.ElementType
+  items: NavSection[]
 }
 
-type NavItem = NavLeaf | NavSection
+type NavEntry =
+  | { kind: 'link'; label: string; href: string; icon: React.ElementType }
+  | { kind: 'group'; group: NavGroupDef }
 
-const NAV_ITEMS: NavItem[] = [
-  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  {
-    label: 'Catalog',
-    children: [
-      { href: '/admin/products', label: 'Products', icon: Package },
-      { href: '/admin/categories', label: 'Categories', icon: Layers },
-      { href: '/admin/collections', label: 'Collections', icon: Archive },
-      { href: '/admin/inventory', label: 'Inventory', icon: Warehouse },
-    ],
-  },
-  {
-    label: 'Sales',
-    children: [
-      { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
-      { href: '/admin/draft-orders', label: 'Draft Orders', icon: FileEdit },
-      { href: '/admin/discounts', label: 'Discounts', icon: Percent },
-      { href: '/admin/gift-cards', label: 'Gift Cards', icon: Gift },
-    ],
-  },
-  { href: '/admin/customers', label: 'Customers', icon: Users },
-  {
-    label: 'Marketing',
-    children: [
-      { href: '/admin/campaigns', label: 'Campaigns', icon: Megaphone },
-      { href: '/admin/newsletter', label: 'Newsletter', icon: Mail },
-      { href: '/admin/featured-products', label: 'Featured Products', icon: Heart },
-      { href: '/admin/banners', label: 'Banners', icon: Image },
-      { href: '/admin/promotions', label: 'Promotions', icon: Sparkles },
-    ],
-  },
-  { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
-  { href: '/admin/content', label: 'Content', icon: FileText },
-  { href: '/admin/media', label: 'Media', icon: FolderOpen },
-  { href: '/admin/settings', label: 'Settings', icon: Settings },
-  { href: '/admin/system', label: 'System', icon: Shield },
+const marketingGroup: NavGroupDef = {
+  label: 'Marketing',
+  icon: Megaphone,
+  items: [
+    { label: 'Descuentos', href: '/admin/discounts', icon: Percent },
+    { label: 'Tarjetas regalo', href: '/admin/gift-cards', icon: Gift },
+    { label: 'Campañas', href: '/admin/campaigns', icon: Megaphone },
+    { label: 'Newsletter', href: '/admin/newsletter', icon: Mail },
+  ],
+}
+
+const entries: NavEntry[] = [
+  { kind: 'link', label: 'Dashboard', href: '/admin', icon: BarChart3 },
+  { kind: 'link', label: 'Productos', href: '/admin/products', icon: Package },
+  { kind: 'link', label: 'Categorías', href: '/admin/categories', icon: FolderOpen },
+  { kind: 'link', label: 'Inventario', href: '/admin/inventory', icon: Warehouse },
+  { kind: 'link', label: 'Pedidos', href: '/admin/orders', icon: ShoppingCart },
+  { kind: 'group', group: marketingGroup },
+  { kind: 'link', label: 'Clientes', href: '/admin/customers', icon: Users },
+  { kind: 'link', label: 'Banners', href: '/admin/banners', icon: Image },
+  { kind: 'link', label: 'Medios', href: '/admin/media', icon: Library },
+  { kind: 'link', label: 'Analítica', href: '/admin/analytics', icon: LineChart },
+  { kind: 'link', label: 'Ajustes', href: '/admin/settings', icon: Settings },
+  { kind: 'link', label: 'Sistema', href: '/admin/system', icon: Shield },
 ]
 
-function isSection(item: NavItem): item is NavSection {
-  return 'children' in item
-}
-
-const SAVED_SECTIONS_KEY = 'admin_sidebar_sections'
-
-export default function AdminSidebar({
-  collapsed,
-  onToggle,
-}: {
+interface AdminSidebarProps {
   collapsed: boolean
   onToggle: () => void
+}
+
+function NavGroup({
+  group,
+  open,
+  onToggle,
+  collapsed,
+  onNavigate,
+  pathname,
+}: {
+  group: NavGroupDef
+  open: boolean
+  onToggle: () => void
+  collapsed: boolean
+  onNavigate: () => void
+  pathname: string
 }) {
-  const pathname = usePathname()!
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['Catalog', 'Sales']))
-  const [hydrated, setHydrated] = useState(false)
-  const [hoveredSection, setHoveredSection] = useState<string | null>(null)
+  const isActive = group.items.some(
+    (item) => pathname === item.href || pathname.startsWith(`${item.href}/`)
+  )
 
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(SAVED_SECTIONS_KEY)
-      if (saved) setExpandedSections(new Set(JSON.parse(saved)))
-    } catch {}
-    setHydrated(true)
-  }, [])
-
-  function toggleSection(label: string) {
-    setExpandedSections((prev) => {
-      const next = new Set(prev)
-      if (next.has(label)) next.delete(label)
-      else next.add(label)
-      localStorage.setItem(SAVED_SECTIONS_KEY, JSON.stringify(Array.from(next)))
-      return next
-    })
-  }
-
-  function isActive(href: string) {
-    if (href === '/admin') return pathname === '/admin'
-    return pathname.startsWith(href)
-  }
-
-  function renderLeaf(leaf: NavLeaf, depth = 0) {
-    const active = isActive(leaf.href)
-    const Icon = leaf.icon
+  if (collapsed) {
     return (
-      <Link
-        key={leaf.href}
-        href={leaf.href}
-        className={`flex items-center gap-2.5 px-2.5 py-2 rounded text-[13px] transition-colors ${
-          active
-            ? 'bg-primary/10 text-primary'
-            : 'text-muted-foreground hover:text-foreground hover:bg-accent/5'
-        }`}
-        style={{ paddingLeft: depth > 0 ? '2.25rem' : '0.5rem' }}
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex w-full items-center justify-center rounded-lg px-3 py-2.5 text-admin-muted transition-colors hover:bg-white/5 hover:text-white"
+        title={group.label}
       >
-        <Icon size={16} strokeWidth={active ? 2 : 1.5} className="shrink-0" />
-        <span className="truncate">{leaf.label}</span>
-        {active && (
-          <span className="ml-auto w-1 h-1 rounded-full bg-primary shrink-0" />
-        )}
-      </Link>
+        <group.icon className="size-5 shrink-0" />
+      </button>
     )
   }
 
   return (
-    <aside
-      className={`${
-        collapsed ? 'w-[56px]' : 'w-56'
-      } border-r border-border bg-card transition-all duration-300 flex flex-col flex-shrink-0 relative`}
-    >
-      {/* Header */}
-      <div className="h-14 flex items-center justify-between px-3 border-b border-border">
-        {!collapsed && (
-          <Link
-            href="/admin"
-            className="font-display text-sm font-bold tracking-tight text-foreground"
-          >
-            Sport<span className="text-primary">balin</span>
-          </Link>
+    <div>
+      <button
+        type="button"
+        onClick={onToggle}
+        className={cn(
+          'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+          isActive
+            ? 'text-primary'
+            : 'text-admin-muted hover:bg-white/5 hover:text-white'
         )}
-        <button
-          onClick={onToggle}
-          className={`p-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-accent/10 transition-colors ${
-            collapsed ? 'mx-auto' : ''
-          }`}
-          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          <ChevronLeft size={15} className={`transition-transform duration-300 ${collapsed ? 'rotate-180' : ''}`} />
-        </button>
-      </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-2 px-2 space-y-px">
-        {NAV_ITEMS.map((item) => {
-          if (!isSection(item)) {
-            return collapsed ? (
+      >
+        <group.icon className="size-5 shrink-0" />
+        <span className="flex-1 text-left">{group.label}</span>
+        <ChevronDown
+          className={cn('size-4 shrink-0 transition-transform', open && 'rotate-180')}
+        />
+      </button>
+      {open && (
+        <div className="mt-1 space-y-1 border-l border-admin-border pl-3 ml-5">
+          {group.items.map((item) => {
+            const active =
+              pathname === item.href || pathname.startsWith(`${item.href}/`)
+            return (
               <Link
                 key={item.href}
                 href={item.href}
-                title={item.label}
-                className={`flex items-center justify-center w-10 h-10 mx-auto rounded transition-colors ${
-                  isActive(item.href)
+                onClick={onNavigate}
+                className={cn(
+                  'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors',
+                  active
                     ? 'bg-primary/10 text-primary'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-accent/5'
-                }`}
-              >
-                <item.icon size={18} strokeWidth={isActive(item.href) ? 2 : 1.5} />
-              </Link>
-            ) : (
-              renderLeaf(item)
-            )
-          }
-
-          const hasActiveChild = item.children.some((child) => isActive(child.href))
-          const isExpanded = expandedSections.has(item.label)
-
-          if (collapsed) {
-            return (
-              <div
-                key={item.label}
-                className="relative flex justify-center"
-                onMouseEnter={() => setHoveredSection(item.label)}
-                onMouseLeave={() => setHoveredSection(null)}
-              >
-                <button
-                  onClick={() => toggleSection(item.label)}
-                  className={`flex items-center justify-center w-10 h-10 mx-auto rounded transition-colors ${
-                    hasActiveChild
-                      ? 'text-foreground/80 bg-accent/5'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-accent/5'
-                  }`}
-                  title={item.label}
-                >
-                  {(() => {
-                    const Icon = item.children[0]?.icon ?? Layers
-                    return <Icon size={18} strokeWidth={1.5} />
-                  })()}
-                </button>
-
-                <AnimatePresence>
-                  {hoveredSection === item.label && (
-                    <motion.div
-                      initial={{ opacity: 0, x: -4 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -4 }}
-                      transition={{ duration: 0.12 }}
-                      className="absolute left-full top-0 ml-2 w-44 bg-popover border border-border rounded-md shadow-lg py-1.5 z-50"
-                    >
-                      <div className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/60">
-                        {item.label}
-                      </div>
-                      <div className="h-px bg-border mx-2 my-0.5" />
-                      {item.children.map((child) => (
-                        <Link
-                          key={child.href}
-                          href={child.href}
-                          className={`flex items-center gap-2.5 px-3 py-1.5 text-[13px] transition-colors ${
-                            isActive(child.href)
-                              ? 'bg-primary/10 text-primary'
-                              : 'text-muted-foreground hover:text-foreground hover:bg-accent/5'
-                          }`}
-                        >
-                          <child.icon size={14} strokeWidth={isActive(child.href) ? 2 : 1.5} />
-                          <span>{child.label}</span>
-                        </Link>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            )
-          }
-
-          return (
-            <div key={item.label}>
-              <button
-                onClick={() => toggleSection(item.label)}
-                className={`w-full flex items-center justify-between px-2 py-1.5 rounded text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors ${
-                  hasActiveChild
-                    ? 'text-foreground/70'
-                    : 'text-muted-foreground/40 hover:text-muted-foreground hover:bg-accent/5'
-                }`}
-              >
-                <span>{item.label}</span>
-                <ChevronDown
-                  size={12}
-                  strokeWidth={2}
-                  className={`transition-transform duration-200 ${isExpanded ? '' : '-rotate-90'}`}
-                />
-              </button>
-
-              <AnimatePresence initial={false}>
-                {isExpanded && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.15, ease: 'easeInOut' }}
-                    className="overflow-hidden"
-                  >
-                    <div className="pt-0.5 pb-1 space-y-px">
-                      {item.children.map((child) => renderLeaf(child, 1))}
-                    </div>
-                  </motion.div>
+                    : 'text-admin-muted hover:bg-white/5 hover:text-white'
                 )}
-              </AnimatePresence>
-            </div>
-          )
-        })}
-      </nav>
+              >
+                <item.icon className="size-4 shrink-0" />
+                <span>{item.label}</span>
+              </Link>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
 
-      {/* Footer */}
-      <div className="border-t border-border">
-        {collapsed ? (
-          <div className="flex justify-center py-3">
-            <Link
-              href="/"
-              className="p-1.5 rounded text-muted-foreground/30 hover:text-foreground hover:bg-accent/10 transition-colors"
-              title="Ir a la tienda"
-            >
-              <ExternalLink size={15} strokeWidth={1.5} />
-            </Link>
+export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
+  const pathname = usePathname()
+  const [mobileOpen, setMobileOpen] = React.useState(false)
+  const [marketingOpen, setMarketingOpen] = React.useState(false)
+
+  const marketingActive = marketingGroup.items.some((item) =>
+    pathname.startsWith(item.href)
+  )
+
+  function handleGroupToggle() {
+    if (collapsed) {
+      onToggle()
+      setMarketingOpen(true)
+    } else {
+      setMarketingOpen((o) => !o)
+    }
+  }
+
+  const navContent = (
+    <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+      {entries.map((entry) => {
+        if (entry.kind === 'group') {
+          return (
+            <NavGroup
+              key={entry.group.label}
+              group={entry.group}
+              open={marketingActive || marketingOpen}
+              onToggle={handleGroupToggle}
+              collapsed={collapsed}
+              onNavigate={() => setMobileOpen(false)}
+              pathname={pathname}
+            />
+          )
+        }
+        const active =
+          pathname === entry.href ||
+          (entry.href !== '/admin' && pathname.startsWith(`${entry.href}/`))
+        return (
+          <Link
+            key={entry.href}
+            href={entry.href}
+            onClick={() => setMobileOpen(false)}
+            className={cn(
+              'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+              active
+                ? 'bg-primary/10 text-primary'
+                : 'text-admin-muted hover:bg-white/5 hover:text-white',
+              collapsed && 'justify-center'
+            )}
+            title={collapsed ? entry.label : undefined}
+          >
+            <entry.icon className="size-5 shrink-0" />
+            {!collapsed && <span>{entry.label}</span>}
+          </Link>
+        )
+      })}
+    </nav>
+  )
+
+  const brand = (
+    <Link href="/admin" className="flex items-center">
+      <Activity className="mr-2 size-6 shrink-0 text-primary" />
+      <span className="font-display text-lg font-bold tracking-tight text-white">
+        Sportbalin
+      </span>
+    </Link>
+  )
+
+  return (
+    <>
+      {/* Mobile trigger */}
+      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+        <SheetTrigger
+          className="fixed left-4 top-3 z-50 flex h-10 w-10 items-center justify-center rounded-lg border border-admin-border bg-admin-surface text-admin-text lg:hidden"
+          aria-label="Abrir menú"
+        >
+          <Menu className="size-5" />
+        </SheetTrigger>
+        <SheetContent side="left" className="w-72 border-admin-border bg-admin-surface p-0!">
+          <div className="flex h-16 items-center border-b border-admin-border px-6">
+            {brand}
           </div>
-        ) : (
-          <div className="px-4 py-3 space-y-1.5">
-            <Link
-              href="/"
-              className="flex items-center gap-2 text-[11px] text-muted-foreground/40 hover:text-foreground transition-colors"
-            >
-              <ExternalLink size={13} strokeWidth={1.5} />
-              <span>Ir a la tienda</span>
-            </Link>
-            <p className="text-[9px] text-muted-foreground/20 tracking-wider uppercase">
-              Sportbalin Admin
-            </p>
-          </div>
+          {navContent}
+        </SheetContent>
+      </Sheet>
+
+      {/* Desktop sidebar */}
+      <aside
+        className={cn(
+          'fixed left-0 top-0 z-40 hidden h-screen flex-col border-r border-admin-border bg-admin-surface transition-all duration-300 lg:flex',
+          collapsed ? 'w-20' : 'w-64'
         )}
-      </div>
-    </aside>
+      >
+        <div className="flex h-16 items-center justify-between border-b border-admin-border px-6">
+          <Link href="/admin" className="flex items-center">
+            <Activity className="size-6 shrink-0 text-primary" />
+            {!collapsed && (
+              <span className="ml-2 font-display text-lg font-bold tracking-tight text-white">
+                Sportbalin
+              </span>
+            )}
+          </Link>
+          <button
+            type="button"
+            onClick={onToggle}
+            className="rounded-md p-1 text-admin-muted transition-colors hover:bg-white/5 hover:text-white"
+            aria-label={collapsed ? 'Expandir menú' : 'Colapsar menú'}
+          >
+            {collapsed ? (
+              <ChevronRight className="size-4" />
+            ) : (
+              <ChevronLeft className="size-4" />
+            )}
+          </button>
+        </div>
+        {navContent}
+        <div className="border-t border-admin-border">
+          {collapsed ? (
+            <div className="flex justify-center py-3">
+              <Link
+                href="/"
+                className="rounded-md p-1.5 text-admin-muted transition-colors hover:bg-white/5 hover:text-white"
+                title="Ir a la tienda"
+              >
+                <ExternalLink size={15} strokeWidth={1.5} />
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-1.5 px-4 py-3">
+              <Link
+                href="/"
+                className="flex items-center gap-2 text-[11px] text-admin-muted transition-colors hover:text-white"
+              >
+                <ExternalLink size={13} strokeWidth={1.5} />
+                <span>Ir a la tienda</span>
+              </Link>
+              <p className="text-[9px] uppercase tracking-wider text-admin-muted/50">
+                Sportbalin Admin
+              </p>
+            </div>
+          )}
+        </div>
+      </aside>
+    </>
   )
 }

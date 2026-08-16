@@ -8,7 +8,7 @@ const BUCKET = 'product-images'
 
 async function checkAdmin() {
   const { userId } = await auth()
-  const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID || 'user_3G8ZXADowWQkNZdX65U1djf8JYZ'
+  const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID
   if (!userId || userId !== adminId) throw new Error('Unauthorized')
 }
 

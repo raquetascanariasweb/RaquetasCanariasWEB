@@ -26,10 +26,10 @@ import type { AdminProduct, AdminCategory, ProductStatus } from '@/lib/admin/typ
 import { useAdminCurrency } from '../AdminLayoutClient'
 
 const productSchema = z.object({
-  name: z.string().min(1, 'Required'),
+  name: z.string().min(1, 'Requerido'),
   description: z.string().optional(),
   materials: z.string().optional(),
-  price_cents: z.coerce.number().min(0.01, 'Price required'),
+  price_cents: z.coerce.number().min(0.01, 'Precio requerido'),
   compare_at_price_cents: z.coerce.number().optional().nullable(),
   sku: z.string().optional(),
   stock_quantity: z.coerce.number().optional(),
@@ -218,11 +218,11 @@ export default function ProductFormDialog({ open, product, onClose, onSaved }: P
       if (res.error) {
         toast.error(res.error)
       } else {
-        toast.success(product ? 'Product updated' : 'Product created')
+        toast.success(product ? 'Producto actualizado' : 'Producto creado')
         onSaved()
       }
     } catch (e: any) {
-      toast.error(e.message ?? 'Error saving product')
+      toast.error(e.message ?? 'Error al guardar el producto')
     }
     setSaving(false)
   }
@@ -231,27 +231,27 @@ export default function ProductFormDialog({ open, product, onClose, onSaved }: P
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{product ? 'Edit Product' : 'New Product'}</DialogTitle>
-          <DialogDescription>Fill in all product details below.</DialogDescription>
+          <DialogTitle>{product ? 'Editar producto' : 'Nuevo producto'}</DialogTitle>
+          <DialogDescription>Rellena todos los datos del producto a continuación.</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={form.handleSubmit(handleSubmit, (errors) => {
           const msgs = Object.values(errors).map((e) => e?.message).filter(Boolean)
-          toast.error(msgs.length > 0 ? msgs.join(', ') : 'Please fix the form errors')
+          toast.error(msgs.length > 0 ? msgs.join(', ') : 'Por favor, corrige los errores del formulario')
         })} className="space-y-6">
           <Tabs defaultValue="general" className="w-full">
             <TabsList className="w-full grid grid-cols-6">
               <TabsTrigger value="general">General</TabsTrigger>
-              <TabsTrigger value="media">Media</TabsTrigger>
-              <TabsTrigger value="variants">Variants</TabsTrigger>
+              <TabsTrigger value="media">Medios</TabsTrigger>
+              <TabsTrigger value="variants">Variantes</TabsTrigger>
               <TabsTrigger value="seo">SEO</TabsTrigger>
-              <TabsTrigger value="inventory">Inventory</TabsTrigger>
-              <TabsTrigger value="pricing">Pricing</TabsTrigger>
+              <TabsTrigger value="inventory">Inventario</TabsTrigger>
+              <TabsTrigger value="pricing">Precios</TabsTrigger>
             </TabsList>
 
             <TabsContent value="general" className="space-y-4 pt-4">
               <div>
-                <Label htmlFor="name">Name *</Label>
+                <Label htmlFor="name">Nombre *</Label>
                 <Input id="name" {...form.register('name')} />
                 {form.formState.errors.name && (
                   <p className="text-xs text-destructive mt-1">{form.formState.errors.name.message}</p>
@@ -259,7 +259,7 @@ export default function ProductFormDialog({ open, product, onClose, onSaved }: P
               </div>
 
               <div>
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">Descripción</Label>
                 <textarea
                   id="description"
                   rows={4}
@@ -269,7 +269,7 @@ export default function ProductFormDialog({ open, product, onClose, onSaved }: P
               </div>
 
               <div>
-                <Label htmlFor="materials">Materials / Care</Label>
+                <Label htmlFor="materials">Materiales / Cuidados</Label>
                 <textarea
                   id="materials"
                   rows={2}
@@ -279,23 +279,24 @@ export default function ProductFormDialog({ open, product, onClose, onSaved }: P
               </div>
 
               <div>
-                <Label>Category</Label>
+                <Label>Categoría</Label>
                 <Select
+                  // eslint-disable-next-line react-hooks/incompatible-library -- form.watch() en render es el uso estándar de React Hook Form
                   value={form.watch('category_id') ?? ''}
                   onValueChange={(v) => form.setValue('category_id', v || null)}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select category" />
+                    <SelectValue placeholder="Selecciona categoría" />
                   </SelectTrigger>
                   <SelectContent className="max-h-64">
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="">Ninguna</SelectItem>
                     {renderCategoryOptions(categories)}
                   </SelectContent>
                 </Select>
               </div>
 
               <div>
-                <Label>Status</Label>
+                <Label>Estado</Label>
                 <Select
                   value={form.watch('status') ?? 'active'}
                   onValueChange={(v) => form.setValue('status', v as ProductStatus)}
@@ -304,9 +305,9 @@ export default function ProductFormDialog({ open, product, onClose, onSaved }: P
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="draft">Draft</SelectItem>
-                    <SelectItem value="archived">Archived</SelectItem>
+                    <SelectItem value="active">Activo</SelectItem>
+                    <SelectItem value="draft">Borrador</SelectItem>
+                    <SelectItem value="archived">Archivado</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -314,13 +315,13 @@ export default function ProductFormDialog({ open, product, onClose, onSaved }: P
 
             <TabsContent value="media" className="space-y-4 pt-4">
               <div>
-                <Label>Sizes</Label>
-                <p className="text-xs text-muted-foreground mb-2 mt-0.5">Leave empty for products without sizes (e.g. bottles, accessories)</p>
+                <Label>Tallas</Label>
+                <p className="text-xs text-muted-foreground mb-2 mt-0.5">Déjalo vacío para productos sin tallas (p. ej. botellas, accesorios)</p>
                 <div className="flex gap-2 mt-1">
                   <Input
                     value={sizeInput}
                     onChange={(e) => setSizeInput(e.target.value)}
-                    placeholder="e.g. S, M, L"
+                    placeholder="p. ej. S, M, L"
                     onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addSize())}
                   />
                   <Button type="button" variant="outline" onClick={addSize}><Plus size={16} /></Button>
@@ -336,12 +337,12 @@ export default function ProductFormDialog({ open, product, onClose, onSaved }: P
               </div>
 
               <div>
-                <Label>Colors</Label>
+                <Label>Colores</Label>
                 <div className="flex gap-2 mt-1">
                   <Input
                     value={colorName}
                     onChange={(e) => setColorName(e.target.value)}
-                    placeholder="Color name"
+                    placeholder="Nombre del color"
                     className="flex-1"
                   />
                   <input
@@ -364,10 +365,10 @@ export default function ProductFormDialog({ open, product, onClose, onSaved }: P
               </div>
 
               <div>
-                <Label>Images (per color)</Label>
+                <Label>Imágenes (por color)</Label>
                 <div className="mt-2 space-y-2">
                   {colors.length === 0 && (
-                    <p className="text-xs text-muted-foreground">Add colors above first</p>
+                    <p className="text-xs text-muted-foreground">Añade primero los colores</p>
                   )}
                   {colors.map((c) => {
                     const colorImages = images.filter((img) => img.color === c.slug)
@@ -376,7 +377,7 @@ export default function ProductFormDialog({ open, product, onClose, onSaved }: P
                         <div className="flex items-center gap-2 mb-2">
                           <span className="w-3 h-3 rounded-full inline-block" style={{ backgroundColor: c.hex }} />
                           <span className="text-sm font-medium">{c.name}</span>
-                          <span className="text-[10px] text-muted-foreground ml-auto">{colorImages.length} image(s)</span>
+                          <span className="text-[10px] text-muted-foreground ml-auto">{colorImages.length} imagen(es)</span>
                         </div>
                         <div className="flex gap-2 flex-wrap">
                           {colorImages.map((img, i) => (
@@ -436,7 +437,7 @@ export default function ProductFormDialog({ open, product, onClose, onSaved }: P
                               setMediaPickerOpen(true)
                             }}
                             className="w-20 h-20 rounded border border-dashed border-border flex items-center justify-center hover:bg-accent/10 transition-colors"
-                            title="Select from media library"
+                            title="Seleccionar de la biblioteca de medios"
                           >
                             <ImageIcon size={14} className="text-muted-foreground" />
                           </button>
@@ -450,20 +451,20 @@ export default function ProductFormDialog({ open, product, onClose, onSaved }: P
 
             <TabsContent value="variants" className="space-y-4 pt-4">
               <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">Generate variants from sizes Ã— colors, or each color/size individually</p>
+                <p className="text-sm text-muted-foreground">Genera variantes a partir de tallas × colores, o de cada talla/color individualmente</p>
                 <Button type="button" variant="outline" size="sm" onClick={addVariant}>
-                  <Plus size={14} className="mr-1" /> Generate
+                  <Plus size={14} className="mr-1" /> Generar
                 </Button>
               </div>
 
               {variants.length === 0 && (
-                <p className="text-sm text-muted-foreground">No variants yet. Add sizes and/or colors, then generate.</p>
+                <p className="text-sm text-muted-foreground">Aún no hay variantes. Añade tallas y/o colores y, después, genera.</p>
               )}
 
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {variants.map((v, i) => (
                   <div key={i} className="flex items-center gap-2 p-2 rounded border border-border bg-accent/5">
-                    <span className="text-xs font-mono w-20 truncate">{v.color_slug || v.size || 'â€”'}</span>
+                    <span className="text-xs font-mono w-20 truncate">{v.color_slug || v.size || '—'}</span>
                     <Input
                       value={v.sku}
                       onChange={(e) => updateVariant(i, 'sku', e.target.value)}
@@ -475,14 +476,14 @@ export default function ProductFormDialog({ open, product, onClose, onSaved }: P
                       step="0.01"
                       value={v.price_cents !== null ? v.price_cents / 100 : ''}
                       onChange={(e) => updateVariant(i, 'price_cents', e.target.value ? Math.round(parseFloat(e.target.value) * 100) : null)}
-                      placeholder="Price ($)"
+                      placeholder="Precio ($)"
                       className="w-24 h-8 text-xs"
                     />
                     <Input
                       type="number"
                       value={v.stock_quantity}
                       onChange={(e) => updateVariant(i, 'stock_quantity', parseInt(e.target.value) || 0)}
-                      placeholder="Qty"
+                      placeholder="Cantidad"
                       className="w-16 h-8 text-xs"
                     />
                     <button type="button" onClick={() => removeVariant(i)} className="p-1 hover:text-destructive">
@@ -495,16 +496,16 @@ export default function ProductFormDialog({ open, product, onClose, onSaved }: P
 
             <TabsContent value="seo" className="space-y-4 pt-4">
               <div>
-                <Label>SEO Title</Label>
-                <Input {...form.register('seo_title')} placeholder="Meta title" />
+                <Label>Título SEO</Label>
+                <Input {...form.register('seo_title')} placeholder="Meta título" />
               </div>
               <div>
-                <Label>SEO Description</Label>
+                <Label>Descripción SEO</Label>
                 <textarea
                   rows={3}
                   className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                   {...form.register('seo_description')}
-                  placeholder="Meta description"
+                  placeholder="Meta descripción"
                 />
               </div>
             </TabsContent>
@@ -513,20 +514,20 @@ export default function ProductFormDialog({ open, product, onClose, onSaved }: P
               {variants.length > 0 ? (
                 <div className="rounded-lg border border-border bg-accent/5 p-4 space-y-3">
                   <p className="text-xs text-muted-foreground">
-                    Stock is managed per variant. Product-level values are computed automatically.
+                    El stock se gestiona por variante. Los valores a nivel de producto se calculan automáticamente.
                   </p>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <Label className="text-xs text-muted-foreground">Total Stock (computed)</Label>
+                      <Label className="text-xs text-muted-foreground">Stock total (calculado)</Label>
                       <div className="mt-1 h-10 px-3 rounded-md border border-input bg-background/50 flex items-center text-sm font-mono">
                         {variants.reduce((s, v) => s + (v.stock_quantity || 0), 0)}
                       </div>
                     </div>
                     <div>
-                      <Label className="text-xs text-muted-foreground">In Stock (computed)</Label>
+                      <Label className="text-xs text-muted-foreground">En stock (calculado)</Label>
                       <div className="mt-1 h-10 px-3 rounded-md border border-input bg-background/50 flex items-center text-sm">
                         {variants.some((v) => (v.stock_quantity || 0) > 0) ? (
-                          <span className="text-admin-success">Yes</span>
+                          <span className="text-admin-success">Sí</span>
                         ) : (
                           <span className="text-admin-danger">No</span>
                         )}
@@ -537,7 +538,7 @@ export default function ProductFormDialog({ open, product, onClose, onSaved }: P
               ) : (
                 <>
                   <div>
-                    <Label htmlFor="stock_quantity">Stock Quantity</Label>
+                    <Label htmlFor="stock_quantity">Cantidad de stock</Label>
                     <Input id="stock_quantity" type="number" {...form.register('stock_quantity', { valueAsNumber: true })} />
                   </div>
 
@@ -548,7 +549,7 @@ export default function ProductFormDialog({ open, product, onClose, onSaved }: P
                       {...form.register('in_stock')}
                       className="rounded border-input"
                     />
-                    <Label htmlFor="in_stock" className="mb-0">In Stock</Label>
+                    <Label htmlFor="in_stock" className="mb-0">En stock</Label>
                   </div>
                 </>
               )}
@@ -557,11 +558,11 @@ export default function ProductFormDialog({ open, product, onClose, onSaved }: P
             <TabsContent value="pricing" className="space-y-4 pt-4">
                 <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="price_cents">Price ({currencyCode}) *</Label>
+                  <Label htmlFor="price_cents">Precio ({currencyCode}) *</Label>
                   <Input id="price_cents" type="number" step="0.01" {...form.register('price_cents', { valueAsNumber: true })} />
                 </div>
                 <div>
-                  <Label htmlFor="compare_at_price_cents">Compare at ({currencyCode})</Label>
+                  <Label htmlFor="compare_at_price_cents">Precio comparado ({currencyCode})</Label>
                   <Input id="compare_at_price_cents" type="number" step="0.01" {...form.register('compare_at_price_cents', { valueAsNumber: true })} />
                 </div>
               </div>
@@ -577,9 +578,9 @@ export default function ProductFormDialog({ open, product, onClose, onSaved }: P
           />
 
           <div className="flex justify-end gap-3 pt-4 border-t border-border">
-            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+            <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
             <Button type="submit" disabled={saving}>
-              {saving ? 'Saving...' : product ? 'Update Product' : 'Create Product'}
+              {saving ? 'Guardando...' : product ? 'Actualizar producto' : 'Crear producto'}
             </Button>
           </div>
         </form>

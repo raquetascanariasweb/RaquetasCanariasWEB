@@ -44,6 +44,7 @@ export default function MediaPicker({ open, onClose, onSelect }: MediaPickerProp
     setLoading(false)
   }
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount via async load()
   useEffect(() => { if (open) load() }, [open])
 
   const filtered = media.filter((f) => {
@@ -63,7 +64,7 @@ export default function MediaPicker({ open, onClose, onSelect }: MediaPickerProp
       if ('error' in res) toast.error(res.error)
       else ok++
     }
-    if (ok > 0) toast.success(`${ok} uploaded`)
+    if (ok > 0) toast.success(`${ok} subido(s)`)
     if (fileInputRef.current) fileInputRef.current.value = ''
     load()
   }
@@ -78,13 +79,13 @@ export default function MediaPicker({ open, onClose, onSelect }: MediaPickerProp
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>Media Library</DialogTitle>
+          <DialogTitle>Biblioteca de medios</DialogTitle>
         </DialogHeader>
 
         <div className="flex items-center gap-3 mb-3">
           <div className="relative flex-1">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-9 text-sm" />
+            <Input placeholder="Buscar..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-9 text-sm" />
           </div>
           <input
             ref={fileInputRef}
@@ -101,15 +102,15 @@ export default function MediaPicker({ open, onClose, onSelect }: MediaPickerProp
             className="h-9"
             onClick={() => fileInputRef.current?.click()}
           >
-            <Upload size={14} className="mr-1.5" /> Upload
+            <Upload size={14} className="mr-1.5" /> Subir
           </Button>
         </div>
 
         <Tabs value={tab} onValueChange={setTab}>
           <TabsList className="mb-3">
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="images">Images</TabsTrigger>
-            <TabsTrigger value="videos">Videos</TabsTrigger>
+            <TabsTrigger value="all">Todo</TabsTrigger>
+            <TabsTrigger value="images">Imágenes</TabsTrigger>
+            <TabsTrigger value="videos">Vídeos</TabsTrigger>
           </TabsList>
 
           <TabsContent value={tab} className="m-0">
@@ -122,7 +123,7 @@ export default function MediaPicker({ open, onClose, onSelect }: MediaPickerProp
             ) : filtered.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
                 <ImageIcon size={40} className="opacity-30 mb-3" />
-                <p className="text-sm">No files found</p>
+                <p className="text-sm">No se encontraron archivos</p>
               </div>
             ) : (
               <div className="grid grid-cols-4 sm:grid-cols-5 gap-3 max-h-[50vh] overflow-y-auto pr-1">
@@ -134,7 +135,7 @@ export default function MediaPicker({ open, onClose, onSelect }: MediaPickerProp
                       key={file.name}
                       type="button"
                       onClick={() => handleSelect(file.name)}
-                      className="group relative aspect-square rounded-lg border border-border overflow-hidden hover:border-luxury-gold hover:ring-1 hover:ring-luxury-gold transition-all text-left"
+                      className="group relative aspect-square rounded-lg border border-border overflow-hidden hover:border-primary hover:ring-1 hover:ring-primary transition-all text-left"
                     >
                       {type === 'image' ? (
                         <img src={url} alt={file.name} className="w-full h-full object-cover" loading="lazy" />

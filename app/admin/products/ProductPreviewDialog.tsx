@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import {
@@ -9,9 +9,9 @@ import type { AdminProduct, ProductStatus } from '@/lib/admin/types'
 import { useAdminCurrency } from '../AdminLayoutClient'
 
 const STATUS_BADGE: Record<ProductStatus, { label: string; className: string }> = {
-  active: { label: 'Active', className: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' },
-  draft: { label: 'Draft', className: 'bg-amber-500/10 text-amber-500 border-amber-500/20' },
-  archived: { label: 'Archived', className: 'bg-slate-500/10 text-slate-400 border-slate-500/20' },
+  active: { label: 'Activo', className: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' },
+  draft: { label: 'Borrador', className: 'bg-amber-500/10 text-amber-500 border-amber-500/20' },
+  archived: { label: 'Archivado', className: 'bg-slate-500/10 text-slate-400 border-slate-500/20' },
 }
 
 interface Props {
@@ -33,7 +33,7 @@ export default function ProductPreviewDialog({ open, product, onClose }: Props) 
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Product Preview</DialogTitle>
+          <DialogTitle>Vista previa del producto</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -46,7 +46,7 @@ export default function ProductPreviewDialog({ open, product, onClose }: Props) 
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
-                No image
+                Sin imagen
               </div>
             )}
           </div>
@@ -58,7 +58,7 @@ export default function ProductPreviewDialog({ open, product, onClose }: Props) 
                   key={i}
                   onClick={() => setSelectedImage(i)}
                   className={`flex-shrink-0 w-12 h-12 rounded border overflow-hidden transition-all ${
-                    i === selectedImage ? 'border-luxury-gold ring-1 ring-luxury-gold' : 'border-border hover:border-muted-foreground'
+                    i === selectedImage ? 'border-primary ring-1 ring-primary' : 'border-border hover:border-muted-foreground'
                   }`}
                 >
                   <img src={img.url} alt="" className="w-full h-full object-cover" />
@@ -69,7 +69,7 @@ export default function ProductPreviewDialog({ open, product, onClose }: Props) 
 
           <div className="space-y-2">
             <div className="flex items-start justify-between gap-2">
-              <h3 className="font-serif text-lg text-foreground">{product.name}</h3>
+              <h3 className="font-display text-lg text-foreground">{product.name}</h3>
               <Badge variant="outline" className={`${statusStyle.className} text-[10px]`}>
                 {statusStyle.label}
               </Badge>
@@ -105,12 +105,12 @@ export default function ProductPreviewDialog({ open, product, onClose }: Props) 
               <p className="text-sm text-muted-foreground line-clamp-3">{product.description}</p>
             )}
             {product.category_name && (
-              <p className="text-xs text-muted-foreground">Category: {product.category_name}</p>
+              <p className="text-xs text-muted-foreground">Categoría: {product.category_name}</p>
             )}
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span className={`w-2 h-2 rounded-full ${product.in_stock ? 'bg-emerald-500' : 'bg-red-500'}`} />
-              {product.in_stock ? 'In Stock' : 'Out of Stock'}
-              <span>({product.stock_quantity} units)</span>
+              {product.in_stock ? 'En stock' : 'Agotado'}
+              <span>({product.stock_quantity} unidades)</span>
             </div>
           </div>
         </div>

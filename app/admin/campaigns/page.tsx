@@ -27,10 +27,10 @@ import DataTablePagination from '@/components/admin/DataTablePagination'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 
 const STATUS_CONFIG: Record<CampaignStatus, { label: string; className: string }> = {
-  draft: { label: 'Draft', className: 'bg-admin-slate/10 text-admin-slate border-admin-slate/20' },
-  sending: { label: 'Sending', className: 'bg-admin-info/10 text-admin-info border-admin-info/20' },
-  sent: { label: 'Sent', className: 'bg-admin-success/10 text-admin-success border-admin-success/20' },
-  failed: { label: 'Failed', className: 'bg-admin-danger/10 text-admin-danger border-admin-danger/20' },
+  draft: { label: 'Borrador', className: 'bg-admin-slate/10 text-admin-slate border-admin-slate/20' },
+  sending: { label: 'Enviando', className: 'bg-admin-info/10 text-admin-info border-admin-info/20' },
+  sent: { label: 'Enviado', className: 'bg-admin-success/10 text-admin-success border-admin-success/20' },
+  failed: { label: 'Fallida', className: 'bg-admin-danger/10 text-admin-danger border-admin-danger/20' },
 }
 
 export default function AdminCampaignsPage() {
@@ -55,12 +55,13 @@ export default function AdminCampaignsPage() {
     setLoading(false)
   }
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount via async load()
   useEffect(() => { load() }, [])
 
   useKeyboardShortcuts({
     'n': () => { setEditId(null); setSubject(''); setHtmlContent(''); setPlainText(''); setMode('compose'); setActiveTab('write') },
     'Escape': () => { if (mode === 'compose') { setMode('list'); setEditId(null) } setDeleteId(null); setSendConfirmId(null) },
-    '?': () => toast('Shortcuts: N = new, Esc = back/close'),
+    '?': () => toast('Atajos: N = nuevo, Esc = atrÃ¡s/cerrar'),
   })
 
   function startEdit(c: EmailCampaign) {
@@ -72,18 +73,18 @@ export default function AdminCampaignsPage() {
   }
 
   async function handleSave() {
-    if (!subject.trim()) { toast.error('Subject is required'); return }
-    if (!htmlContent.trim()) { toast.error('HTML content is required'); return }
+    if (!subject.trim()) { toast.error('El asunto es obligatorio'); return }
+    if (!htmlContent.trim()) { toast.error('El contenido HTML es obligatorio'); return }
     setSaving(true)
     const data = { subject, html_content: htmlContent, plain_text: plainText }
     if (editId) {
       const res = await updateCampaign(editId, data)
       if (res.error) toast.error(res.error)
-      else { toast.success('Campaign saved'); setMode('list'); setEditId(null) }
+      else { toast.success('CampaÃ±a guardada'); setMode('list'); setEditId(null) }
     } else {
       const res = await createCampaign(data)
       if (res.error) toast.error(res.error)
-      else { toast.success('Campaign created'); setMode('list' as any) }
+      else { toast.success('CampaÃ±a creada'); setMode('list' as any) }
     }
     setSaving(false); load()
   }
@@ -92,7 +93,7 @@ export default function AdminCampaignsPage() {
     if (!deleteId) return
     const res = await deleteCampaign(deleteId)
     if (res.error) toast.error(res.error)
-    else { toast.success('Campaign deleted'); load() }
+    else { toast.success('CampaÃ±a eliminada'); load() }
     setDeleteId(null)
   }
 
@@ -101,14 +102,14 @@ export default function AdminCampaignsPage() {
     setSending(true)
     const res = await sendCampaign(sendConfirmId)
     if (res.error) toast.error(res.error)
-    else toast.success('Campaign sent!')
+    else toast.success('Â¡CampaÃ±a enviada!')
     setSending(false); setSendConfirmId(null); load()
   }
 
   async function handleDuplicate(id: string) {
     const res = await duplicateCampaign(id)
     if (res.error) toast.error(res.error)
-    else { toast.success('Campaign duplicated'); load() }
+    else { toast.success('CampaÃ±a duplicada'); load() }
   }
 
   const filtered = search
@@ -128,39 +129,39 @@ export default function AdminCampaignsPage() {
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-serif tracking-wider text-foreground">{editId ? 'Edit Campaign' : 'New Campaign'}</h1>
+          <h1 className="text-2xl font-display tracking-wider text-foreground">{editId ? 'Editar campaÃ±a' : 'Nueva campaÃ±a'}</h1>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" className="gap-1" onClick={() => { setMode('list'); setEditId(null) }}>
-              Back
+              Volver
             </Button>
             <Button size="sm" className="gap-1" onClick={handleSave} disabled={saving}>
-              {saving ? 'Saving...' : editId ? 'Save Changes' : 'Create Campaign'}
+              {saving ? 'Guardando...' : editId ? 'Guardar cambios' : 'Crear campaÃ±a'}
             </Button>
           </div>
         </div>
 
         <Card>
-          <CardContent className="p-6 space-y-4">
+          <CardContent className="p-6 pt-6 space-y-4">
             <div className="space-y-2">
-              <Label>Subject</Label>
-              <Input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Your email subject line..." />
+              <Label>Asunto</Label>
+              <Input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="La lÃ­nea de asunto de tu email..." />
             </div>
             <div className="space-y-2">
-              <Label>Plain Text Fallback</Label>
-              <Textarea value={plainText} onChange={(e) => setPlainText(e.target.value)} placeholder="Plain text version (optional)" rows={3} />
+              <Label>VersiÃ³n texto plano</Label>
+              <Textarea value={plainText} onChange={(e) => setPlainText(e.target.value)} placeholder="VersiÃ³n de texto plano (opcional)" rows={3} />
             </div>
             <div className="space-y-2">
-              <Label>HTML Content</Label>
+              <Label>Contenido HTML</Label>
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList>
-                  <TabsTrigger value="write" className="gap-1"><FileText size={14} /> Write</TabsTrigger>
-                  <TabsTrigger value="preview" className="gap-1"><Eye size={14} /> Preview</TabsTrigger>
+                  <TabsTrigger value="write" className="gap-1"><FileText size={14} /> Escribir</TabsTrigger>
+                  <TabsTrigger value="preview" className="gap-1"><Eye size={14} /> Vista previa</TabsTrigger>
                 </TabsList>
                 <TabsContent value="write">
                   <Textarea
                     value={htmlContent}
                     onChange={(e) => setHtmlContent(e.target.value)}
-                    placeholder="<html><body><h1>Your email content here...</h1></body></html>"
+                    placeholder="<html><body><h1>Tu contenido de email aquÃ­...</h1></body></html>"
                     className="min-h-[400px] font-mono text-sm"
                   />
                 </TabsContent>
@@ -170,12 +171,12 @@ export default function AdminCampaignsPage() {
                       <iframe
                         srcDoc={htmlContent}
                         className="w-full min-h-[400px] rounded-lg"
-                        title="Email preview"
+                        title="Vista previa del email"
                         sandbox=""
                       />
                     ) : (
                       <div className="flex items-center justify-center h-[400px] text-muted-foreground text-sm">
-                        No content to preview
+                        No hay contenido para previsualizar
                       </div>
                     )}
                   </div>
@@ -191,13 +192,13 @@ export default function AdminCampaignsPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-serif tracking-wider text-foreground">Campaigns</h1>
+        <h1 className="text-2xl font-display tracking-wider text-foreground">CampaÃ±as</h1>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="gap-1 h-8 text-xs" onClick={() => toast('Shortcuts: N = new, Esc = back')}>
-            <Keyboard size={14} /> Shortcuts
+          <Button variant="outline" size="sm" className="gap-1 h-8 text-xs" onClick={() => toast('Atajos: N = nuevo, Esc = atrÃ¡s')}>
+            <Keyboard size={14} /> Atajos
           </Button>
           <Button size="sm" className="gap-1 h-8 text-xs" onClick={startNew}>
-            <Plus size={14} /> New Campaign
+            <Plus size={14} /> Nueva campaÃ±a
           </Button>
         </div>
       </div>
@@ -205,7 +206,7 @@ export default function AdminCampaignsPage() {
       <div className="flex items-center gap-2">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Search campaigns..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+          <Input placeholder="Buscar campaÃ±as..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
         </div>
       </div>
 
@@ -214,18 +215,18 @@ export default function AdminCampaignsPage() {
           <Table className="table-fixed">
             <TableHeader>
               <TableRow>
-                <TableHead style={{ width: 'auto' }} className="text-xs font-medium">Subject</TableHead>
-                <TableHead style={{ width: 100 }} className="text-xs font-medium">Status</TableHead>
-                <TableHead style={{ width: 80 }} className="text-xs font-medium text-right">Sent</TableHead>
-                <TableHead style={{ width: 80 }} className="text-xs font-medium text-right">Failed</TableHead>
-                <TableHead style={{ width: 130 }} className="text-xs font-medium">Created</TableHead>
+                <TableHead style={{ width: 'auto' }} className="text-xs font-medium">Asunto</TableHead>
+                <TableHead style={{ width: 100 }} className="text-xs font-medium">Estado</TableHead>
+                <TableHead style={{ width: 80 }} className="text-xs font-medium text-right">Enviados</TableHead>
+                <TableHead style={{ width: 80 }} className="text-xs font-medium text-right">Fallidos</TableHead>
+                <TableHead style={{ width: 130 }} className="text-xs font-medium">Creada</TableHead>
                 <TableHead style={{ width: 60 }} />
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.map((c) => (
                 <TableRow key={c.id} className="cursor-pointer" onClick={() => startEdit(c)}>
-                  <TableCell className="font-medium text-sm truncate">{c.subject || 'Untitled'}</TableCell>
+                  <TableCell className="font-medium text-sm truncate">{c.subject || 'Sin tÃ­tulo'}</TableCell>
                   <TableCell>
                     <Badge variant="outline" className={`${STATUS_CONFIG[c.status].className} text-[10px]`}>
                       {STATUS_CONFIG[c.status].label}
@@ -241,16 +242,16 @@ export default function AdminCampaignsPage() {
                           <Button variant="ghost" size="sm" className="h-8 w-8 p-0"><MoreHorizontal size={14} /></Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-40">
-                          <DropdownMenuItem onClick={() => startEdit(c)}><Edit size={14} className="mr-2" /> Edit</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleDuplicate(c.id)}><Copy size={14} className="mr-2" /> Duplicate</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => startEdit(c)}><Edit size={14} className="mr-2" /> Editar</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleDuplicate(c.id)}><Copy size={14} className="mr-2" /> Duplicar</DropdownMenuItem>
                           {c.status === 'draft' && (
                             <DropdownMenuItem onClick={() => setSendConfirmId(c.id)}>
-                              <Send size={14} className="mr-2" /> Send
+                              <Send size={14} className="mr-2" /> Enviar
                             </DropdownMenuItem>
                           )}
                           <DropdownMenuSeparator />
                           <DropdownMenuItem className="text-destructive" onClick={() => setDeleteId(c.id)}>
-                            <Trash2 size={14} className="mr-2" /> Delete
+                            <Trash2 size={14} className="mr-2" /> Eliminar
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -263,8 +264,8 @@ export default function AdminCampaignsPage() {
                   <TableCell colSpan={6} className="text-center text-muted-foreground py-12">
                     <div className="flex flex-col items-center gap-2">
                       <Megaphone size={32} className="text-muted-foreground/40" />
-                      <span>No campaigns yet</span>
-                      <Button variant="outline" size="sm" onClick={startNew}>Create your first campaign</Button>
+                      <span>AÃºn no hay campaÃ±as</span>
+                      <Button variant="outline" size="sm" onClick={startNew}>Crea tu primera campaÃ±a</Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -276,10 +277,10 @@ export default function AdminCampaignsPage() {
 
       <Dialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Delete Campaign</DialogTitle><DialogDescription>Are you sure? This cannot be undone.</DialogDescription></DialogHeader>
+          <DialogHeader><DialogTitle>Eliminar campaÃ±a</DialogTitle><DialogDescription>Â¿EstÃ¡s seguro? Esta acciÃ³n no se puede deshacer.</DialogDescription></DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteId(null)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleDelete}>Delete</Button>
+            <Button variant="outline" onClick={() => setDeleteId(null)}>Cancelar</Button>
+            <Button variant="destructive" onClick={handleDelete}>Eliminar</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -287,15 +288,15 @@ export default function AdminCampaignsPage() {
       <Dialog open={!!sendConfirmId} onOpenChange={(o) => !o && setSendConfirmId(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Send Campaign</DialogTitle>
+            <DialogTitle>Enviar campaÃ±a</DialogTitle>
             <DialogDescription>
-              This will send the campaign to all active subscribers. This action cannot be undone.
+              Esto enviarÃ¡ la campaÃ±a a todos los suscriptores activos. Esta acciÃ³n no se puede deshacer.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setSendConfirmId(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setSendConfirmId(null)}>Cancelar</Button>
             <Button onClick={handleSend} disabled={sending} className="gap-1">
-              <Send size={14} /> {sending ? 'Sending...' : 'Send Now'}
+              <Send size={14} /> {sending ? 'Enviando...' : 'Enviar ahora'}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react'
 import {
@@ -7,13 +7,10 @@ import {
   type SortingState, type ColumnDef, type ColumnFiltersState,
 } from '@tanstack/react-table'
 import {
-  Plus, Search, Edit, Trash2, MoreHorizontal, ArrowUpDown, ImageIcon,
+  Plus, Search, Edit, Pencil, Trash2, MoreHorizontal, ArrowUpDown, ImageIcon,
   Copy, Eye, Globe, FileText, Archive, FilterX, Keyboard, Star,
 } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
@@ -35,20 +32,17 @@ import { toast } from 'sonner'
 import DataTableViewOptions from '@/components/admin/DataTableViewOptions'
 import DataTablePagination from '@/components/admin/DataTablePagination'
 import RowContextMenu from '@/components/admin/RowContextMenu'
+import PageHeader from '@/components/admin/PageHeader'
+import PageSkeleton from '@/components/admin/PageSkeleton'
+import StatusBadge from '@/components/admin/StatusBadge'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import ProductFormDialog from './ProductFormDialog'
 import QuickEditDialog from './QuickEditDialog'
 import ProductPreviewDialog from './ProductPreviewDialog'
 
-const STATUS_CONFIG: Record<ProductStatus, { label: string; className: string }> = {
-  active: { label: 'Active', className: 'bg-admin-success/10 text-admin-success border-admin-success/20' },
-  draft: { label: 'Draft', className: 'bg-admin-warning/10 text-admin-warning border-admin-warning/20' },
-  archived: { label: 'Archived', className: 'bg-admin-slate/10 text-admin-slate border-admin-slate/20' },
-}
-
 type StockFilter = 'all' | 'in' | 'out' | 'low'
 
-function StockCell({ row }: { row: any }) {
+function StockCell({ row, onRefresh }: { row: any; onRefresh?: () => void }) {
   const qty = row.original.stock_quantity
   const inStock = row.original.in_stock
   const isLow = qty > 0 && qty <= 5
@@ -70,9 +64,7 @@ function StockCell({ row }: { row: any }) {
     if (res.error) {
       toast.error(res.error)
     } else {
-      row.original.stock_quantity = newStock
-      row.original.in_stock = newInStock
-      row.original.track_inventory = true
+      onRefresh?.()
     }
     setEditing(false)
   }
@@ -88,7 +80,7 @@ function StockCell({ row }: { row: any }) {
           onChange={(e) => setEditQty(Number(e.target.value))}
           onKeyDown={(e) => { if (e.key === 'Enter') save(); if (e.key === 'Escape') setEditing(false) }}
           onBlur={save}
-          className="w-16 h-7 px-2 text-xs border border-input rounded bg-background"
+          className="w-16 h-7 px-2 text-xs border border-admin-border rounded bg-admin-surface text-admin-text"
         />
       </div>
     )
@@ -97,9 +89,9 @@ function StockCell({ row }: { row: any }) {
   return (
     <button onClick={(e) => { e.stopPropagation(); setEditQty(qty); setEditing(true) }} className="flex items-center gap-2 cursor-pointer hover:opacity-80">
       <div className={`w-2 h-2 rounded-full ${isLow ? 'bg-admin-warning' : inStock ? 'bg-admin-success' : 'bg-admin-danger'}`} />
-      <span className="text-xs">{isLow ? 'Low Stock' : inStock ? 'In Stock' : 'Out of Stock'}</span>
-      <span className="text-[10px] text-muted-foreground">({qty})</span>
-      <span className="text-muted-foreground hover:text-foreground underline text-[10px]">Edit</span>
+      <span className="text-xs">{isLow ? 'Stock bajo' : inStock ? 'En stock' : 'Agotado'}</span>
+      <span className="text-[10px] text-admin-muted">({qty})</span>
+      <span className="text-admin-muted hover:text-admin-text underline text-[10px]">Editar</span>
     </button>
   )
 }
@@ -115,6 +107,93 @@ function CategorySelectItem({ cat, depth = 0 }: { cat: AdminCategory; depth?: nu
         <CategorySelectItem key={child.id} cat={child} depth={depth + 1} />
       ))}
     </>
+  )
+}
+
+function CategoryCell({ row, categories, onRefresh }: { row: { original: AdminProduct }; categories: AdminCategory[]; onRefresh?: () => void }) {
+  const [open, setOpen] = useState(false)
+
+  const catNameMap = useMemo(() => {
+    const map = new Map<string, string>()
+    function walk(cats: AdminCategory[]) {
+      for (const c of cats) {
+        map.set(c.id, c.name)
+        if (c.children) walk(c.children)
+      }
+    }
+    walk(categories)
+    return map
+  }, [categories])
+
+  const ids: string[] = row.original.category_ids ?? []
+  const displayNames = ids.length > 0
+    ? ids.map(id => catNameMap.get(id) || id.slice(0, 8)).join(', ')
+    : '-'
+
+  async function toggleCat(catId: string) {
+    const current = new Set(row.original.category_ids ?? [])
+    if (current.has(catId)) current.delete(catId)
+    else current.add(catId)
+    const newIds = Array.from(current)
+    const res = await quickUpdateProduct(row.original.id, { category_ids: newIds, category_id: newIds[0] || null })
+    if (res.error) toast.error(res.error)
+    else onRefresh?.()
+  }
+
+  async function clearAll() {
+    const res = await quickUpdateProduct(row.original.id, { category_ids: [], category_id: null })
+    if (res.error) toast.error(res.error)
+    else {
+      setOpen(false)
+      onRefresh?.()
+    }
+  }
+
+  function renderCategoryItems(cat: AdminCategory, depth: number) {
+    const isChecked = ids.includes(cat.id)
+    const indent = depth * 16
+    return (
+      <div key={cat.id}>
+        <DropdownMenuItem
+          className="text-xs text-admin-text"
+          style={{ paddingLeft: `${8 + indent}px` }}
+          onClick={async (e) => {
+            e.preventDefault()
+            await toggleCat(cat.id)
+          }}
+        >
+          <span className={`mr-2 text-[10px] ${isChecked ? 'text-ember' : 'text-admin-muted/30'}`}>
+            {isChecked ? '✓' : '○'}
+          </span>
+          <span className={isChecked ? 'text-admin-text' : 'text-admin-muted'}>
+            {cat.name}
+          </span>
+        </DropdownMenuItem>
+        {cat.children?.map((child: AdminCategory) => renderCategoryItems(child, depth + 1))}
+      </div>
+    )
+  }
+
+  return (
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>
+        <button className="text-xs text-admin-muted hover:text-admin-text cursor-pointer text-left max-w-[160px] truncate" title={displayNames}>
+          {displayNames}
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-60 max-h-[450px] overflow-y-auto border-admin-border bg-admin-surface">
+        <DropdownMenuLabel className="text-[11px] text-admin-muted">
+          {ids.length} categoría{ids.length !== 1 ? 's' : ''}
+        </DropdownMenuLabel>
+        {ids.length > 0 && (
+          <DropdownMenuItem className="text-xs text-admin-muted" onClick={clearAll}>
+            ✕ Quitar todas
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuSeparator className="bg-admin-border" />
+        {categories.map((cat) => renderCategoryItems(cat, 0))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
 
@@ -172,7 +251,7 @@ export default function AdminProductsPage() {
     if (res.error) {
       toast.error(res.error)
     } else {
-      toast.success('Product deleted')
+      toast.success('Producto eliminado')
       setData((prev) => prev.filter((p) => p.id !== id))
     }
     setDeleteId(null)
@@ -183,7 +262,7 @@ export default function AdminProductsPage() {
     if (res.error) {
       toast.error(res.error)
     } else {
-      toast.success(`${selectedIds.length} products deleted`)
+      toast.success(`${selectedIds.length} productos eliminados`)
       setData((prev) => prev.filter((p) => !selectedIds.includes(p.id)))
       setRowSelection({})
     }
@@ -195,7 +274,7 @@ export default function AdminProductsPage() {
     if (res.error) {
       toast.error(res.error)
     } else {
-      toast.success(`${selectedIds.length} products updated to ${status}`)
+      toast.success(`${selectedIds.length} productos actualizados a ${status}`)
       setData((prev) => prev.map((p) => selectedIds.includes(p.id) ? { ...p, status } : p))
       setRowSelection({})
     }
@@ -206,7 +285,7 @@ export default function AdminProductsPage() {
     if (res.error) {
       toast.error(res.error)
     } else {
-      toast.success('Product duplicated')
+      toast.success('Producto duplicado')
       load()
     }
   }
@@ -237,10 +316,10 @@ export default function AdminProductsPage() {
       size: 40,
       minSize: 40,
       header: ({ table }) => (
-        <input type="checkbox" checked={table.getIsAllRowsSelected()} onChange={table.getToggleAllRowsSelectedHandler()} className="rounded border-input" />
+        <input type="checkbox" checked={table.getIsAllRowsSelected()} onChange={table.getToggleAllRowsSelectedHandler()} className="rounded border-admin-border bg-admin-surface accent-primary" />
       ),
       cell: ({ row }) => (
-        <input type="checkbox" checked={row.getIsSelected()} onChange={row.getToggleSelectedHandler()} className="rounded border-input" />
+        <input type="checkbox" checked={row.getIsSelected()} onChange={row.getToggleSelectedHandler()} className="rounded border-admin-border bg-admin-surface accent-primary" />
       ),
       enableSorting: false,
     },
@@ -287,7 +366,7 @@ export default function AdminProductsPage() {
           <button
             onClick={toggle}
             className={`p-1 rounded transition-colors ${
-              isFeatured ? 'text-ember hover:text-ember/70' : 'text-muted-foreground/20 hover:text-muted-foreground'
+              isFeatured ? 'text-ember hover:text-ember/70' : 'text-admin-muted/30 hover:text-admin-muted'
             }`}
             title={isFeatured ? 'Quitar de más vendidos' : 'Añadir a más vendidos'}
           >
@@ -301,19 +380,19 @@ export default function AdminProductsPage() {
       accessorKey: 'name',
       header: ({ column }) => (
         <button onClick={() => column.toggleSorting()} className="flex items-center gap-1 text-xs font-medium">
-          Name <ArrowUpDown size={12} />
+          Nombre <ArrowUpDown size={12} />
         </button>
       ),
       cell: ({ row }) => (
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
+          <div className="w-10 h-10 rounded-md border border-admin-border bg-admin-surface flex items-center justify-center overflow-hidden flex-shrink-0">
             {row.original.images?.[0]?.url ? (
               <img src={row.original.images[0].url} alt="" className="w-full h-full object-cover" />
             ) : (
-              <ImageIcon size={14} className="text-muted-foreground" />
+              <ImageIcon size={14} className="text-admin-muted" />
             )}
           </div>
-          <span className="font-medium text-sm truncate">{row.original.name}</span>
+          <span className="font-medium text-sm truncate text-admin-text">{row.original.name}</span>
         </div>
       ),
     },
@@ -323,100 +402,10 @@ export default function AdminProductsPage() {
       minSize: 130,
       header: ({ column }) => (
         <button onClick={() => column.toggleSorting()} className="flex items-center gap-1 text-xs font-medium">
-          Categories <ArrowUpDown size={12} />
+          Categorías <ArrowUpDown size={12} />
         </button>
       ),
-      cell: ({ row }) => {
-        const [open, setOpen] = useState(false)
-        
-        // Build category ID -> name map from the tree
-        const catNameMap = useMemo(() => {
-          const map = new Map<string, string>()
-          function walk(cats: AdminCategory[]) {
-            for (const c of cats) {
-              map.set(c.id, c.name)
-              if (c.children) walk(c.children)
-            }
-          }
-          walk(categories)
-          return map
-        }, [categories])
-
-        const ids: string[] = row.original.category_ids ?? []
-        const displayNames = ids.length > 0
-          ? ids.map(id => catNameMap.get(id) || id.slice(0, 8)).join(', ')
-          : '-'
-
-        async function toggleCat(catId: string) {
-          const current = new Set(row.original.category_ids ?? [])
-          if (current.has(catId)) current.delete(catId)
-          else current.add(catId)
-          const newIds = Array.from(current)
-          const res = await quickUpdateProduct(row.original.id, { category_ids: newIds, category_id: newIds[0] || null })
-          if (res.error) toast.error(res.error)
-          else {
-            row.original.category_ids = newIds
-            row.original.category_id = newIds[0] || null
-          }
-        }
-
-        async function clearAll() {
-          const res = await quickUpdateProduct(row.original.id, { category_ids: [], category_id: null })
-          if (res.error) toast.error(res.error)
-          else {
-            row.original.category_ids = []
-            row.original.category_id = null
-            setOpen(false)
-          }
-        }
-
-        function renderCategoryItems(cat: AdminCategory, depth: number) {
-          const isChecked = ids.includes(cat.id)
-          const indent = depth * 16
-          return (
-            <div key={cat.id}>
-              <DropdownMenuItem
-                className="text-xs"
-                style={{ paddingLeft: `${8 + indent}px` }}
-                onClick={async (e) => {
-                  e.preventDefault()
-                  await toggleCat(cat.id)
-                }}
-              >
-                <span className={`mr-2 text-[10px] ${isChecked ? 'text-ember' : 'text-muted-foreground/30'}`}>
-                  {isChecked ? '✓' : '○'}
-                </span>
-                <span className={isChecked ? 'text-foreground' : 'text-muted-foreground'}>
-                  {cat.name}
-                </span>
-              </DropdownMenuItem>
-              {cat.children?.map((child: AdminCategory) => renderCategoryItems(child, depth + 1))}
-            </div>
-          )
-        }
-
-        return (
-          <DropdownMenu open={open} onOpenChange={setOpen}>
-            <DropdownMenuTrigger asChild>
-              <button className="text-xs text-muted-foreground hover:text-foreground cursor-pointer text-left max-w-[160px] truncate" title={displayNames}>
-                {displayNames}
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-60 max-h-[450px] overflow-y-auto">
-              <DropdownMenuLabel className="text-[11px] text-muted-foreground">
-                {ids.length} categoría{ids.length !== 1 ? 's' : ''}
-              </DropdownMenuLabel>
-              {ids.length > 0 && (
-                <DropdownMenuItem className="text-xs text-muted-foreground" onClick={clearAll}>
-                  ✕ Quitar todas
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuSeparator />
-              {categories.map((cat) => renderCategoryItems(cat, 0))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )
-      },
+      cell: ({ row }) => <CategoryCell row={row} categories={categories} onRefresh={load} />,
     },
     {
       accessorKey: 'status',
@@ -424,13 +413,12 @@ export default function AdminProductsPage() {
       minSize: 80,
       header: ({ column }) => (
         <button onClick={() => column.toggleSorting()} className="flex items-center gap-1 text-xs font-medium">
-          Status <ArrowUpDown size={12} />
+          Estado <ArrowUpDown size={12} />
         </button>
       ),
       cell: ({ getValue }) => {
         const status = getValue() as ProductStatus
-        const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.draft
-        return <Badge variant="outline" className={`${cfg.className} text-[10px]`}>{cfg.label}</Badge>
+        return <StatusBadge status={status} />
       },
     },
     {
@@ -439,10 +427,10 @@ export default function AdminProductsPage() {
       minSize: 80,
       header: ({ column }) => (
         <button onClick={() => column.toggleSorting()} className="flex items-center gap-1 text-xs font-medium">
-          Price <ArrowUpDown size={12} />
+          Precio <ArrowUpDown size={12} />
         </button>
       ),
-      cell: ({ getValue }) => <span className="font-mono text-xs">{fmt(Number(getValue()))}</span>,
+      cell: ({ getValue }) => <span className="font-mono text-xs text-admin-text">{fmt(Number(getValue()))}</span>,
     },
     {
       id: 'stock_status',
@@ -458,7 +446,7 @@ export default function AdminProductsPage() {
           Stock <ArrowUpDown size={12} />
         </button>
       ),
-      cell: ({ row }) => <StockCell row={row} />,
+      cell: ({ row }) => <StockCell row={row} onRefresh={load} />,
     },
     {
       accessorKey: 'created_at',
@@ -466,36 +454,44 @@ export default function AdminProductsPage() {
       minSize: 100,
       header: ({ column }) => (
         <button onClick={() => column.toggleSorting()} className="flex items-center gap-1 text-xs font-medium">
-          Created <ArrowUpDown size={12} />
+          Creado <ArrowUpDown size={12} />
         </button>
       ),
       cell: ({ getValue }) => (
-        <span className="text-xs text-muted-foreground">
-          {new Date(String(getValue())).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+        <span className="text-xs text-admin-muted">
+          {new Date(String(getValue())).toLocaleDateString('es-ES', { month: 'short', day: 'numeric', year: 'numeric' })}
         </span>
       ),
     },
     {
       id: 'actions',
-      size: 60,
-      minSize: 60,
+      size: 110,
+      minSize: 110,
       header: () => null,
       cell: ({ row }) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild><Button variant="ghost" size="sm" className="h-8 w-8 p-0"><MoreHorizontal size={14} /></Button></DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-40">
-            <DropdownMenuItem onClick={() => setEditProduct(row.original)}><Edit size={14} className="mr-2" /> Edit</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setQuickEditProduct(row.original)}><FileText size={14} className="mr-2" /> Quick Edit</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleDuplicate(row.original.id)}><Copy size={14} className="mr-2" /> Duplicate</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setPreviewProduct(row.original)}><Eye size={14} className="mr-2" /> Preview</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive" onClick={() => setDeleteId(row.original.id)}><Trash2 size={14} className="mr-2" /> Delete</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex items-center justify-end gap-1">
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-admin-muted hover:text-admin-text hover:bg-white/5" onClick={() => setEditProduct(row.original)}>
+            <Pencil size={14} />
+            <span className="sr-only">Editar</span>
+          </Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-admin-muted hover:text-admin-danger hover:bg-white/5" onClick={() => setDeleteId(row.original.id)}>
+            <Trash2 size={14} />
+            <span className="sr-only">Eliminar</span>
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild><Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-admin-muted hover:text-admin-text hover:bg-white/5"><MoreHorizontal size={14} /></Button></DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44 border-admin-border bg-admin-surface">
+              <DropdownMenuItem className="text-admin-text" onClick={() => setQuickEditProduct(row.original)}><FileText size={14} className="mr-2" /> Edición rápida</DropdownMenuItem>
+              <DropdownMenuItem className="text-admin-text" onClick={() => handleDuplicate(row.original.id)}><Copy size={14} className="mr-2" /> Duplicar</DropdownMenuItem>
+              <DropdownMenuItem className="text-admin-text" onClick={() => setPreviewProduct(row.original)}><Eye size={14} className="mr-2" /> Vista previa</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       ),
     },
   ], [categories, featuredIds, fmt])
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- uso idiomático de TanStack Table (useReactTable)
   const table = useReactTable({
     data: filteredData,
     columns,
@@ -520,126 +516,124 @@ export default function AdminProductsPage() {
   const hasFilters = statusFilter !== 'all' || categoryFilter !== 'all' || stockFilter !== 'all' || globalFilter !== ''
 
   if (loading) {
-    return (
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="h-8 w-32 bg-muted rounded animate-pulse" />
-          <div className="h-9 w-32 bg-muted rounded animate-pulse" />
-        </div>
-        <div className="h-10 w-full max-w-sm bg-muted rounded animate-pulse" />
-        <div className="h-96 bg-muted rounded-lg animate-pulse" />
-      </div>
-    )
+    return <PageSkeleton rows={6} />
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-serif tracking-wider text-foreground">Products</h1>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="gap-1 h-8 text-xs" onClick={() => setShowShortcuts(true)}>
-            <Keyboard size={14} /> Shortcuts
-          </Button>
-          <Button size="sm" className="h-8 gap-1 text-xs" onClick={() => setShowAdd(true)}><Plus size={14} /> Add Product</Button>
-        </div>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Productos"
+        description="Gestiona el catálogo de productos de la tienda."
+        action={
+          <>
+            <Button variant="outline" size="sm" className="gap-1 h-8 text-xs border-admin-border bg-admin-surface text-admin-text hover:bg-white/5 hover:text-white" onClick={() => setShowShortcuts(true)}>
+              <Keyboard size={14} /> Atajos
+            </Button>
+            <Button size="sm" className="h-8 gap-1 text-xs" onClick={() => setShowAdd(true)}><Plus size={14} /> Añadir producto</Button>
+          </>
+        }
+      />
 
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input ref={searchRef} placeholder="Search products..." value={globalFilter} onChange={(e) => handleGlobalFilter(e.target.value)} className="pl-9" />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-admin-muted" />
+          <input
+            ref={searchRef}
+            placeholder="Buscar productos..."
+            value={globalFilter}
+            onChange={(e) => handleGlobalFilter(e.target.value)}
+            className="h-10 w-full rounded-lg border border-admin-border bg-admin-surface pl-9 pr-3 text-sm text-admin-text placeholder:text-admin-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ember/70"
+          />
         </div>
         <DataTableViewOptions table={table} />
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[130px]"><SelectValue placeholder="Status" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="draft">Draft</SelectItem>
-            <SelectItem value="archived">Archived</SelectItem>
+          <SelectTrigger className="h-10 w-[130px] border-admin-border bg-admin-surface text-admin-text"><SelectValue placeholder="Estado" /></SelectTrigger>
+          <SelectContent className="border-admin-border bg-admin-surface">
+            <SelectItem value="all">Todos los estados</SelectItem>
+            <SelectItem value="active">Activo</SelectItem>
+            <SelectItem value="draft">Borrador</SelectItem>
+            <SelectItem value="archived">Archivado</SelectItem>
           </SelectContent>
         </Select>
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-          <SelectTrigger className="w-[200px]"><SelectValue placeholder="Category" /></SelectTrigger>
-          <SelectContent className="max-h-80 overflow-y-auto">
-            <SelectItem value="all">All Categories</SelectItem>
+          <SelectTrigger className="h-10 w-[200px] border-admin-border bg-admin-surface text-admin-text"><SelectValue placeholder="Categoría" /></SelectTrigger>
+          <SelectContent className="max-h-80 overflow-y-auto border-admin-border bg-admin-surface">
+            <SelectItem value="all">Todas las categorías</SelectItem>
             {categories.map((cat) => (
               <CategorySelectItem key={cat.id} cat={cat} />
             ))}
           </SelectContent>
         </Select>
         <Select value={stockFilter} onValueChange={(v) => setStockFilter(v as StockFilter)}>
-          <SelectTrigger className="w-[140px]"><SelectValue placeholder="Stock" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Stock</SelectItem>
-            <SelectItem value="in">In Stock</SelectItem>
-            <SelectItem value="out">Out of Stock</SelectItem>
-            <SelectItem value="low">Low Stock</SelectItem>
+          <SelectTrigger className="h-10 w-[140px] border-admin-border bg-admin-surface text-admin-text"><SelectValue placeholder="Stock" /></SelectTrigger>
+          <SelectContent className="border-admin-border bg-admin-surface">
+            <SelectItem value="all">Todo el stock</SelectItem>
+            <SelectItem value="in">En stock</SelectItem>
+            <SelectItem value="out">Agotado</SelectItem>
+            <SelectItem value="low">Stock bajo</SelectItem>
           </SelectContent>
         </Select>
-        {hasFilters && (<Button variant="ghost" size="sm" onClick={clearFilters} className="text-xs gap-1"><FilterX size={12} /> Clear</Button>)}
+        {hasFilters && (<Button variant="ghost" size="sm" onClick={clearFilters} className="text-xs gap-1 text-admin-muted hover:text-admin-text"><FilterX size={12} /> Limpiar</Button>)}
       </div>
 
       {selectedCount > 0 && (
-        <div className="flex items-center gap-2 px-3 py-2 bg-accent/30 rounded-lg border border-border">
-          <span className="text-sm font-medium">{selectedCount} selected</span>
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-admin-border bg-admin-surface/80">
+          <span className="text-sm font-medium text-admin-text">{selectedCount} seleccionados</span>
           <div className="flex-1" />
-          <Button variant="outline" size="sm" className="h-8 text-xs gap-1" onClick={() => handleBulkStatus('active')}><Globe size={12} /> Publish</Button>
-          <Button variant="outline" size="sm" className="h-8 text-xs gap-1" onClick={() => handleBulkStatus('draft')}><FileText size={12} /> Draft</Button>
-          <Button variant="outline" size="sm" className="h-8 text-xs gap-1" onClick={() => handleBulkStatus('archived')}><Archive size={12} /> Archive</Button>
-          <Button variant="destructive" size="sm" className="h-8 text-xs gap-1" onClick={() => setBulkDeleteOpen(true)}><Trash2 size={12} /> Delete</Button>
+          <Button variant="outline" size="sm" className="h-8 text-xs gap-1 border-admin-border bg-admin-surface text-admin-text hover:bg-white/5 hover:text-white" onClick={() => handleBulkStatus('active')}><Globe size={12} /> Publicar</Button>
+          <Button variant="outline" size="sm" className="h-8 text-xs gap-1 border-admin-border bg-admin-surface text-admin-text hover:bg-white/5 hover:text-white" onClick={() => handleBulkStatus('draft')}><FileText size={12} /> Borrador</Button>
+          <Button variant="outline" size="sm" className="h-8 text-xs gap-1 border-admin-border bg-admin-surface text-admin-text hover:bg-white/5 hover:text-white" onClick={() => handleBulkStatus('archived')}><Archive size={12} /> Archivar</Button>
+          <Button variant="destructive" size="sm" className="h-8 text-xs gap-1" onClick={() => setBulkDeleteOpen(true)}><Trash2 size={12} /> Eliminar</Button>
         </div>
       )}
 
-      <Card>
-        <CardContent className="p-0">
-          <Table className="table-fixed">
-            <TableHeader>
-              {table.getHeaderGroups().map((hg) => (
-                <TableRow key={hg.id}>
-                  {hg.headers.map((h) => {
-                    const size = h.getSize()
-                    return (
-                      <TableHead key={h.id} style={size ? { width: size } : undefined}>
-                        {flexRender(h.column.columnDef.header, h.getContext())}
-                      </TableHead>
-                    )
-                  })}
+      <div className="overflow-hidden rounded-xl border border-admin-border bg-admin-surface">
+        <Table className="table-fixed">
+          <TableHeader>
+            {table.getHeaderGroups().map((hg) => (
+              <TableRow key={hg.id} className="border-admin-border hover:bg-transparent">
+                {hg.headers.map((h) => {
+                  const size = h.getSize()
+                  return (
+                    <TableHead key={h.id} className="text-admin-muted" style={size ? { width: size } : undefined}>
+                      {flexRender(h.column.columnDef.header, h.getContext())}
+                    </TableHead>
+                  )
+                })}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows.map((row) => (
+              <RowContextMenu key={row.id} actions={[
+                { label: 'Editar', icon: <Edit size={14} />, onClick: () => setEditProduct(row.original) },
+                { label: 'Edición rápida', icon: <FileText size={14} />, onClick: () => setQuickEditProduct(row.original) },
+                { label: 'Duplicar', icon: <Copy size={14} />, onClick: () => handleDuplicate(row.original.id) },
+                { label: 'Vista previa', icon: <Eye size={14} />, onClick: () => setPreviewProduct(row.original) },
+                { label: 'Eliminar', icon: <Trash2 size={14} />, onClick: () => setDeleteId(row.original.id), destructive: true },
+              ]}>
+                <TableRow data-state={row.getIsSelected() && 'selected'} className="border-admin-border hover:bg-white/5 data-[state=selected]:bg-white/5">
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id} className="text-admin-text" style={{ width: cell.column.getSize() }}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                  ))}
                 </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows.map((row) => (
-                <RowContextMenu key={row.id} actions={[
-                  { label: 'Edit', icon: <Edit size={14} />, onClick: () => setEditProduct(row.original) },
-                  { label: 'Quick Edit', icon: <FileText size={14} />, onClick: () => setQuickEditProduct(row.original) },
-                  { label: 'Duplicate', icon: <Copy size={14} />, onClick: () => handleDuplicate(row.original.id) },
-                  { label: 'Preview', icon: <Eye size={14} />, onClick: () => setPreviewProduct(row.original) },
-                  { label: 'Delete', icon: <Trash2 size={14} />, onClick: () => setDeleteId(row.original.id), destructive: true },
-                ]}>
-                  <TableRow data-state={row.getIsSelected() && 'selected'}>
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} style={{ width: cell.column.getSize() }}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
-                    ))}
-                  </TableRow>
-                </RowContextMenu>
-              ))}
-              {table.getRowModel().rows.length === 0 && (
-                <TableRow><TableCell colSpan={columns.length} className="text-center text-muted-foreground py-12">No products found</TableCell></TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+              </RowContextMenu>
+            ))}
+            {table.getRowModel().rows.length === 0 && (
+              <TableRow className="border-admin-border hover:bg-transparent"><TableCell colSpan={columns.length} className="text-center text-admin-muted py-12">No se encontraron productos</TableCell></TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
       <DataTablePagination table={table} />
 
       <Dialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Delete Product</DialogTitle><DialogDescription>Are you sure? This action cannot be undone.</DialogDescription></DialogHeader>
+          <DialogHeader><DialogTitle>Eliminar producto</DialogTitle><DialogDescription>¿Estás seguro? Esta acción no se puede deshacer.</DialogDescription></DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteId(null)}>Cancel</Button>
-            <Button variant="destructive" onClick={() => deleteId && handleDelete(deleteId)}>Delete</Button>
+            <Button variant="outline" onClick={() => setDeleteId(null)}>Cancelar</Button>
+            <Button variant="destructive" onClick={() => deleteId && handleDelete(deleteId)}>Eliminar</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -647,24 +641,24 @@ export default function AdminProductsPage() {
       <Dialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete {selectedCount} Products</DialogTitle>
-            <DialogDescription>Are you sure? This action cannot be undone.</DialogDescription>
+            <DialogTitle>Eliminar {selectedCount} productos</DialogTitle>
+            <DialogDescription>¿Estás seguro? Esta acción no se puede deshacer.</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setBulkDeleteOpen(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleBulkDelete}>Delete {selectedCount} Products</Button>
+            <Button variant="outline" onClick={() => setBulkDeleteOpen(false)}>Cancelar</Button>
+            <Button variant="destructive" onClick={handleBulkDelete}>Eliminar {selectedCount} productos</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       <Dialog open={showShortcuts} onOpenChange={setShowShortcuts}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Keyboard Shortcuts</DialogTitle><DialogDescription>Available shortcuts for the products page.</DialogDescription></DialogHeader>
+          <DialogHeader><DialogTitle>Atajos de teclado</DialogTitle><DialogDescription>Atajos disponibles para la página de productos.</DialogDescription></DialogHeader>
           <div className="space-y-2 text-sm">
-            <div className="flex justify-between"><span className="text-muted-foreground">Focus search</span><kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">Ctrl+K</kbd></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">New product</span><kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">N</kbd></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Close dialogs</span><kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">Esc</kbd></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Show shortcuts</span><kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">?</kbd></div>
+            <div className="flex justify-between"><span className="text-admin-muted">Buscar</span><kbd className="px-1.5 py-0.5 bg-admin-surface rounded text-xs font-mono">Ctrl+K</kbd></div>
+            <div className="flex justify-between"><span className="text-admin-muted">Nuevo producto</span><kbd className="px-1.5 py-0.5 bg-admin-surface rounded text-xs font-mono">N</kbd></div>
+            <div className="flex justify-between"><span className="text-admin-muted">Cerrar diálogos</span><kbd className="px-1.5 py-0.5 bg-admin-surface rounded text-xs font-mono">Esc</kbd></div>
+            <div className="flex justify-between"><span className="text-admin-muted">Mostrar atajos</span><kbd className="px-1.5 py-0.5 bg-admin-surface rounded text-xs font-mono">?</kbd></div>
           </div>
         </DialogContent>
       </Dialog>
@@ -676,4 +670,3 @@ export default function AdminProductsPage() {
     </div>
   )
 }
-

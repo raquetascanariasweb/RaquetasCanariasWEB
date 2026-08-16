@@ -51,6 +51,7 @@ export default function BannersPage() {
     setLoading(false)
   }
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount via async load()
   useEffect(() => { load() }, [])
 
   function openEdit(b: Banner) {
@@ -92,7 +93,7 @@ export default function BannersPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!formTitle.trim()) { toast.error('Title required'); return }
+    if (!formTitle.trim()) { toast.error('El tÃ­tulo es obligatorio'); return }
     setSaving(true)
     const fd = new FormData()
     fd.append('title', formTitle)
@@ -114,16 +115,16 @@ export default function BannersPage() {
         ? await updateBanner(editItem.id, fd)
         : await createBanner(fd)
 
-      if (!res || res.error) { toast.error(res?.error || 'Something went wrong') }
+      if (!res || res.error) { toast.error(res?.error || 'Algo saliÃ³ mal') }
       else {
-        toast.success(editItem ? 'Banner updated' : 'Banner created')
+        toast.success(editItem ? 'Banner actualizado' : 'Banner creado')
         setShowAdd(false)
         setEditItem(null)
         load()
       }
     } catch (e: any) {
       console.error('Banner save error:', e)
-      toast.error(e?.message || 'Something went wrong')
+      toast.error(e?.message || 'Algo saliÃ³ mal')
     }
     setSaving(false)
   }
@@ -132,7 +133,7 @@ export default function BannersPage() {
     const res = await deleteBanner(id)
     if (res.error) { toast.error(res.error) }
     else {
-      toast.success('Banner deleted')
+      toast.success('Banner eliminado')
       setData((prev) => prev.filter((b) => b.id !== id))
     }
     setDeleteId(null)
@@ -176,11 +177,11 @@ export default function BannersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-serif tracking-wider text-foreground">Homepage Banners</h1>
-          <p className="text-sm text-muted-foreground mt-1">Manage hero banners and promotional images</p>
+          <h1 className="text-2xl font-display tracking-wider text-foreground">Banners</h1>
+          <p className="text-sm text-muted-foreground mt-1">Gestiona los banners hero y las imÃ¡genes promocionales de la portada</p>
         </div>
         <Button onClick={openAdd}>
-          <Plus size={16} className="mr-2" /> Add Banner
+          <Plus size={16} className="mr-2" /> AÃ±adir banner
         </Button>
       </div>
 
@@ -190,18 +191,18 @@ export default function BannersPage() {
             <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
               <Image size={28} className="text-muted-foreground/60" />
             </div>
-            <h3 className="text-lg font-medium text-foreground mb-1">No banners yet</h3>
+            <h3 className="text-lg font-medium text-foreground mb-1">AÃºn no hay banners</h3>
             <p className="text-sm text-muted-foreground text-center max-w-md mb-4">
-              Add homepage banners to promote collections, sales, and featured content.
+              AÃ±ade banners de la portada para promocionar colecciones, ofertas y contenido destacado.
             </p>
-            <Button onClick={openAdd}><Plus size={16} className="mr-2" /> Add Banner</Button>
+            <Button onClick={openAdd}><Plus size={16} className="mr-2" /> AÃ±adir banner</Button>
           </CardContent>
         </Card>
       ) : (
         <div className="space-y-3">
           {data.map((b, i) => (
             <Card key={b.id} className={`border-l-4 ${b.active ? 'border-l-admin-success/50' : 'border-l-admin-slate/30'}`}>
-              <CardContent className="p-4">
+              <CardContent className="p-4 pt-4">
                 <div className="flex items-start gap-4">
                   <div className="flex flex-col items-center gap-1 pt-1">
                     <button onClick={() => moveUp(i)} disabled={i === 0} className="p-0.5 text-muted-foreground hover:text-foreground disabled:opacity-30">
@@ -223,7 +224,7 @@ export default function BannersPage() {
                     <div className="flex items-start gap-2">
                       <h3 className="text-sm font-medium truncate">{b.title}</h3>
                       <Badge variant="outline" className={`text-[10px] flex-shrink-0 ${b.active ? 'bg-admin-success/10 text-admin-success' : 'bg-admin-slate/10 text-admin-slate'}`}>
-                        {b.active ? 'Active' : 'Inactive'}
+                        {b.active ? 'Activo' : 'Inactivo'}
                       </Badge>
                     </div>
                     {b.subtitle && <p className="text-xs text-muted-foreground mt-0.5">{b.subtitle}</p>}
@@ -251,12 +252,12 @@ export default function BannersPage() {
       <Dialog open={showAdd} onOpenChange={(o) => !o && (setShowAdd(false), setEditItem(null))}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editItem ? 'Edit Banner' : 'New Banner'}</DialogTitle>
-            <DialogDescription>Configure the banner image and content.</DialogDescription>
+            <DialogTitle>{editItem ? 'Editar banner' : 'Nuevo banner'}</DialogTitle>
+            <DialogDescription>Configura la imagen y el contenido del banner.</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label>Banner Image</Label>
+              <Label>Imagen del banner</Label>
               <div className="mt-1 flex gap-3 items-start">
                 {(formImagePreview || formImage) && (
                   <div className="w-32 h-20 rounded border border-border overflow-hidden flex-shrink-0">
@@ -266,27 +267,27 @@ export default function BannersPage() {
                 <div className="flex-1 flex flex-col gap-1.5">
                   <label className="h-10 rounded border border-dashed border-border flex items-center justify-center cursor-pointer hover:bg-accent/10 transition-colors">
                     <span className="text-xs text-muted-foreground">
-                      {formImage ? 'Change image' : formImagePreview ? 'Replace image' : 'Upload image'}
+                      {formImage ? 'Cambiar imagen' : formImagePreview ? 'Reemplazar imagen' : 'Subir imagen'}
                     </span>
-                    <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) { if (f.size > 8 * 1024 * 1024) { setFormImageError('Image too large (max 8MB)'); return }; setFormImageError(''); setFormImage(f) } }} />
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) { if (f.size > 8 * 1024 * 1024) { setFormImageError('Imagen demasiado grande (mÃ¡x. 8MB)'); return }; setFormImageError(''); setFormImage(f) } }} />
                   </label>
                   <Button type="button" variant="outline" size="sm" className="h-8 text-xs" onClick={() => setMediaPicker(true)}>
-                    <Image size={11} className="mr-1.5" /> Browse Media
+                    <Image size={11} className="mr-1.5" /> Explorar medios
                   </Button>
                 </div>
               </div>
               {formImageError && <p className="text-xs text-admin-danger mt-1">{formImageError}</p>}
             </div>
             <div>
-              <Label htmlFor="title">Title *</Label>
+              <Label htmlFor="title">TÃ­tulo *</Label>
               <Input id="title" value={formTitle} onChange={(e) => setFormTitle(e.target.value)} />
             </div>
             <div>
-              <Label htmlFor="subtitle">Subtitle</Label>
+              <Label htmlFor="subtitle">SubtÃ­tulo</Label>
               <Input id="subtitle" value={formSubtitle} onChange={(e) => setFormSubtitle(e.target.value)} />
             </div>
             <div>
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">DescripciÃ³n</Label>
               <textarea
                 id="description"
                 rows={2}
@@ -297,16 +298,16 @@ export default function BannersPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label htmlFor="link_url">Link URL</Label>
+                <Label htmlFor="link_url">URL del enlace</Label>
                 <Input id="link_url" value={formLinkUrl} onChange={(e) => setFormLinkUrl(e.target.value)} placeholder="/collections/new" />
               </div>
               <div>
-                <Label htmlFor="link_label">Link Label</Label>
-                <Input id="link_label" value={formLinkLabel} onChange={(e) => setFormLinkLabel(e.target.value)} placeholder="Shop Now" />
+                <Label htmlFor="link_label">Texto del enlace</Label>
+                <Input id="link_label" value={formLinkLabel} onChange={(e) => setFormLinkLabel(e.target.value)} placeholder="Comprar ahora" />
               </div>
             </div>
             <div>
-              <Label>Text Position</Label>
+              <Label>PosiciÃ³n del texto</Label>
               <div className="mt-1 grid grid-cols-2 gap-3">
                 <div>
                   <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
@@ -324,13 +325,13 @@ export default function BannersPage() {
               {(formImagePreview || formImage) && (
                 <div className="mt-2 relative w-full h-20 rounded border border-border overflow-hidden">
                   <img src={formImage ? URL.createObjectURL(formImage) : formImagePreview} alt="" className="w-full h-full object-cover" />
-                  <div className="absolute w-4 h-4 rounded-full bg-luxury-gold border-2 border-luxury-black shadow-md" style={{ left: `${formTextX}%`, top: `${formTextY}%`, transform: 'translate(-50%,-50%)' }} />
+                  <div className="absolute w-4 h-4 rounded-full bg-primary border-2 border-admin-bg shadow-md" style={{ left: `${formTextX}%`, top: `${formTextY}%`, transform: 'translate(-50%,-50%)' }} />
                 </div>
               )}
             </div>
             <div>
-              <Label>Background Video (optional)</Label>
-              <p className="text-xs text-muted-foreground mb-2">Select a video from the media library to use as banner background.</p>
+              <Label>VÃ­deo de fondo (opcional)</Label>
+              <p className="text-xs text-muted-foreground mb-2">Selecciona un vÃ­deo de la biblioteca de medios para usarlo como fondo del banner.</p>
               <div className="flex items-center gap-3">
                 {formVideoUrl && (
                   <div className="w-32 h-20 rounded border border-border overflow-hidden flex-shrink-0 bg-black flex items-center justify-center">
@@ -339,14 +340,14 @@ export default function BannersPage() {
                 )}
                 <Button type="button" variant="outline" size="sm" onClick={() => { setMediaPickerMode('video'); setMediaPicker(true) }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mr-1.5"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/><line x1="17" y1="17" x2="22" y2="17"/></svg>
-                  {formVideoUrl ? 'Change video' : 'Select video from media'}
+                  {formVideoUrl ? 'Cambiar vÃ­deo' : 'Seleccionar vÃ­deo de medios'}
                 </Button>
               </div>
             </div>
             {formVideoUrl && (
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label>Start (seconds)</Label>
+                  <Label>Inicio (segundos)</Label>
                   <Input
                     type="number"
                     value={formVideoStart}
@@ -355,23 +356,23 @@ export default function BannersPage() {
                   />
                 </div>
                 <div>
-                  <Label>End (seconds)</Label>
+                  <Label>Fin (segundos)</Label>
                   <Input
                     type="number"
                     value={formVideoEnd}
                     onChange={(e) => setFormVideoEnd(e.target.value)}
-                    placeholder="Full video"
+                    placeholder="VÃ­deo completo"
                   />
                 </div>
               </div>
             )}
             <label className="flex items-center gap-2">
               <input type="checkbox" checked={formActive} onChange={(e) => setFormActive(e.target.checked)} className="rounded border-input" />
-              <span className="text-sm">Active</span>
+              <span className="text-sm">Activo</span>
             </label>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => (setShowAdd(false), setEditItem(null))}>Cancel</Button>
-              <Button type="submit" disabled={saving}>{saving ? 'Saving...' : editItem ? 'Update' : 'Create'}</Button>
+              <Button type="button" variant="outline" onClick={() => (setShowAdd(false), setEditItem(null))}>Cancelar</Button>
+              <Button type="submit" disabled={saving}>{saving ? 'Guardando...' : editItem ? 'Actualizar' : 'Crear'}</Button>
             </DialogFooter>
           </form>
           <MediaPicker
@@ -392,12 +393,12 @@ export default function BannersPage() {
       <Dialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Banner</DialogTitle>
-            <DialogDescription>Are you sure? This cannot be undone.</DialogDescription>
+            <DialogTitle>Eliminar banner</DialogTitle>
+            <DialogDescription>Â¿EstÃ¡s seguro? Esta acciÃ³n no se puede deshacer.</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteId(null)}>Cancel</Button>
-            <Button variant="destructive" onClick={() => deleteId && handleDelete(deleteId)}>Delete</Button>
+            <Button variant="outline" onClick={() => setDeleteId(null)}>Cancelar</Button>
+            <Button variant="destructive" onClick={() => deleteId && handleDelete(deleteId)}>Eliminar</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

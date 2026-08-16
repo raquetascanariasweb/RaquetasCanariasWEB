@@ -261,7 +261,7 @@ export default function Navbar({ categories }: { categories: Category[] }) {
   const favCount = useFavoritesStore((s) => s.items.length)
   const { isSignedIn, user } = useUser()
   const mounted = useSyncExternalStore(() => () => {}, () => true, () => false)
-  const isAdmin = isSignedIn && user?.id === (process.env.NEXT_PUBLIC_ADMIN_USER_ID || "user_3G8ZXADowWQkNZdX65U1djf8JYZ")
+  const isAdmin = isSignedIn && user?.id === (process.env.NEXT_PUBLIC_ADMIN_USER_ID)
 
   const allParents = categories.filter((c) => !c.parent_id)
   const modaCat = allParents.find((c) => c.slug === "moda")

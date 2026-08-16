@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useEffect, useState, useMemo } from 'react'
 import {
@@ -46,6 +46,7 @@ export default function AdminGiftCardsPage() {
     setLoading(false)
   }
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount via async load()
   useEffect(() => { load() }, [])
 
   function resetForm() {
@@ -76,8 +77,8 @@ export default function AdminGiftCardsPage() {
   }
 
   async function handleSave() {
-    if (!form.code.trim()) return toast.error('Code required')
-    if (!form.initial_balance_cents || form.initial_balance_cents <= 0) return toast.error('Balance must be positive')
+    if (!form.code.trim()) return toast.error('El cÃ³digo es obligatorio')
+    if (!form.initial_balance_cents || form.initial_balance_cents <= 0) return toast.error('El saldo debe ser positivo')
     setSaving(true)
     try {
       const payload = {
@@ -95,7 +96,7 @@ export default function AdminGiftCardsPage() {
       if (res.error) {
         toast.error(res.error)
       } else {
-        toast.success(editing ? 'Gift card updated' : 'Gift card created')
+        toast.success(editing ? 'Tarjeta regalo actualizada' : 'Tarjeta regalo creada')
         setShowForm(false)
         load()
       }
@@ -108,14 +109,14 @@ export default function AdminGiftCardsPage() {
   async function handleDelete(id: string) {
     const res = await deleteGiftCard(id)
     if (res.error) toast.error(res.error)
-    else { toast.success('Gift card deleted'); setDeleteId(null); load() }
+    else { toast.success('Tarjeta regalo eliminada'); setDeleteId(null); load() }
   }
 
   async function handleBulkDelete() {
     if (selected.size === 0) return
     const res = await bulkDeleteGiftCards(Array.from(selected))
     if (res.error) toast.error(res.error)
-    else { toast.success(`${selected.size} gift cards deleted`); setSelected(new Set()); load() }
+    else { toast.success(`${selected.size} tarjetas regalo eliminadas`); setSelected(new Set()); load() }
   }
 
   function toggleSelect(id: string) {
@@ -144,25 +145,25 @@ export default function AdminGiftCardsPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-serif tracking-wider text-foreground">Gift Cards</h1>
-          <p className="text-sm text-muted-foreground mt-1">Issue and manage gift card products</p>
+          <h1 className="text-2xl font-display tracking-wider text-foreground">Tarjetas regalo</h1>
+          <p className="text-sm text-muted-foreground mt-1">Emite y gestiona tarjetas regalo</p>
         </div>
         <Button onClick={() => { resetForm(); setShowForm(true) }}>
-          <Plus size={16} className="mr-2" /> Issue Gift Card
+          <Plus size={16} className="mr-2" /> Emitir tarjeta regalo
         </Button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">Total Issued</CardTitle>
+            <CardTitle className="text-xs font-medium text-muted-foreground">Total emitidas</CardTitle>
             <Gift size={14} className="text-muted-foreground/60" />
           </CardHeader>
           <CardContent><div className="text-xl font-semibold">{data.length}</div></CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">Outstanding Value</CardTitle>
+            <CardTitle className="text-xs font-medium text-muted-foreground">Valor pendiente</CardTitle>
             <DollarSign size={14} className="text-admin-success" />
           </CardHeader>
           <CardContent>
@@ -171,7 +172,7 @@ export default function AdminGiftCardsPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">Active</CardTitle>
+            <CardTitle className="text-xs font-medium text-muted-foreground">Activas</CardTitle>
             <CreditCard size={14} className="text-muted-foreground/60" />
           </CardHeader>
           <CardContent><div className="text-xl font-semibold">{activeCount}</div></CardContent>
@@ -181,11 +182,11 @@ export default function AdminGiftCardsPage() {
       <div className="flex items-center justify-between">
         <div className="relative max-w-xs">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Search by code or email..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-9 text-sm" />
+          <Input placeholder="Buscar por cÃ³digo o email..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-9 text-sm" />
         </div>
         {selected.size > 0 && (
           <Button size="sm" variant="destructive" onClick={handleBulkDelete} className="h-8 text-xs">
-            Delete {selected.size}
+            Eliminar {selected.size}
           </Button>
         )}
       </div>
@@ -194,19 +195,19 @@ export default function AdminGiftCardsPage() {
         <CardContent className="p-0">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border">
+              <tr>
                 <th className="w-8 py-3 px-2"><input type="checkbox" className="rounded border-input" /></th>
-                <th className="text-left py-3 px-4 font-medium text-muted-foreground text-xs uppercase tracking-wider">Code</th>
-                <th className="text-right py-3 px-4 font-medium text-muted-foreground text-xs uppercase tracking-wider">Initial</th>
-                <th className="text-right py-3 px-4 font-medium text-muted-foreground text-xs uppercase tracking-wider">Remaining</th>
-                <th className="text-left py-3 px-4 font-medium text-muted-foreground text-xs uppercase tracking-wider">Recipient</th>
-                <th className="text-center py-3 px-4 font-medium text-muted-foreground text-xs uppercase tracking-wider">Status</th>
-                <th className="text-right py-3 px-4 font-medium text-muted-foreground text-xs uppercase tracking-wider">Actions</th>
+                <th className="text-left py-3 px-4 font-medium text-muted-foreground text-xs uppercase tracking-wider">CÃ³digo</th>
+                <th className="text-right py-3 px-4 font-medium text-muted-foreground text-xs uppercase tracking-wider">Inicial</th>
+                <th className="text-right py-3 px-4 font-medium text-muted-foreground text-xs uppercase tracking-wider">Restante</th>
+                <th className="text-left py-3 px-4 font-medium text-muted-foreground text-xs uppercase tracking-wider">Destinatario</th>
+                <th className="text-center py-3 px-4 font-medium text-muted-foreground text-xs uppercase tracking-wider">Estado</th>
+                <th className="text-right py-3 px-4 font-medium text-muted-foreground text-xs uppercase tracking-wider">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody>
               {filtered.length === 0 && (
-                <tr><td colSpan={7} className="text-center text-muted-foreground py-12">No gift cards found</td></tr>
+                <tr><td colSpan={7} className="text-center text-muted-foreground py-12">No se encontraron tarjetas regalo</td></tr>
               )}
               {filtered.map((gc) => (
                 <tr key={gc.id} className="hover:bg-accent/5">
@@ -224,17 +225,17 @@ export default function AdminGiftCardsPage() {
                   <td className="py-3 px-4 text-right">{fmt(gc.initial_balance_cents)}</td>
                   <td className="py-3 px-4 text-right font-medium">{fmt(gc.remaining_balance_cents)}</td>
                   <td className="py-3 px-4">
-                    <span className="text-xs text-muted-foreground">{gc.recipient_email || '—'}</span>
+                    <span className="text-xs text-muted-foreground">{gc.recipient_email || 'â€”'}</span>
                   </td>
                   <td className="py-3 px-4 text-center">
                     <Badge variant={gc.active ? 'default' : 'secondary'} className="text-[10px]">
-                      {gc.active ? 'Active' : 'Inactive'}
+                      {gc.active ? 'Activo' : 'Inactivo'}
                     </Badge>
                   </td>
                   <td className="py-3 px-4 text-right">
                     <div className="flex items-center justify-end gap-1">
-                      <Button variant="ghost" size="sm" onClick={() => openEdit(gc)} className="h-7 text-xs">Edit</Button>
-                      <Button variant="ghost" size="sm" onClick={() => setDeleteId(gc.id)} className="h-7 text-xs text-destructive">Delete</Button>
+                      <Button variant="ghost" size="sm" onClick={() => openEdit(gc)} className="h-7 text-xs">Editar</Button>
+                      <Button variant="ghost" size="sm" onClick={() => setDeleteId(gc.id)} className="h-7 text-xs text-destructive">Eliminar</Button>
                     </div>
                   </td>
                 </tr>
@@ -247,15 +248,15 @@ export default function AdminGiftCardsPage() {
       <Dialog open={showForm} onOpenChange={(o) => !o && setShowForm(false)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editing ? 'Edit Gift Card' : 'Issue Gift Card'}</DialogTitle>
+            <DialogTitle>{editing ? 'Editar tarjeta regalo' : 'Emitir tarjeta regalo'}</DialogTitle>
             <DialogDescription>
-              {editing ? 'Update gift card details.' : 'Create a new gift card for a customer.'}
+              {editing ? 'Actualiza los detalles de la tarjeta regalo.' : 'Crea una nueva tarjeta regalo para un cliente.'}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="col-span-2">
-                <Label htmlFor="gc_code">Code *</Label>
+                <Label htmlFor="gc_code">CÃ³digo *</Label>
                 <Input
                   id="gc_code"
                   value={form.code}
@@ -265,7 +266,7 @@ export default function AdminGiftCardsPage() {
                 />
               </div>
               <div className="col-span-2">
-                <Label htmlFor="gc_balance">Initial Balance (cents) *</Label>
+                <Label htmlFor="gc_balance">Saldo inicial (cÃ©ntimos) *</Label>
                 <Input
                   id="gc_balance"
                   type="number"
@@ -275,7 +276,7 @@ export default function AdminGiftCardsPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="gc_recipient">Recipient Email</Label>
+                <Label htmlFor="gc_recipient">Email del destinatario</Label>
                 <Input
                   id="gc_recipient"
                   type="email"
@@ -284,7 +285,7 @@ export default function AdminGiftCardsPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="gc_sender">Sender Email</Label>
+                <Label htmlFor="gc_sender">Email del remitente</Label>
                 <Input
                   id="gc_sender"
                   type="email"
@@ -293,7 +294,7 @@ export default function AdminGiftCardsPage() {
                 />
               </div>
               <div className="col-span-2">
-                <Label htmlFor="gc_expires">Expires At</Label>
+                <Label htmlFor="gc_expires">Expira el</Label>
                 <Input
                   id="gc_expires"
                   type="datetime-local"
@@ -302,7 +303,7 @@ export default function AdminGiftCardsPage() {
                 />
               </div>
               <div className="col-span-2">
-                <Label htmlFor="gc_message">Message</Label>
+                <Label htmlFor="gc_message">Mensaje</Label>
                 <textarea
                   id="gc_message"
                   rows={2}
@@ -319,14 +320,14 @@ export default function AdminGiftCardsPage() {
                   onChange={(e) => setForm({ ...form, active: e.target.checked })}
                   className="rounded border-input"
                 />
-                <Label htmlFor="gc_active" className="mb-0">Active</Label>
+                <Label htmlFor="gc_active" className="mb-0">Activo</Label>
               </div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowForm(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setShowForm(false)}>Cancelar</Button>
             <Button onClick={handleSave} disabled={saving}>
-              {saving ? 'Saving...' : editing ? 'Update' : 'Issue'}
+              {saving ? 'Guardando...' : editing ? 'Actualizar' : 'Emitir'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -335,12 +336,12 @@ export default function AdminGiftCardsPage() {
       <Dialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Gift Card</DialogTitle>
-            <DialogDescription>This action cannot be undone.</DialogDescription>
+            <DialogTitle>Eliminar tarjeta regalo</DialogTitle>
+            <DialogDescription>Esta acciÃ³n no se puede deshacer.</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteId(null)}>Cancel</Button>
-            <Button variant="destructive" onClick={() => deleteId && handleDelete(deleteId)}>Delete</Button>
+            <Button variant="outline" onClick={() => setDeleteId(null)}>Cancelar</Button>
+            <Button variant="destructive" onClick={() => deleteId && handleDelete(deleteId)}>Eliminar</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useEffect, useState } from 'react'
 import {
@@ -27,9 +27,10 @@ export default function AdminSystemPage() {
   async function handleMakeBucketPublic() {
     const res = await setupStoragePublicBucket()
     if (res?.error) toast.error(res.error)
-    else { toast.success('Bucket is now public'); load() }
+    else { toast.success('El bucket ahora es pÃºblico'); load() }
   }
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount via async load()
   useEffect(() => { load() }, [])
 
   if (loading) {
@@ -48,27 +49,27 @@ export default function AdminSystemPage() {
     const d = Math.floor(seconds / 86400)
     const h = Math.floor((seconds % 86400) / 3600)
     const m = Math.floor((seconds % 3600) / 60)
-    return `${d}d ${h}h ${m}m`
+    return `${d}d ${h}h ${m}min`
   }
 
   const statusCards = [
-    { label: 'Node Version', value: data.node_version, icon: Server, status: null as string | null },
-    { label: 'Platform', value: data.platform, icon: Activity, status: null },
-    { label: 'Uptime', value: formatUptime(data.uptime_seconds), icon: Clock, status: null },
-    { label: 'Memory', value: `${data.memory_usage_mb} MB`, icon: Database, status: null },
+    { label: 'VersiÃ³n de Node', value: data.node_version, icon: Server, status: null as string | null },
+    { label: 'Plataforma', value: data.platform, icon: Activity, status: null },
+    { label: 'Tiempo activo', value: formatUptime(data.uptime_seconds), icon: Clock, status: null },
+    { label: 'Memoria', value: `${data.memory_usage_mb} MB`, icon: Database, status: null },
   ]
 
   const services = [
-    { label: 'Supabase', configured: data.supabase_connected, status: data.supabase_connected ? 'Connected' : 'Disconnected' },
-    { label: 'Stripe', configured: data.stripe_configured, status: data.stripe_configured ? 'Configured' : 'Missing Key' },
-    { label: 'Clerk', configured: data.clerk_configured, status: data.clerk_configured ? 'Configured' : 'Missing Key' },
+    { label: 'Supabase', configured: data.supabase_connected, status: data.supabase_connected ? 'Conectado' : 'Desconectado' },
+    { label: 'Stripe', configured: data.stripe_configured, status: data.stripe_configured ? 'Configurado' : 'Clave no configurada' },
+    { label: 'Clerk', configured: data.clerk_configured, status: data.clerk_configured ? 'Configurado' : 'Clave no configurada' },
   ]
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-serif tracking-wider text-foreground">System</h1>
-        <p className="text-sm text-muted-foreground mt-1">System status and configuration</p>
+        <h1 className="text-2xl font-display tracking-wider text-foreground">Sistema</h1>
+        <p className="text-sm text-muted-foreground mt-1">Estado y configuraciÃ³n del sistema</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -92,7 +93,7 @@ export default function AdminSystemPage() {
         <CardHeader>
           <CardTitle className="text-sm font-medium flex items-center gap-2">
             <Shield size={14} className="text-muted-foreground" />
-            Services Status
+            Estado de los servicios
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -118,23 +119,23 @@ export default function AdminSystemPage() {
         <CardHeader>
           <CardTitle className="text-sm font-medium flex items-center gap-2">
             <Database size={14} className="text-muted-foreground" />
-            Storage Bucket (product-images)
+            Bucket de almacenamiento (product-images)
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <span className="text-sm">Public access</span>
+              <span className="text-sm">Acceso pÃºblico</span>
               {data.storage_bucket_public === null ? (
-                <Badge variant="outline" className="text-admin-warning border-admin-warning/30 bg-admin-warning/5">Unknown</Badge>
+                <Badge variant="outline" className="text-admin-warning border-admin-warning/30 bg-admin-warning/5">Desconocido</Badge>
               ) : data.storage_bucket_public ? (
-                <Badge variant="outline" className="text-admin-success border-admin-success/30 bg-admin-success/5">Public</Badge>
+                <Badge variant="outline" className="text-admin-success border-admin-success/30 bg-admin-success/5">PÃºblico</Badge>
               ) : (
-                <Badge variant="outline" className="text-admin-danger border-admin-danger/30 bg-admin-danger/5">Private</Badge>
+                <Badge variant="outline" className="text-admin-danger border-admin-danger/30 bg-admin-danger/5">Privado</Badge>
               )}
             </div>
             {data.storage_bucket_public === false && (
-              <Button size="sm" onClick={handleMakeBucketPublic}>Make Public</Button>
+              <Button size="sm" onClick={handleMakeBucketPublic}>Hacer pÃºblico</Button>
             )}
           </div>
         </CardContent>
@@ -144,7 +145,7 @@ export default function AdminSystemPage() {
         <CardHeader>
           <CardTitle className="text-sm font-medium flex items-center gap-2">
             <RefreshCw size={14} className="text-muted-foreground" />
-            Environment Variables
+            Variables de entorno
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -152,7 +153,7 @@ export default function AdminSystemPage() {
             {data.env_checks.map((env) => (
               <div
                 key={env.key}
-                className="flex items-center justify-between py-2 border-b border-border/50 last:border-0"
+                className="flex items-center justify-between py-2"
               >
                 <div className="flex items-center gap-3">
                   <span className="text-xs font-mono text-muted-foreground">{env.key}</span>
@@ -166,7 +167,7 @@ export default function AdminSystemPage() {
                       : 'text-admin-danger border-admin-danger/30 bg-admin-danger/5'
                   }`}
                 >
-                  {env.configured ? 'Set' : 'Missing'}
+                  {env.configured ? 'Definida' : 'Faltante'}
                 </Badge>
               </div>
             ))}

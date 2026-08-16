@@ -4,10 +4,11 @@ import { auth } from '@clerk/nextjs/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { uploadProductImages } from '@/lib/supabase/storage'
 import { revalidatePath } from 'next/cache'
+import { sanitizeNotificationSettings } from './notifications'
 
 async function checkAdmin() {
   const { userId } = await auth()
-  const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID || 'user_3G8ZXADowWQkNZdX65U1djf8JYZ'
+  const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID
   if (!userId || userId !== adminId) throw new Error('Unauthorized')
 }
 
@@ -32,7 +33,8 @@ export async function getSetting(key: string): Promise<any> {
 export async function updateSetting(key: string, value: any) {
   await checkAdmin()
   const supabase = createAdminClient()
-  const { error } = await supabase.from('settings').upsert({ key, value }, { onConflict: 'key' })
+  const normalized = key === 'notifications' ? sanitizeNotificationSettings(value) : value
+  const { error } = await supabase.from('settings').upsert({ key, value: normalized }, { onConflict: 'key' })
   if (error) return { error: error.message }
   revalidatePath('/admin/settings')
   return { success: true }

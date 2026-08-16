@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import {
@@ -39,6 +39,7 @@ export default function AdminInventoryPage() {
     setLoading(false)
   }
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount via async load()
   useEffect(() => { load() }, [search, lowStockOnly])
 
   function openEdit(item: InventoryItem) {
@@ -55,7 +56,7 @@ export default function AdminInventoryPage() {
     if (res.error) {
       toast.error(res.error)
     } else {
-      toast.success('Stock updated')
+      toast.success('Stock actualizado')
       setEditingItem(null)
       load()
     }
@@ -71,7 +72,7 @@ export default function AdminInventoryPage() {
     if (res.error) {
       toast.error(res.error)
     } else {
-      toast.success('Variant stock updated')
+      toast.success('Stock de variante actualizado')
       setEditingVariant(null)
       load()
     }
@@ -99,7 +100,7 @@ export default function AdminInventoryPage() {
         body: JSON.stringify({ stock_quantity: bulkStock }),
       })
       const d = await res.json()
-      if (!res.ok) throw new Error(d.error || 'Failed')
+      if (!res.ok) throw new Error(d.error || 'Error')
       toast.success(`Stock actualizado a ${bulkStock} unidades en ${d.updated} productos`)
       load()
     } catch (e: any) {
@@ -124,15 +125,15 @@ export default function AdminInventoryPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-serif tracking-wider text-foreground">Inventory</h1>
-          <p className="text-sm text-muted-foreground mt-1">Track stock levels across all products</p>
+          <h1 className="text-2xl font-display tracking-wider text-foreground">Inventario</h1>
+          <p className="text-sm text-muted-foreground mt-1">Consulta los niveles de stock de todos los productos</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">Total Stock</CardTitle>
+            <CardTitle className="text-xs font-medium text-muted-foreground">Stock total</CardTitle>
             <Package size={14} className="text-muted-foreground/60" />
           </CardHeader>
           <CardContent>
@@ -141,7 +142,7 @@ export default function AdminInventoryPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">Low Stock</CardTitle>
+            <CardTitle className="text-xs font-medium text-muted-foreground">Stock bajo</CardTitle>
             <AlertTriangle size={14} className="text-admin-warning" />
           </CardHeader>
           <CardContent>
@@ -150,7 +151,7 @@ export default function AdminInventoryPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">Out of Stock</CardTitle>
+            <CardTitle className="text-xs font-medium text-muted-foreground">Agotado</CardTitle>
             <Warehouse size={14} className="text-admin-danger" />
           </CardHeader>
           <CardContent>
@@ -160,9 +161,9 @@ export default function AdminInventoryPage() {
       </div>
 
       <Card className="border-border/60">
-        <CardContent className="p-4 flex items-center gap-3">
+        <CardContent className="p-4 pt-4 flex items-center gap-3">
           <Layers size={16} className="text-muted-foreground shrink-0" />
-          <span className="text-sm font-medium whitespace-nowrap">Set all stock to:</span>
+          <span className="text-sm font-medium whitespace-nowrap">Establecer todo el stock en:</span>
           <Input
             type="number"
             min={0}
@@ -171,7 +172,7 @@ export default function AdminInventoryPage() {
             className="w-20 h-8 text-sm"
           />
           <Button size="sm" onClick={handleBulkStock} disabled={bulkLoading}>
-            {bulkLoading ? 'Updating...' : 'Apply to all'}
+            {bulkLoading ? 'Actualizando...' : 'Aplicar a todos'}
           </Button>
         </CardContent>
       </Card>
@@ -180,7 +181,7 @@ export default function AdminInventoryPage() {
         <div className="relative flex-1 max-w-sm">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search products..."
+            placeholder="Buscar productos..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9 h-9 text-sm"
@@ -191,17 +192,17 @@ export default function AdminInventoryPage() {
           size="sm"
           onClick={() => setLowStockOnly(!lowStockOnly)}
         >
-          <Filter size={14} className="mr-2" /> Low Stock Only
+          <Filter size={14} className="mr-2" /> Solo stock bajo
         </Button>
       </div>
 
       <Card>
         <CardContent className="p-0">
           {filtered.length === 0 && (
-            <div className="text-center text-muted-foreground py-12">No products found</div>
+            <div className="text-center text-muted-foreground py-12">No se encontraron productos</div>
           )}
           {filtered.map((item) => (
-            <div key={item.id} className="border-b border-border last:border-0">
+            <div key={item.id}>
               <div className="flex items-center justify-between py-3 px-4 hover:bg-accent/5">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
@@ -220,14 +221,14 @@ export default function AdminInventoryPage() {
                         {item.stock_quantity}
                       </span>
                     ) : (
-                      <span className="text-muted-foreground/50">—</span>
+                      <span className="text-muted-foreground/50">â€”</span>
                     )}
                   </div>
                   <Badge variant={item.in_stock ? 'default' : 'secondary'} className="text-[10px] w-14 justify-center">
-                    {item.in_stock ? 'Active' : 'Hidden'}
+                    {item.in_stock ? 'Activo' : 'Oculto'}
                   </Badge>
                   <Button variant="ghost" size="sm" onClick={() => openEdit(item)} className="h-7 text-xs">
-                    Edit
+                    Editar
                   </Button>
                 </div>
               </div>
@@ -236,7 +237,7 @@ export default function AdminInventoryPage() {
                   {item.variants.map((v) => (
                     <div key={v.id} className="flex items-center justify-between py-1.5 px-4 text-xs text-muted-foreground hover:bg-accent/3">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono">{v.sku || '—'}</span>
+                        <span className="font-mono">{v.sku || 'â€”'}</span>
                         {v.size && <Badge variant="outline" className="text-[10px]">{v.size}</Badge>}
                         {v.color_slug && <span className="capitalize">{v.color_slug}</span>}
                       </div>
@@ -246,7 +247,7 @@ export default function AdminInventoryPage() {
                           onClick={() => setEditingVariant({ id: v.id, sku: v.sku, stock: v.stock_quantity })}
                           className="text-muted-foreground hover:text-foreground underline text-[10px]"
                         >
-                          Edit
+                          Editar
                         </button>
                       </div>
                     </div>
@@ -261,12 +262,12 @@ export default function AdminInventoryPage() {
       <Dialog open={!!editingItem} onOpenChange={(o) => !o && setEditingItem(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Stock</DialogTitle>
+            <DialogTitle>Editar stock</DialogTitle>
             <DialogDescription>{editingItem?.name}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="stock_qty">Stock Quantity</Label>
+              <Label htmlFor="stock_qty">Cantidad de stock</Label>
               <Input
                 id="stock_qty"
                 type="number"
@@ -277,9 +278,9 @@ export default function AdminInventoryPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditingItem(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setEditingItem(null)}>Cancelar</Button>
             <Button onClick={handleSaveStock} disabled={saving}>
-              {saving ? 'Saving...' : 'Save'}
+              {saving ? 'Guardando...' : 'Guardar'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -288,12 +289,12 @@ export default function AdminInventoryPage() {
       <Dialog open={!!editingVariant} onOpenChange={(o) => !o && setEditingVariant(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Variant Stock</DialogTitle>
+            <DialogTitle>Editar stock de variante</DialogTitle>
             <DialogDescription>{editingVariant?.sku}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="variant_stock">Stock Quantity</Label>
+              <Label htmlFor="variant_stock">Cantidad de stock</Label>
               <Input
                 id="variant_stock"
                 type="number"
@@ -304,9 +305,9 @@ export default function AdminInventoryPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditingVariant(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setEditingVariant(null)}>Cancelar</Button>
             <Button onClick={handleSaveVariant} disabled={saving}>
-              {saving ? 'Saving...' : 'Save'}
+              {saving ? 'Guardando...' : 'Guardar'}
             </Button>
           </DialogFooter>
         </DialogContent>

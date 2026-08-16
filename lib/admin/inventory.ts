@@ -3,12 +3,13 @@
 import { auth } from "@clerk/nextjs/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { revalidatePath } from "next/cache"
+import { escapeLike } from "@/lib/utils"
 import type { InventoryItem } from "./types"
 
 async function checkAdmin() {
   const { userId } = await auth()
-  const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID || "user_3G8ZXADowWQkNZdX65U1djf8JYZ"
-  if (!userId || (adminId && userId !== adminId)) throw new Error("Unauthorized")
+  const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID
+  if (!userId || userId !== adminId) throw new Error("Unauthorized")
 }
 
 export async function getInventory(search?: string, lowStockOnly?: boolean): Promise<InventoryItem[]> {
@@ -17,7 +18,7 @@ export async function getInventory(search?: string, lowStockOnly?: boolean): Pro
 
   let q = supabase.from("products").select("*, categories(name), product_variants(*)")
 
-  if (search) q = q.ilike("name", `%${search}%`)
+  if (search) q = q.ilike("name", `%${escapeLike(search)}%`)
   if (lowStockOnly) q = q.lte("stock_quantity", 5).gt("stock_quantity", 0).eq("in_stock", true)
 
   const { data } = await q.order("name", { ascending: true })

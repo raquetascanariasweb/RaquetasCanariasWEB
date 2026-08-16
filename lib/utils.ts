@@ -1,8 +1,13 @@
 import { type ClassValue, clsx } from "clsx"
+import { twMerge } from "tailwind-merge"
 import type { Product } from "@/types/product"
 
 export function cn(...inputs: ClassValue[]) {
-  return clsx(inputs)
+  return twMerge(clsx(inputs))
+}
+
+export function escapeLike(value: string): string {
+  return value.replace(/[\\%_]/g, (m) => `\\${m}`)
 }
 
 export function getVariantMaxStock(product: Product, size: string, color: string): number {

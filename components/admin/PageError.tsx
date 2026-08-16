@@ -17,12 +17,12 @@ export default function PageError({
         <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mb-4">
           <AlertTriangle size={28} className="text-destructive" />
         </div>
-        <h3 className="text-lg font-medium text-foreground mb-1">Something went wrong</h3>
+        <h3 className="text-lg font-medium text-foreground mb-1">Algo salió mal</h3>
         <p className="text-sm text-muted-foreground text-center max-w-md mb-4">
-          {error.message || 'An unexpected error occurred. Please try again.'}
+          {error.message || 'Ocurrió un error inesperado. Inténtalo de nuevo.'}
         </p>
         <Button variant="outline" onClick={reset}>
-          Try again
+          Reintentar
         </Button>
       </CardContent>
     </Card>

@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { Upload, Trash2, Copy, Image as ImageIcon, Film, File, Search, X } from 'lucide-react'
@@ -46,11 +46,12 @@ export default function MediaPage() {
       const list = await getMediaList()
       setMedia(list)
     } catch (e: any) {
-      toast.error(e.message || 'Failed to load media')
+      toast.error(e.message || 'Error al cargar los medios')
     }
     setLoading(false)
   }
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount via async load()
   useEffect(() => { load() }, [])
 
   const filtered = media.filter((f) => f.name.toLowerCase().includes(search.toLowerCase()))
@@ -67,7 +68,7 @@ export default function MediaPage() {
 
   const uploadFiles = useCallback(async (files: FileList | File[]) => {
     const fileArr = Array.from(files)
-    if (!fileArr.length) { toast.error('Select files'); return }
+    if (!fileArr.length) { toast.error('Selecciona archivos'); return }
     setUploading(true)
 
     try {
@@ -89,11 +90,11 @@ export default function MediaPage() {
           ok++
         }
       }
-      if (ok > 0) toast.success(`${ok} file(s) uploaded`)
+      if (ok > 0) toast.success(`${ok} archivo(s) subidos`)
       setUploadOpen(false)
       setSelectedFiles([])
     } catch (e: any) {
-      toast.error(e.message || 'Upload failed')
+      toast.error(e.message || 'Error al subir')
     }
     setUploading(false)
   }, [])
@@ -122,11 +123,11 @@ export default function MediaPage() {
       const res = await deleteMedia(targets)
       if (res?.error) toast.error(res.error)
       else {
-        toast.success(`${targets.length} file(s) deleted`)
+        toast.success(`${targets.length} archivo(s) eliminados`)
         setSelected(new Set())
       }
     } catch (e: any) {
-      toast.error(e.message || 'Failed to delete files')
+      toast.error(e.message || 'Error al eliminar archivos')
     }
     setDeleteOpen(false)
     setDeleteTargets([])
@@ -135,7 +136,7 @@ export default function MediaPage() {
 
   function copyUrl(name: string) {
     const url = getPublicUrl(name)
-    navigator.clipboard.writeText(url).then(() => toast.success('URL copied')).catch(() => toast.error('Failed to copy'))
+    navigator.clipboard.writeText(url).then(() => toast.success('URL copiada')).catch(() => toast.error('Error al copiar'))
   }
 
   async function handleDropFiles(files: FileList) {
@@ -161,9 +162,9 @@ export default function MediaPage() {
           ok++
         }
       }
-      if (ok > 0) toast.success(`${ok} file(s) uploaded`)
+      if (ok > 0) toast.success(`${ok} archivo(s) subidos`)
     } catch (e: any) {
-      toast.error(e.message || 'Upload failed')
+      toast.error(e.message || 'Error al subir')
     }
     setUploading(false)
   }
@@ -213,42 +214,42 @@ export default function MediaPage() {
       {pageDragOver && (
         <div className="absolute inset-0 z-50 bg-background/90 backdrop-blur-sm border-2 border-dashed border-primary rounded-lg flex flex-col items-center justify-center pointer-events-none">
           <Upload size={48} className="text-primary mb-4 animate-bounce" />
-          <p className="text-lg font-serif text-foreground">Drop files to upload</p>
-          <p className="text-sm text-muted-foreground mt-1">Images and videos will be uploaded automatically</p>
+          <p className="text-lg font-display text-foreground">Suelta archivos para subirlos</p>
+          <p className="text-sm text-muted-foreground mt-1">Las imágenes y vídeos se subirán automáticamente</p>
         </div>
       )}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-serif tracking-wider text-foreground">Media Library</h1>
+          <h1 className="text-2xl font-display tracking-wider text-foreground">Biblioteca de medios</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {media.length} file(s) â€” Upload, manage, and copy URLs for images and videos
+            {media.length} archivo(s) — Sube, gestiona y copia URLs de imágenes y vídeos
           </p>
         </div>
         <div className="flex gap-2">
           {selected.size > 0 && (
             <Button variant="destructive" size="sm" onClick={() => { setDeleteTargets(Array.from(selected)); setDeleteOpen(true) }}>
-              <Trash2 size={14} className="mr-2" /> Delete ({selected.size})
+              <Trash2 size={14} className="mr-2" /> Eliminar ({selected.size})
             </Button>
           )}
           <Button onClick={() => setUploadOpen(true)}>
-            <Upload size={16} className="mr-2" /> Upload
+            <Upload size={16} className="mr-2" /> Subir
           </Button>
         </div>
       </div>
 
       <div className="relative max-w-sm">
         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-        <Input placeholder="Search files..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(0) }} className="pl-9" />
+        <Input placeholder="Buscar archivos..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(0) }} className="pl-9" />
       </div>
 
       {paginated.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-20 text-muted-foreground">
             <ImageIcon size={48} className="mb-4 opacity-30" />
-            <p className="text-lg font-medium">No media files</p>
-            <p className="text-sm mt-1">Upload images and videos to use across the site</p>
+            <p className="text-lg font-medium">No hay archivos</p>
+            <p className="text-sm mt-1">Sube imágenes y vídeos para usarlos en todo el sitio</p>
             <Button variant="outline" className="mt-6" onClick={() => setUploadOpen(true)}>
-              <Upload size={16} className="mr-2" /> Upload your first file
+              <Upload size={16} className="mr-2" /> Sube tu primer archivo
             </Button>
           </CardContent>
         </Card>
@@ -296,21 +297,21 @@ export default function MediaPage() {
                   <button
                     onClick={(e) => { e.stopPropagation(); copyUrl(file.name) }}
                     className="h-7 w-7 rounded-md bg-black/60 hover:bg-black/80 flex items-center justify-center text-white"
-                    title="Copy URL"
+                    title="Copiar URL"
                   >
                     <Copy size={12} />
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); setDeleteTargets([file.name]); setDeleteOpen(true) }}
                     className="h-7 w-7 rounded-md bg-black/60 hover:bg-red-600/80 flex items-center justify-center text-white"
-                    title="Delete"
+                    title="Eliminar"
                   >
                     <Trash2 size={12} />
                   </button>
                 </div>
                 {isSelected && (
                   <div className="absolute top-2 left-2 h-5 w-5 rounded-full bg-primary flex items-center justify-center">
-                    <span className="text-[10px] text-background font-bold">âœ“</span>
+                    <span className="text-[10px] text-background font-bold">✓</span>
                   </div>
                 )}
               </div>
@@ -330,11 +331,11 @@ export default function MediaPage() {
       <Dialog open={uploadOpen} onOpenChange={(v) => { setUploadOpen(v); if (!v) setSelectedFiles([]) }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Upload Media</DialogTitle>
-            <DialogDescription>Upload images and videos to use across the website.</DialogDescription>
+            <DialogTitle>Subir medios</DialogTitle>
+            <DialogDescription>Sube imágenes y vídeos para usarlos en todo el sitio web.</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleUpload} className="space-y-4">
-            {/* drop zone â€” only shown when no files selected */}
+            {/* drop zone — only shown when no files selected */}
             {selectedFiles.length === 0 && (
               <label
                 className={`flex flex-col items-center justify-center h-40 rounded-lg border border-dashed cursor-pointer transition-colors ${
@@ -348,7 +349,7 @@ export default function MediaPage() {
                 onDrop={onDialogDrop}
               >
                 <Upload size={24} className="text-muted-foreground mb-2" />
-                <span className="text-sm text-muted-foreground">Click to select files or drag & drop</span>
+                <span className="text-sm text-muted-foreground">Haz clic para seleccionar archivos o arrastra y suelta</span>
                 <span className="text-[10px] text-muted-foreground/50 mt-1">JPG, PNG, WebP, GIF, MP4, WebM</span>
                 <input ref={dialogFileInputRef} type="file" multiple accept=".jpg,.jpeg,.png,.gif,.webp,.avif,.svg,.mp4,.webm,.mov" className="hidden" onChange={handleDialogFileSelect} />
               </label>
@@ -357,7 +358,7 @@ export default function MediaPage() {
             {/* file previews */}
             {selectedFiles.length > 0 && (
               <div className="space-y-2 max-h-64 overflow-y-auto">
-                <p className="text-xs text-muted-foreground">{selectedFiles.length} file(s) selected</p>
+                <p className="text-xs text-muted-foreground">{selectedFiles.length} archivo(s) seleccionados</p>
                 {selectedFiles.map((file, i) => (
                   <div key={`${file.name}-${i}`} className="flex items-center gap-3 rounded-lg border border-border p-2 pr-3">
                     <div className="h-12 w-12 shrink-0 rounded-md bg-muted overflow-hidden flex items-center justify-center">
@@ -383,14 +384,14 @@ export default function MediaPage() {
                   className="w-full text-xs"
                   onClick={() => dialogFileInputRef.current?.click()}
                 >
-                  <Upload size={12} className="mr-1" /> Add more files
+                  <Upload size={12} className="mr-1" /> Añadir más archivos
                 </Button>
               </div>
             )}
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => { setUploadOpen(false); setSelectedFiles([]) }}>Cancel</Button>
-              <Button type="submit" disabled={uploading || selectedFiles.length === 0}>{uploading ? 'Uploading...' : 'Upload'}</Button>
+              <Button type="button" variant="outline" onClick={() => { setUploadOpen(false); setSelectedFiles([]) }}>Cancelar</Button>
+              <Button type="submit" disabled={uploading || selectedFiles.length === 0}>{uploading ? 'Subiendo...' : 'Subir'}</Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -400,9 +401,9 @@ export default function MediaPage() {
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete {deleteTargets.length > 1 ? `${deleteTargets.length} files` : 'file'}</DialogTitle>
+            <DialogTitle>Eliminar {deleteTargets.length > 1 ? `${deleteTargets.length} archivos` : 'archivo'}</DialogTitle>
             <DialogDescription>
-              This will permanently delete {deleteTargets.length > 1 ? 'these files' : 'this file'} from storage. This cannot be undone.
+              Esto eliminará permanentemente {deleteTargets.length > 1 ? 'estos archivos' : 'este archivo'} del almacenamiento. Esta acción no se puede deshacer.
             </DialogDescription>
           </DialogHeader>
           {deleteTargets.length <= 5 && (
@@ -413,8 +414,8 @@ export default function MediaPage() {
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteOpen(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleDelete}>Delete</Button>
+            <Button variant="outline" onClick={() => setDeleteOpen(false)}>Cancelar</Button>
+            <Button variant="destructive" onClick={handleDelete}>Eliminar</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

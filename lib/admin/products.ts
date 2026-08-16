@@ -4,15 +4,29 @@ import { auth } from '@clerk/nextjs/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { uploadProductImages } from '@/lib/supabase/storage'
 import { revalidatePath } from 'next/cache'
+import { escapeLike } from '@/lib/utils'
 import type { AdminProduct, ProductStatus } from './types'
 
 function getAdminId() {
-  return process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID || 'user_3G8ZXADowWQkNZdX65U1djf8JYZ'
+  return process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID
 }
 
 async function checkAdmin() {
   const { userId } = await auth()
-  if (!userId || (getAdminId() && userId !== getAdminId())) throw new Error('Unauthorized')
+  if (!userId || userId !== getAdminId()) throw new Error('Unauthorized')
+}
+
+async function ensureUniqueSlug(supabase: ReturnType<typeof createAdminClient>, baseSlug: string, excludeId?: string): Promise<string> {
+  const { data } = await supabase
+    .from('products')
+    .select('slug')
+    .ilike('slug', `${baseSlug}%`)
+    .limit(100)
+  const existing = new Set((data ?? []).map((p: { slug: string }) => p.slug).filter((s: string) => s !== excludeId))
+  if (!existing.has(baseSlug)) return baseSlug
+  let i = 2
+  while (existing.has(`${baseSlug}-${i}`)) i++
+  return `${baseSlug}-${i}`
 }
 
 export async function getProducts(categoryId?: string, search?: string, inStock?: boolean): Promise<AdminProduct[]> {
@@ -22,7 +36,7 @@ export async function getProducts(categoryId?: string, search?: string, inStock?
   let q = supabase.from('products').select('*, categories(name), product_variants(*)')
 
   if (categoryId) q = q.contains('category_ids', [categoryId])
-  if (search) q = q.ilike('name', `%${search}%`)
+  if (search) q = q.ilike('name', `%${escapeLike(search)}%`)
   if (inStock !== undefined) q = q.eq('in_stock', inStock)
 
   const { data } = await q.order('created_at', { ascending: false })
@@ -94,7 +108,8 @@ export async function createProduct(formData: FormData) {
     : formData.get('in_stock') !== 'false'
 
   const supabase = createAdminClient()
-  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+  const baseSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+  const slug = await ensureUniqueSlug(supabase, baseSlug)
 
   const categoryId = (formData.get('category_id') as string) || null
   const categoryIdsStr = (formData.get('category_ids') as string) || ''
@@ -171,7 +186,8 @@ export async function updateProduct(id: string, formData: FormData) {
   const supabase = createAdminClient()
 
   const name = formData.get('name') as string
-  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+  const baseSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+  const slug = await ensureUniqueSlug(supabase, baseSlug, id)
   const categoryId = (formData.get('category_id') as string) || null
   const categoryIdsStr = (formData.get('category_ids') as string) || ''
   const categoryIds: string[] = categoryIdsStr ? JSON.parse(categoryIdsStr) : (categoryId ? [categoryId] : [])
@@ -269,7 +285,7 @@ export async function duplicateProduct(id: string) {
     .single()
   if (!original) return { error: 'Product not found' }
   const baseSlug = original.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
-  const slug = `${baseSlug}-${Date.now()}`
+  const slug = await ensureUniqueSlug(supabase, baseSlug)
   const { data: product, error } = await supabase
     .from('products')
     .insert({
@@ -316,7 +332,8 @@ export async function quickUpdateProduct(id: string, data: { name?: string; pric
   const updateData: Record<string, string | number | null | string[] | boolean> = {}
   if (data.name !== undefined) {
     updateData.name = data.name
-    updateData.slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+    const baseSlug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+    updateData.slug = await ensureUniqueSlug(supabase, baseSlug, id)
   }
   if (data.price_cents !== undefined) updateData.price_cents = data.price_cents
   if (data.status !== undefined) updateData.status = data.status

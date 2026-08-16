@@ -3,6 +3,7 @@
 import { useState, createContext, useContext } from 'react'
 import { Toaster } from 'sonner'
 import AdminSidebar from '@/components/admin/AdminSidebar'
+import AdminHeader from './AdminHeader'
 import { formatPrice as fmtPrice, formatPriceRaw as fmtPriceRaw } from '@/lib/utils'
 
 export interface CurrencyConfig {
@@ -31,11 +32,12 @@ export default function AdminLayoutClient({ children, currencyConfig }: Props) {
 
   return (
     <CurrencyContext.Provider value={currencyConfig}>
-      <div data-theme="dark" className="min-h-screen bg-background flex text-foreground">
+      <div data-theme="dark" className="min-h-screen bg-admin-bg text-admin-text">
         <AdminSidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
-        <main className="flex-1 overflow-auto">
-          <div className="p-6 max-w-7xl mx-auto">{children}</div>
-        </main>
+        <div className={`transition-all duration-300 ${collapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
+          <AdminHeader />
+          <main className="min-h-[calc(100vh-4rem)] p-4 sm:p-6 lg:p-8">{children}</main>
+        </div>
         <Toaster />
       </div>
     </CurrencyContext.Provider>

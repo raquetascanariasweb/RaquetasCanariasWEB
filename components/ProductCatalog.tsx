@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useCallback } from "react"
+import { useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
@@ -151,9 +151,75 @@ interface Props {
   products: Product[]
   categories: Category[]
   activeCategorySlug: string | null
+  total: number
+  page: number
+  totalPages: number
 }
 
-export default function ProductCatalog({ products, categories, activeCategorySlug }: Props) {
+function PaginationControls({ page, totalPages }: { page: number; totalPages: number }) {
+  const searchParams = useSearchParams()!
+  const router = useRouter()
+  if (totalPages <= 1) return null
+
+  function goTo(p: number) {
+    if (p < 1 || p > totalPages) return
+    const params = new URLSearchParams(searchParams.toString())
+    if (p === 1) params.delete("page")
+    else params.set("page", String(p))
+    const qs = params.toString()
+    router.push(qs ? `?${qs}` : window.location.pathname)
+    window.scrollTo({ top: 0 })
+  }
+
+  const pages = Array.from({ length: totalPages }, (_, i) => i + 1).filter(
+    (p) => p === 1 || p === totalPages || Math.abs(p - page) <= 2
+  )
+  const items: (number | "…")[] = []
+  let prev = 0
+  for (const p of pages) {
+    if (p - prev > 1) items.push("…")
+    items.push(p)
+    prev = p
+  }
+
+  return (
+    <nav className="flex items-center justify-center gap-2 mt-12">
+      <button
+        onClick={() => goTo(page - 1)}
+        disabled={page <= 1}
+        className="px-3 py-1.5 text-sm border border-gray-300 rounded-md disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+      >
+        ← Anterior
+      </button>
+      {items.map((item, i) =>
+        item === "…" ? (
+          <span key={`gap-${i}`} className="px-2 text-gray-400">…</span>
+        ) : (
+          <button
+            key={item}
+            onClick={() => goTo(item)}
+            className={`px-3 py-1.5 text-sm rounded-md border transition-colors ${
+              item === page
+                ? "bg-black text-white border-black font-medium"
+                : "border-gray-300 text-gray-700 hover:bg-gray-50"
+            }`}
+          >
+            {item}
+          </button>
+        )
+      )}
+      <button
+        onClick={() => goTo(page + 1)}
+        disabled={page >= totalPages}
+        className="px-3 py-1.5 text-sm border border-gray-300 rounded-md disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+      >
+        Siguiente →
+      </button>
+    </nav>
+  )
+}
+
+export default function ProductCatalog({ products, categories, activeCategorySlug, total, page, totalPages }: Props) {
   const searchParams = useSearchParams()!
   const router = useRouter()
 
@@ -165,70 +231,6 @@ export default function ProductCatalog({ products, categories, activeCategorySlu
   const [priceMin, setPriceMin] = useState(searchParams?.get("precio_min") || "")
   const [priceMax, setPriceMax] = useState(searchParams?.get("precio_max") || "")
   const [inStockOnly, setInStockOnly] = useState(searchParams?.get("stock") === "1")
-
-  const activeCategoryIds = useMemo(() => {
-    if (!activeCategorySlug) return null
-    const cat = categories.find((c) => c.slug === activeCategorySlug)
-    if (!cat) return null
-    const ids = new Set<string>()
-    ids.add(cat.id)
-    const stack = [cat.id]
-    while (stack.length > 0) {
-      const currentId = stack.pop()!
-      const children = categories.filter((c) => c.parent_id === currentId)
-      for (const child of children) {
-        ids.add(child.id)
-        stack.push(child.id)
-      }
-    }
-    return Array.from(ids)
-  }, [activeCategorySlug, categories])
-
-  const filtered = useMemo(() => {
-    let result = [...products]
-
-    if (activeCategoryIds) {
-      result = result.filter(
-        (p) => {
-          const ids = p.category_ids ?? (p.category_id ? [p.category_id] : [])
-          return ids.some((id) => activeCategoryIds.includes(id))
-        }
-      )
-    }
-    if (sinCategoria) {
-      result = result.filter((p) => {
-        const ids = p.category_ids ?? (p.category_id ? [p.category_id] : [])
-        return ids.length === 0
-      })
-    }
-    if (priceMin) {
-      const min = Number(priceMin) * 100
-      if (!isNaN(min)) result = result.filter((p) => p.price_cents >= min)
-    }
-    if (priceMax) {
-      const max = Number(priceMax) * 100
-      if (!isNaN(max)) result = result.filter((p) => p.price_cents <= max)
-    }
-    if (inStockOnly) result = result.filter((p) => p.in_stock)
-    if (searchQuery) {
-      const words = searchQuery.toLowerCase().split(/\s+/).filter(Boolean)
-      result = result.filter((p) => {
-        const haystack = `${p.name} ${p.description || ""}`.toLowerCase()
-        return words.every((w) => haystack.includes(w))
-      })
-    }
-
-    switch (sort) {
-      case "precio_asc":
-        result.sort((a, b) => a.price_cents - b.price_cents)
-        break
-      case "precio_desc":
-        result.sort((a, b) => b.price_cents - a.price_cents)
-        break
-    }
-
-    return result
-  }, [products, activeCategoryIds, sinCategoria, priceMin, priceMax, inStockOnly, searchQuery, sort])
 
   const rootCategories = categories.filter((c) => !c.parent_id)
   const activeCategory = activeCategorySlug
@@ -342,7 +344,7 @@ export default function ProductCatalog({ products, categories, activeCategorySlu
           )}
           <li>
             <Link
-              href="/?sin_categoria=1"
+              href="/shop?sin_categoria=1"
               className={`text-base transition-colors ${
                 sinCategoria ? "text-black font-medium" : "text-gray-500 hover:text-black"
               }`}
@@ -406,8 +408,8 @@ export default function ProductCatalog({ products, categories, activeCategorySlu
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-2xl font-medium text-black">
           {activeCategory}
-          {filtered.length > 0 && (
-            <span className="text-gray-400 font-normal ml-1">({filtered.length})</span>
+          {total > 0 && (
+            <span className="text-gray-400 font-normal ml-1">({total})</span>
           )}
         </h1>
         <div className="flex items-center gap-6">
@@ -465,7 +467,7 @@ export default function ProductCatalog({ products, categories, activeCategorySlu
 
         {/* Product grid */}
         <div className="flex-1 min-w-0">
-          {filtered.length === 0 ? (
+          {products.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <p className="text-lg font-medium text-gray-900">No se encontraron productos</p>
               <p className="text-sm text-gray-500 mt-1">
@@ -474,11 +476,12 @@ export default function ProductCatalog({ products, categories, activeCategorySlu
             </div>
           ) : (
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-10">
-              {filtered.map((product, i) => (
+              {products.map((product, i) => (
                 <ProductCard key={product.id} product={product} index={i} />
               ))}
             </div>
           )}
+          <PaginationControls page={page} totalPages={totalPages} />
         </div>
       </div>
     </div>

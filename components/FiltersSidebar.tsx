@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, memo } from "react"
+import { useState, memo } from "react"
 import Link from "next/link"
 import type { Category } from "@/types/product"
 
@@ -29,11 +29,17 @@ const FiltersSidebar = memo(function FiltersSidebar({
 }: FiltersSidebarProps) {
   const [localPriceMin, setLocalPriceMin] = useState(priceMin || "")
   const [localPriceMax, setLocalPriceMax] = useState(priceMax || "")
+  const [syncedPriceMin, setSyncedPriceMin] = useState(priceMin)
+  const [syncedPriceMax, setSyncedPriceMax] = useState(priceMax)
 
-  useEffect(() => {
+  if (priceMin !== syncedPriceMin) {
+    setSyncedPriceMin(priceMin)
     setLocalPriceMin(priceMin || "")
+  }
+  if (priceMax !== syncedPriceMax) {
+    setSyncedPriceMax(priceMax)
     setLocalPriceMax(priceMax || "")
-  }, [priceMin, priceMax])
+  }
 
   function applyPrice() {
     onFilterChange("precio_min", localPriceMin || null)

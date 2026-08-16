@@ -1,20 +1,19 @@
 import { NextResponse } from 'next/server'
+import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/admin'
+
+const SubscribeSchema = z.object({
+  email: z.string().trim().toLowerCase().email(),
+})
 
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { email } = body
-
-    if (!email || typeof email !== 'string') {
+    const parsed = SubscribeSchema.safeParse(body)
+    if (!parsed.success) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 })
     }
-
-    const trimmedEmail = email.trim().toLowerCase()
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(trimmedEmail)) {
-      return NextResponse.json({ error: 'Invalid email address' }, { status: 400 })
-    }
+    const trimmedEmail = parsed.data.email
 
     const supabase = createAdminClient()
 
