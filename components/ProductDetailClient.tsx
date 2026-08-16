@@ -8,7 +8,7 @@ import { Heart, ChevronLeft, ChevronRight, Plus, Minus, Truck, ShieldCheck } fro
 import { useUser } from "@clerk/nextjs"
 import { useCartStore } from "@/store/cart"
 import { useFavoritesStore } from "@/store/favorites-store"
-import { getFavorites, addFavorite, removeFavorite } from "@/lib/favorites"
+import { getFavorites, addFavorite, removeFavorite } from "@/services/favorites"
 import { getVariantMaxStock } from "@/lib/utils"
 import { toast } from "sonner"
 import type { Product } from "@/types/product"
