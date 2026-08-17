@@ -1,6 +1,5 @@
 'use server'
 
-import { auth } from '@clerk/nextjs/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getStripe } from '@/lib/stripe'
 import { revalidatePath } from 'next/cache'
@@ -11,11 +10,10 @@ import type {
 } from './types'
 import { sendOrderStatusNotification } from './notifications'
 import { decrementStockWithFallback, type StockItem } from '@/lib/stock'
+import { requireAdmin } from '@/lib/admin-auth'
 
 async function checkAdmin() {
-  const { userId } = await auth()
-  const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID
-  if (!userId || userId !== adminId) throw new Error('Unauthorized')
+  await requireAdmin()
 }
 
 export async function bulkDeleteOrders(ids: string[]) {

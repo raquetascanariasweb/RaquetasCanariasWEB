@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { auth } from "@clerk/nextjs/server"
 import { z } from "zod"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { isAdmin } from "@/lib/admin-auth"
 
 const BulkStockSchema = z.object({
   stock_quantity: z.number().int().min(0).max(1000000),
@@ -9,8 +10,7 @@ const BulkStockSchema = z.object({
 
 export async function POST(request: Request) {
   const { userId } = await auth()
-  const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID
-  if (!userId || userId !== adminId) {
+  if (!isAdmin(userId)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 

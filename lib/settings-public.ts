@@ -3,6 +3,7 @@
 import { auth } from '@clerk/nextjs/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
+import { isAdmin } from '@/lib/admin-auth'
 
 export async function getShippingSettings(): Promise<{ shippingRate: number; freeThreshold: number }> {
   const supabase = createAdminClient()
@@ -22,8 +23,7 @@ export async function getAboutContent(): Promise<Record<string, string>> {
 
 export async function updateAboutContent(images: Record<string, string>) {
   const { userId } = await auth()
-  const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID
-  if (!userId || userId !== adminId) return { error: 'Unauthorized' }
+  if (!isAdmin(userId)) return { error: 'Unauthorized' }
   const supabase = createAdminClient()
   const { error } = await supabase.from('settings').upsert({ key: 'about_page', value: images }, { onConflict: 'key' })
   if (error) return { error: error.message }

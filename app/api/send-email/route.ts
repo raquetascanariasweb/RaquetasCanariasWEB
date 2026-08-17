@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { Resend } from 'resend'
 import { render } from '@react-email/components'
 import BaseEmail from '@/emails/BaseEmail'
+import { isAdmin } from '@/lib/admin-auth'
 
 const FROM_EMAIL = 'Sportbalin <hello@sportbalin.com>'
 
@@ -20,8 +21,7 @@ const SendEmailSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth()
-    const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID
-    if (!userId || userId !== adminId) {
+    if (!isAdmin(userId)) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }

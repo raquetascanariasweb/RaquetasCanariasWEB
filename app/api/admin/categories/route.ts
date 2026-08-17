@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { isAdmin } from '@/lib/admin-auth'
 
 const CategoryNameSchema = z.object({
   name: z.string().trim().min(1).max(100),
@@ -14,8 +15,7 @@ const CategoryIdSchema = z.object({
 export async function GET() {
   try {
     const { userId } = await auth()
-    const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID
-    if (!userId || userId !== adminId) {
+    if (!isAdmin(userId)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
@@ -49,8 +49,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const { userId } = await auth()
-    const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID
-    if (!userId || userId !== adminId) {
+    if (!isAdmin(userId)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
@@ -89,8 +88,7 @@ export async function POST(request: Request) {
 export async function DELETE(request: Request) {
   try {
     const { userId } = await auth()
-    const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID
-    if (!userId || userId !== adminId) {
+    if (!isAdmin(userId)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 

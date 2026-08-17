@@ -4,20 +4,16 @@ import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { uploadProductImages } from '@/lib/supabase/storage'
 import { escapeLike } from '@/lib/utils'
+import { isAdmin } from '@/lib/admin-auth'
 
 const DeleteProductSchema = z.object({
   id: z.string().uuid(),
 })
 
-function checkAdmin(userId: string | null) {
-  const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID
-  return userId === adminId
-}
-
 export async function GET(request: Request) {
   try {
     const { userId } = await auth()
-    if (!checkAdmin(userId)) {
+    if (!isAdmin(userId)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
@@ -57,9 +53,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const { userId } = await auth()
-    const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID
-
-    if (!userId || userId !== adminId) {
+    if (!isAdmin(userId)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
@@ -145,7 +139,7 @@ export async function POST(request: Request) {
 export async function DELETE(request: Request) {
   try {
     const { userId } = await auth()
-    if (!checkAdmin(userId)) {
+    if (!isAdmin(userId)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 

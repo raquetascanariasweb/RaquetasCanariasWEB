@@ -1,19 +1,14 @@
 'use server'
 
-import { auth } from '@clerk/nextjs/server'
+import { requireAdmin } from '@/lib/admin-auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { uploadProductImages } from '@/lib/supabase/storage'
 import { revalidatePath } from 'next/cache'
 import { escapeLike } from '@/lib/utils'
 import type { AdminProduct, ProductStatus } from './types'
 
-function getAdminId() {
-  return process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID
-}
-
 async function checkAdmin() {
-  const { userId } = await auth()
-  if (!userId || userId !== getAdminId()) throw new Error('Unauthorized')
+  await requireAdmin()
 }
 
 async function ensureUniqueSlug(supabase: ReturnType<typeof createAdminClient>, baseSlug: string, excludeId?: string): Promise<string> {

@@ -1,15 +1,13 @@
 'use server'
 
-import { auth } from '@clerk/nextjs/server'
+import { requireAdmin } from '@/lib/admin-auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 
 const BUCKET = 'product-images'
 
 async function checkAdmin() {
-  const { userId } = await auth()
-  const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID || process.env.ADMIN_USER_ID
-  if (!userId || userId !== adminId) throw new Error('Unauthorized')
+  await requireAdmin()
 }
 
 export interface MediaFile {
