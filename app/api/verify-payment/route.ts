@@ -43,7 +43,7 @@ async function sendConfirmationEmail(sessionId: string, customerEmail: string, o
         <tbody>${itemsHtml}</tbody>
         <tfoot><tr><td colspan="2" style="padding:12px 8px;text-align:right;font-weight:bold">Total:</td><td style="padding:12px 8px;text-align:right;font-weight:bold;font-size:18px">${formatPrice(total)}€</td></tr></tfoot>
       </table>
-      <p style="color:#888;font-size:13px">Si tienes alguna duda, contáctanos en info@sportbalin.com</p>
+      <p style="color:#888;font-size:13px">Si tienes alguna duda, contáctanos en sportbalin@gmail.com</p>
     </div>
   `
 

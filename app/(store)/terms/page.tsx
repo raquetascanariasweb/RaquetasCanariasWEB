@@ -22,7 +22,7 @@ const sections = [
 
         <p className="font-medium text-ink">2.2 Transferencia bancaria</p>
         <p>Si seleccionas como medio de pago la transferencia bancaria, recibirás junto con la confirmación de tu pedido un email donde se te indicará el número de cuenta en el que efectuar la transferencia a nombre de SPORTBALIN.</p>
-        <p>Es muy importante que indiques el número de pedido, así como tu nombre y apellidos, y realices la transferencia dentro de los 3 días posteriores a la fecha de confirmación del pedido. Una vez realizada, envía el justificante a <a href="mailto:info@sportbalin.com" className="text-ember underline underline-offset-2">info@sportbalin.com</a>.</p>
+        <p>Es muy importante que indiques el número de pedido, así como tu nombre y apellidos, y realices la transferencia dentro de los 3 días posteriores a la fecha de confirmación del pedido. Una vez realizada, envía el justificante a <a href="mailto:sportbalin@gmail.com" className="text-ember underline underline-offset-2">sportbalin@gmail.com</a>.</p>
         <p>No se considerará efectivo el pedido hasta que nuestro departamento de administración tenga confirmación bancaria de la transferencia.</p>
         <p>El pago debe realizarse en euros. Todas las eventuales comisiones de cambio y bancarias corren por cuenta del comprador al optar por este sistema de pago. En el caso de transferencias desde fuera de España, es importante que comuniques a tu banco hacerse cargo de las comisiones en origen. De no ser así, SPORTBALIN podría paralizar el envío de tu pedido al no recibir la cantidad íntegra.</p>
 
@@ -52,7 +52,7 @@ const sections = [
           <p className="font-semibold text-ink mb-2">Envíos a domicilio</p>
           <ul className="space-y-1.5 list-disc list-inside text-[#6B6863]">
             <li>Península: <strong className="text-ink">3 €</strong>. Gratuito para pedidos superiores a <strong className="text-ink">75 €</strong>.</li>
-            <li>Europa y resto del mundo: consultar portes en <a href="mailto:info@sportbalin.com" className="text-ember underline underline-offset-2">info@sportbalin.com</a>.</li>
+            <li>Europa y resto del mundo: consultar portes en <a href="mailto:sportbalin@gmail.com" className="text-ember underline underline-offset-2">sportbalin@gmail.com</a>.</li>
           </ul>
         </div>
 
@@ -90,7 +90,7 @@ const sections = [
         </ul>
 
         <h3 className="font-medium text-ink mt-6 mb-2">Proceso de devolución</h3>
-        <p>Para realizar un cambio o devolución, envía un email a <a href="mailto:info@sportbalin.com" className="text-ember underline underline-offset-2">info@sportbalin.com</a> y te indicaremos cómo proceder.</p>
+        <p>Para realizar un cambio o devolución, envía un email a <a href="mailto:sportbalin@gmail.com" className="text-ember underline underline-offset-2">sportbalin@gmail.com</a> y te indicaremos cómo proceder.</p>
         <p className="font-semibold text-ink">Importante: SPORTBALIN no admite envíos a portes debidos. Antes de cualquier cambio, contacta con Atención al Cliente.</p>
 
         <h3 className="font-medium text-ink mt-6 mb-2">Reintegro del importe</h3>
@@ -109,8 +109,8 @@ const sections = [
     content: (
       <>
         <p>En cumplimiento de lo establecido en la Ley Orgánica 15/1999, de 13 de diciembre, de Protección de Datos de Carácter Personal, te informamos de que los datos personales que nos facilites serán incluidos en un fichero automatizado creado y mantenido bajo la responsabilidad de SPORTBALIN.</p>
-        <p>La finalidad de dicho fichero es facilitar la tramitación de los pedidos y, en caso de que nos hayas autorizado expresamente, enviarte comunicaciones comerciales sobre productos, ofertas, bonos descuento y servicios que puedan resultar de tu interés. Si no deseas recibir estas comunicaciones, indícanoslo enviando un email a <a href="mailto:info@sportbalin.com" className="text-ember underline underline-offset-2">info@sportbalin.com</a>.</p>
-        <p>Podrás ejercitar en todo momento los derechos de acceso, rectificación, cancelación y oposición comunicándolo por correo electrónico a <a href="mailto:info@sportbalin.com" className="text-ember underline underline-offset-2">info@sportbalin.com</a>.</p>
+        <p>La finalidad de dicho fichero es facilitar la tramitación de los pedidos y, en caso de que nos hayas autorizado expresamente, enviarte comunicaciones comerciales sobre productos, ofertas, bonos descuento y servicios que puedan resultar de tu interés. Si no deseas recibir estas comunicaciones, indícanoslo enviando un email a <a href="mailto:sportbalin@gmail.com" className="text-ember underline underline-offset-2">sportbalin@gmail.com</a>.</p>
+        <p>Podrás ejercitar en todo momento los derechos de acceso, rectificación, cancelación y oposición comunicándolo por correo electrónico a <a href="mailto:sportbalin@gmail.com" className="text-ember underline underline-offset-2">sportbalin@gmail.com</a>.</p>
       </>
     ),
   },

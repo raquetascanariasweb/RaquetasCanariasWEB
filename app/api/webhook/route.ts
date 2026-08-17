@@ -97,7 +97,7 @@ async function sendOrderConfirmation(session: any) {
           ? `<div style="background:#f9f9f9;padding:16px;border-radius:8px;margin:16px 0"><h3 style="margin:0 0 8px">Dirección de envío</h3><p style="margin:0">${session.shipping_details.name || ""}<br/>${session.shipping_details.address.line1 || ""}<br/>${session.shipping_details.address.line2 ? session.shipping_details.address.line2 + "<br/>" : ""}${session.shipping_details.address.postal_code || ""} ${session.shipping_details.address.city || ""}<br/>${session.shipping_details.address.country || ""}</p></div>`
           : ""
         }
-        <p style="color:#888;font-size:13px">Si tienes alguna duda, contáctanos en info@sportbalin.com</p>
+        <p style="color:#888;font-size:13px">Si tienes alguna duda, contáctanos en sportbalin@gmail.com</p>
       </div>
     `
   }
