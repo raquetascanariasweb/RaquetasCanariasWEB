@@ -260,6 +260,7 @@ export default function Navbar({ categories }: { categories: Category[] }) {
   const itemCount = useCartStore((s) => s.totalItems())
   const favCount = useFavoritesStore((s) => s.items.length)
   const { isSignedIn, user } = useUser()
+  const { signOut } = useClerk()
   const mounted = useSyncExternalStore(() => () => {}, () => true, () => false)
   const isAdmin = isSignedIn && user?.id === (process.env.NEXT_PUBLIC_ADMIN_USER_ID)
 
@@ -358,6 +359,18 @@ export default function Navbar({ categories }: { categories: Category[] }) {
                 {isSignedIn && (
                   <Link href="/orders" onClick={() => setMenuOpen(false)} className="block text-base font-semibold text-white">
                     Mis pedidos
+                  </Link>
+                )}
+                {isSignedIn ? (
+                  <button
+                    onClick={() => { signOut(); setMenuOpen(false) }}
+                    className="block text-base font-semibold text-gray-400 hover:text-white transition-colors"
+                  >
+                    Cerrar sesión
+                  </button>
+                ) : (
+                  <Link href="/sign-in" onClick={() => setMenuOpen(false)} className="block text-base font-semibold text-white">
+                    Iniciar sesión
                   </Link>
                 )}
                 <Link href="/about" onClick={() => setMenuOpen(false)} className="block text-base font-semibold text-white">Sobre nosotros</Link>
