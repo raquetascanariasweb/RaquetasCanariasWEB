@@ -262,7 +262,9 @@ export default function Navbar({ categories }: { categories: Category[] }) {
   const { isSignedIn, user } = useUser()
   const { signOut } = useClerk()
   const mounted = useSyncExternalStore(() => () => {}, () => true, () => false)
-  const isAdmin = isSignedIn && user?.id === (process.env.NEXT_PUBLIC_ADMIN_USER_ID)
+  const adminIds = (process.env.NEXT_PUBLIC_ADMIN_USER_IDS || process.env.NEXT_PUBLIC_ADMIN_USER_ID || '')
+    .split(',').map((s) => s.trim()).filter(Boolean)
+  const isAdmin = isSignedIn && !!user?.id && adminIds.includes(user.id)
 
   const allParents = categories.filter((c) => !c.parent_id)
   const modaCat = allParents.find((c) => c.slug === "moda")
