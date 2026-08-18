@@ -18,14 +18,14 @@ async function decrementStockFallback(
   if (item.size || item.color) {
     const { data: variant, error: variantError } = await supabase
       .from("product_variants")
-      .select("id, product_id, stock_quantity, track_inventory")
+      .select("id, product_id, stock_quantity")
       .eq("product_id", item.product_id)
       .eq("size", item.size || "")
       .eq("color_slug", item.color || "")
       .maybeSingle()
 
     if (variantError) return variantError.message
-    if (!variant?.track_inventory) return
+    if (!variant) return
 
     const newQty = Math.max(0, (variant.stock_quantity ?? 0) - item.quantity)
     const { error } = await supabase
@@ -46,12 +46,12 @@ async function decrementStockFallback(
   } else {
     const { data: product, error: productError } = await supabase
       .from("products")
-      .select("id, stock_quantity, track_inventory")
+      .select("id, stock_quantity")
       .eq("id", item.product_id)
       .maybeSingle()
 
     if (productError) return productError.message
-    if (!product?.track_inventory) return
+    if (!product) return
 
     const newQty = Math.max(0, (product.stock_quantity ?? 0) - item.quantity)
     const { error } = await supabase
