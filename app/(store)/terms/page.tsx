@@ -1,69 +1,71 @@
 import Link from "next/link"
+import { getShippingSettings } from "@/lib/settings-public"
 
-const sections = [
-  {
-    id: "precios",
-    title: "1. Precios",
-    content: (
-      <>
-        <p>Todos los precios expuestos en www.sportbalin.com son con impuestos incluidos.</p>
-        <p>Los precios podrán ser revisados y modificados si las condiciones lo requieren en cualquier momento, sin que ello afecte a los pedidos ya confirmados.</p>
-        <p>Todos los productos que SPORTBALIN promocione u oferte a un precio especial estarán disponibles a ese precio de promoción solo hasta la fecha indicada, salvo fin de existencias.</p>
-      </>
-    ),
-  },
-  {
-    id: "medios-de-pago",
-    title: "2. Medios de Pago",
-    content: (
-      <>
-        <p className="font-medium text-ink">2.1 Tarjeta de crédito — TPV Virtual</p>
-        <p>El pago con tarjeta de crédito se realiza mediante plataforma de pago segura proporcionada por la entidad bancaria. Toda la transacción relacionada con el pago se realizará a través de los sistemas de la entidad bancaria, garantizando la confidencialidad de tus datos.</p>
+function buildSections(shippingRate: number, freeThreshold: number) {
+  return [
+    {
+      id: "precios",
+      title: "1. Precios",
+      content: (
+        <>
+          <p>Todos los precios expuestos en www.sportbalin.com son con impuestos incluidos.</p>
+          <p>Los precios podrán ser revisados y modificados si las condiciones lo requieren en cualquier momento, sin que ello afecte a los pedidos ya confirmados.</p>
+          <p>Todos los productos que SPORTBALIN promocione u oferte a un precio especial estarán disponibles a ese precio de promoción solo hasta la fecha indicada, salvo fin de existencias.</p>
+        </>
+      ),
+    },
+    {
+      id: "medios-de-pago",
+      title: "2. Medios de Pago",
+      content: (
+        <>
+          <p className="font-medium text-ink">2.1 Tarjeta de crédito — TPV Virtual</p>
+          <p>El pago con tarjeta de crédito se realiza mediante plataforma de pago segura proporcionada por la entidad bancaria. Toda la transacción relacionada con el pago se realizará a través de los sistemas de la entidad bancaria, garantizando la confidencialidad de tus datos.</p>
 
-        <p className="font-medium text-ink">2.2 Transferencia bancaria</p>
-        <p>Si seleccionas como medio de pago la transferencia bancaria, recibirás junto con la confirmación de tu pedido un email donde se te indicará el número de cuenta en el que efectuar la transferencia a nombre de SPORTBALIN.</p>
-        <p>Es muy importante que indiques el número de pedido, así como tu nombre y apellidos, y realices la transferencia dentro de los 3 días posteriores a la fecha de confirmación del pedido. Una vez realizada, envía el justificante a <a href="mailto:sportbalin@gmail.com" className="text-ember underline underline-offset-2">sportbalin@gmail.com</a>.</p>
-        <p>No se considerará efectivo el pedido hasta que nuestro departamento de administración tenga confirmación bancaria de la transferencia.</p>
-        <p>El pago debe realizarse en euros. Todas las eventuales comisiones de cambio y bancarias corren por cuenta del comprador al optar por este sistema de pago. En el caso de transferencias desde fuera de España, es importante que comuniques a tu banco hacerse cargo de las comisiones en origen. De no ser así, SPORTBALIN podría paralizar el envío de tu pedido al no recibir la cantidad íntegra.</p>
+          <p className="font-medium text-ink">2.2 Transferencia bancaria</p>
+          <p>Si seleccionas como medio de pago la transferencia bancaria, recibirás junto con la confirmación de tu pedido un email donde se te indicará el número de cuenta en el que efectuar la transferencia a nombre de SPORTBALIN.</p>
+          <p>Es muy importante que indiques el número de pedido, así como tu nombre y apellidos, y realices la transferencia dentro de los 3 días posteriores a la fecha de confirmación del pedido. Una vez realizada, envía el justificante a <a href="mailto:sportbalin@gmail.com" className="text-ember underline underline-offset-2">sportbalin@gmail.com</a>.</p>
+          <p>No se considerará efectivo el pedido hasta que nuestro departamento de administración tenga confirmación bancaria de la transferencia.</p>
+          <p>El pago debe realizarse en euros. Todas las eventuales comisiones de cambio y bancarias corren por cuenta del comprador al optar por este sistema de pago. En el caso de transferencias desde fuera de España, es importante que comuniques a tu banco hacerse cargo de las comisiones en origen. De no ser así, SPORTBALIN podría paralizar el envío de tu pedido al no recibir la cantidad íntegra.</p>
 
-        <p className="font-medium text-ink">2.3 PayPal</p>
-        <p>PayPal permite enviar pagos en Internet de forma segura, cómoda y rentable. La red de PayPal se basa en la infraestructura financiera existente de cuentas bancarias y tarjetas de crédito para crear una solución global de pago en tiempo real.</p>
-        <p>
-          Para más información puedes visitar la web de{" "}
-          <a href="https://www.paypal.com" target="_blank" rel="noopener noreferrer" className="text-ember underline underline-offset-2">
-            PayPal
-          </a>.
-        </p>
-      </>
-    ),
-  },
-  {
-    id: "envios",
-    title: "3. Formas de Envío y Plazos de Entrega",
-    content: (
-      <>
-        <p>SPORTBALIN garantiza la entrega mediante correos certificado, en un plazo de 4-5 días hábiles una vez validado el pedido, siempre que correos cumpla con sus plazos de entrega.</p>
-        <p>Los plazos se computan en días laborables y pueden verse alterados por festivos locales o nacionales.</p>
-        <p>Si la forma de pago elegida es transferencia bancaria, no se realizará el envío hasta que tengamos confirmación bancaria de la transferencia.</p>
-        <p>SPORTBALIN se reserva el derecho de variar el tipo de envío y la compañía por la cual se efectúa este, independientemente de lo expuesto en estas páginas, siempre que no suponga un perjuicio manifiesto para el cliente.</p>
-        <p className="font-semibold text-ink">Atención: No realizamos envíos a apartados postales.</p>
+          <p className="font-medium text-ink">2.3 PayPal</p>
+          <p>PayPal permite enviar pagos en Internet de forma segura, cómoda y rentable. La red de PayPal se basa en la infraestructura financiera existente de cuentas bancarias y tarjetas de crédito para crear una solución global de pago en tiempo real.</p>
+          <p>
+            Para más información puedes visitar la web de{" "}
+            <a href="https://www.paypal.com" target="_blank" rel="noopener noreferrer" className="text-ember underline underline-offset-2">
+              PayPal
+            </a>.
+          </p>
+        </>
+      ),
+    },
+    {
+      id: "envios",
+      title: "3. Formas de Envío y Plazos de Entrega",
+      content: (
+        <>
+          <p>SPORTBALIN garantiza la entrega mediante correos certificado, en un plazo de 4-5 días hábiles una vez validado el pedido, siempre que correos cumpla con sus plazos de entrega.</p>
+          <p>Los plazos se computan en días laborables y pueden verse alterados por festivos locales o nacionales.</p>
+          <p>Si la forma de pago elegida es transferencia bancaria, no se realizará el envío hasta que tengamos confirmación bancaria de la transferencia.</p>
+          <p>SPORTBALIN se reserva el derecho de variar el tipo de envío y la compañía por la cual se efectúa este, independientemente de lo expuesto en estas páginas, siempre que no suponga un perjuicio manifiesto para el cliente.</p>
+          <p className="font-semibold text-ink">Atención: No realizamos envíos a apartados postales.</p>
 
-        <div className="mt-6 p-4 bg-linen/60 rounded-xl border border-[#DDD8CC]">
-          <p className="font-semibold text-ink mb-2">Envíos a domicilio</p>
-          <ul className="space-y-1.5 list-disc list-inside text-[#6B6863]">
-            <li>Península: <strong className="text-ink">3 €</strong>. Gratuito para pedidos superiores a <strong className="text-ink">75 €</strong>.</li>
-            <li>Europa y resto del mundo: consultar portes en <a href="mailto:sportbalin@gmail.com" className="text-ember underline underline-offset-2">sportbalin@gmail.com</a>.</li>
-          </ul>
-        </div>
+          <div className="mt-6 p-4 bg-linen/60 rounded-xl border border-[#DDD8CC]">
+            <p className="font-semibold text-ink mb-2">Envíos a domicilio</p>
+            <ul className="space-y-1.5 list-disc list-inside text-[#6B6863]">
+              <li>Península: <strong className="text-ink">{shippingRate} €</strong>. Gratuito para pedidos superiores a <strong className="text-ink">{freeThreshold} €</strong>.</li>
+              <li>Europa y resto del mundo: consultar portes en <a href="mailto:sportbalin@gmail.com" className="text-ember underline underline-offset-2">sportbalin@gmail.com</a>.</li>
+            </ul>
+          </div>
 
-        <div className="mt-4 p-4 bg-ember/5 rounded-xl border border-ember/15">
-          <p className="font-semibold text-ember mb-2">Envío gratuito</p>
-          <p>Los gastos de envío serán gratuitos para pedidos superiores a 75 €. Durante el proceso de compra, si tu pedido supera ese importe, podrás seleccionar la opción &laquo;Envío Gratuito&raquo; junto al resto de opciones de envío.</p>
-          <p className="mt-2">Aplica a envíos realizados en España, tanto en territorio peninsular como en Canarias.</p>
-        </div>
-      </>
-    ),
-  },
+          <div className="mt-4 p-4 bg-ember/5 rounded-xl border border-ember/15">
+            <p className="font-semibold text-ember mb-2">Envío gratuito</p>
+            <p>Los gastos de envío serán gratuitos para pedidos superiores a {freeThreshold} €. Durante el proceso de compra, si tu pedido supera ese importe, podrás seleccionar la opción &laquo;Envío Gratuito&raquo; junto al resto de opciones de envío.</p>
+            <p className="mt-2">Aplica a envíos realizados en España, tanto en territorio peninsular como en Canarias.</p>
+          </div>
+        </>
+      ),
+    },
   {
     id: "garantia",
     title: "4. Garantía",
@@ -123,9 +125,13 @@ const sections = [
       </>
     ),
   },
-]
+  ]
+}
 
-export default function TermsPage() {
+export default async function TermsPage() {
+  const { shippingRate, freeThreshold } = await getShippingSettings()
+  const sections = buildSections(shippingRate, freeThreshold)
+
   return (
     <main className="flex-1 pt-16 sm:pt-18">
       <section className="bg-gradient-to-br from-slate via-[#1a1a1a] to-black py-16 sm:py-20">

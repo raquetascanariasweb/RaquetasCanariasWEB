@@ -2,18 +2,16 @@ import { auth } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import AdminLayoutClient from './AdminLayoutClient'
 import { getCurrencyConfig } from '@/lib/admin/currency'
+import { isAdmin } from '@/lib/admin-auth'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const { userId, redirectToSignIn } = await auth()
-
-  const adminUserId =
-    process.env.NEXT_PUBLIC_ADMIN_USER_ID
 
   if (!userId) {
     return redirectToSignIn()
   }
 
-  if (userId !== adminUserId) {
+  if (!isAdmin(userId)) {
     redirect('/')
   }
 
