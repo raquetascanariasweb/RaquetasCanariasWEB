@@ -365,86 +365,149 @@ export default function ProductFormDialog({ open, product, onClose, onSaved }: P
               </div>
 
               <div>
-                <Label>Imágenes (por color)</Label>
+                <Label>Imágenes{colors.length > 0 ? ' (por color)' : ''}</Label>
                 <div className="mt-2 space-y-2">
-                  {colors.length === 0 && (
-                    <p className="text-xs text-muted-foreground">Añade primero los colores</p>
-                  )}
-                  {colors.map((c) => {
-                    const colorImages = images.filter((img) => img.color === c.slug)
-                    return (
-                      <div key={c.slug} className="border border-border rounded-lg p-3">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="w-3 h-3 rounded-full inline-block" style={{ backgroundColor: c.hex }} />
-                          <span className="text-sm font-medium">{c.name}</span>
-                          <span className="text-[10px] text-muted-foreground ml-auto">{colorImages.length} imagen(es)</span>
-                        </div>
-                        <div className="flex gap-2 flex-wrap">
-                          {colorImages.map((img, i) => (
-                            <div key={i} className="relative w-20 h-20 rounded border border-border overflow-hidden group">
-                              <img
-                                src={img.url ?? (img.file ? URL.createObjectURL(img.file) : '')}
-                                alt=""
-                                className="w-full h-full object-cover"
-                              />
-                              <div className="absolute inset-x-0 bottom-0 flex justify-center gap-0.5 pb-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button
-                                  type="button"
-                                  className="bg-black/60 rounded p-0.5 hover:bg-black/80 disabled:opacity-30"
-                                  onClick={() => moveImage(c.slug, i, 'up')}
-                                  disabled={i === 0}
-                                >
-                                  <ChevronUp size={10} className="text-white" />
-                                </button>
-                                <button
-                                  type="button"
-                                  className="bg-black/60 rounded p-0.5 hover:bg-black/80 disabled:opacity-30"
-                                  onClick={() => moveImage(c.slug, i, 'down')}
-                                  disabled={i === colorImages.length - 1}
-                                >
-                                  <ChevronDown size={10} className="text-white" />
-                                </button>
-                              </div>
+                  {colors.length === 0 ? (
+                    <div className="border border-border rounded-lg p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-sm font-medium">Imágenes del producto</span>
+                        <span className="text-[10px] text-muted-foreground ml-auto">{images.filter((img) => !img.color).length} imagen(es)</span>
+                      </div>
+                      <div className="flex gap-2 flex-wrap">
+                        {images.filter((img) => !img.color).map((img, i, arr) => (
+                          <div key={i} className="relative w-20 h-20 rounded border border-border overflow-hidden group">
+                            <img
+                              src={img.url ?? (img.file ? URL.createObjectURL(img.file) : '')}
+                              alt=""
+                              className="w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-x-0 bottom-0 flex justify-center gap-0.5 pb-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                               <button
                                 type="button"
-                                className="absolute top-0.5 right-0.5 bg-black/60 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                                onClick={() => {
-                                  const imgIdx = images.findIndex((im, idx) => idx === images.indexOf(img) && im.color === c.slug)
-                                  setImages(images.filter((_, idx) => idx !== images.indexOf(img)))
-                                }}
+                                className="bg-black/60 rounded p-0.5 hover:bg-black/80 disabled:opacity-30"
+                                onClick={() => moveImage('', i, 'up')}
+                                disabled={i === 0}
                               >
-                                <X size={10} className="text-white" />
+                                <ChevronUp size={10} className="text-white" />
+                              </button>
+                              <button
+                                type="button"
+                                className="bg-black/60 rounded p-0.5 hover:bg-black/80 disabled:opacity-30"
+                                onClick={() => moveImage('', i, 'down')}
+                                disabled={i === arr.length - 1}
+                              >
+                                <ChevronDown size={10} className="text-white" />
                               </button>
                             </div>
-                          ))}
-                          <label className="w-20 h-20 rounded border border-dashed border-border flex items-center justify-center cursor-pointer hover:bg-accent/10 transition-colors">
-                            <Upload size={14} className="text-muted-foreground" />
-                            <input
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0]
-                                if (file) setImages([...images, { file, color: c.slug }])
-                                e.target.value = ''
-                              }}
-                            />
-                          </label>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setMediaPickerColor(c.slug)
-                              setMediaPickerOpen(true)
+                            <button
+                              type="button"
+                              className="absolute top-0.5 right-0.5 bg-black/60 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => setImages(images.filter((_, idx) => idx !== images.indexOf(img)))}
+                            >
+                              <X size={10} className="text-white" />
+                            </button>
+                          </div>
+                        ))}
+                        <label className="w-20 h-20 rounded border border-dashed border-border flex items-center justify-center cursor-pointer hover:bg-accent/10 transition-colors">
+                          <Upload size={14} className="text-muted-foreground" />
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0]
+                              if (file) setImages([...images, { file, color: '' }])
+                              e.target.value = ''
                             }}
-                            className="w-20 h-20 rounded border border-dashed border-border flex items-center justify-center hover:bg-accent/10 transition-colors"
-                            title="Seleccionar de la biblioteca de medios"
-                          >
-                            <ImageIcon size={14} className="text-muted-foreground" />
-                          </button>
-                        </div>
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMediaPickerColor('')
+                            setMediaPickerOpen(true)
+                          }}
+                          className="w-20 h-20 rounded border border-dashed border-border flex items-center justify-center hover:bg-accent/10 transition-colors"
+                          title="Seleccionar de la biblioteca de medios"
+                        >
+                          <ImageIcon size={14} className="text-muted-foreground" />
+                        </button>
                       </div>
-                    )
-                  })}
+                    </div>
+                  ) : (
+                    colors.map((c) => {
+                      const colorImages = images.filter((img) => img.color === c.slug)
+                      return (
+                        <div key={c.slug} className="border border-border rounded-lg p-3">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="w-3 h-3 rounded-full inline-block" style={{ backgroundColor: c.hex }} />
+                            <span className="text-sm font-medium">{c.name}</span>
+                            <span className="text-[10px] text-muted-foreground ml-auto">{colorImages.length} imagen(es)</span>
+                          </div>
+                          <div className="flex gap-2 flex-wrap">
+                            {colorImages.map((img, i) => (
+                              <div key={i} className="relative w-20 h-20 rounded border border-border overflow-hidden group">
+                                <img
+                                  src={img.url ?? (img.file ? URL.createObjectURL(img.file) : '')}
+                                  alt=""
+                                  className="w-full h-full object-cover"
+                                />
+                                <div className="absolute inset-x-0 bottom-0 flex justify-center gap-0.5 pb-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <button
+                                    type="button"
+                                    className="bg-black/60 rounded p-0.5 hover:bg-black/80 disabled:opacity-30"
+                                    onClick={() => moveImage(c.slug, i, 'up')}
+                                    disabled={i === 0}
+                                  >
+                                    <ChevronUp size={10} className="text-white" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="bg-black/60 rounded p-0.5 hover:bg-black/80 disabled:opacity-30"
+                                    onClick={() => moveImage(c.slug, i, 'down')}
+                                    disabled={i === colorImages.length - 1}
+                                  >
+                                    <ChevronDown size={10} className="text-white" />
+                                  </button>
+                                </div>
+                                <button
+                                  type="button"
+                                  className="absolute top-0.5 right-0.5 bg-black/60 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  onClick={() => setImages(images.filter((_, idx) => idx !== images.indexOf(img)))}
+                                >
+                                  <X size={10} className="text-white" />
+                                </button>
+                              </div>
+                            ))}
+                            <label className="w-20 h-20 rounded border border-dashed border-border flex items-center justify-center cursor-pointer hover:bg-accent/10 transition-colors">
+                              <Upload size={14} className="text-muted-foreground" />
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0]
+                                  if (file) setImages([...images, { file, color: c.slug }])
+                                  e.target.value = ''
+                                }}
+                              />
+                            </label>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setMediaPickerColor(c.slug)
+                                setMediaPickerOpen(true)
+                              }}
+                              className="w-20 h-20 rounded border border-dashed border-border flex items-center justify-center hover:bg-accent/10 transition-colors"
+                              title="Seleccionar de la biblioteca de medios"
+                            >
+                              <ImageIcon size={14} className="text-muted-foreground" />
+                            </button>
+                          </div>
+                        </div>
+                      )
+                    })
+                  )}
                 </div>
               </div>
             </TabsContent>

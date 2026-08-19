@@ -79,10 +79,6 @@ export async function POST(request: Request) {
     let colors: { name: string; hex: string; slug: string }[] = []
     try { colors = colorsRaw ? JSON.parse(colorsRaw) : [] } catch { colors = [] }
 
-    if (colors.length === 0) {
-      return NextResponse.json({ error: 'At least one color is required' }, { status: 400 })
-    }
-
     const slug = name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
