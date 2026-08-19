@@ -12,58 +12,62 @@ export async function getCustomers(): Promise<AdminCustomer[]> {
   await checkAdmin()
   const supabase = createAdminClient()
 
+  // 1. Fetch order stats
   const { data: orders } = await supabase.from('orders').select('user_id, total_cents, status, created_at')
-  const userMap = new Map<string, { order_count: number; total_spent: number; first_order: string }>()
+  const orderStats = new Map<string, { order_count: number; total_spent: number; first_order: string }>()
 
   for (const o of orders ?? []) {
     if (!o.user_id) continue
-    const entry = userMap.get(o.user_id) ?? { order_count: 0, total_spent: 0, first_order: o.created_at }
+    const entry = orderStats.get(o.user_id) ?? { order_count: 0, total_spent: 0, first_order: o.created_at }
     entry.order_count++
     if (o.status !== 'cancelled' && o.status !== 'refunded') entry.total_spent += o.total_cents
     if (o.created_at && o.created_at < entry.first_order) entry.first_order = o.created_at
-    userMap.set(o.user_id, entry)
+    orderStats.set(o.user_id, entry)
   }
 
+  // 2. Fetch all Clerk users
   const customers: AdminCustomer[] = []
-  const userIds = Array.from(userMap.keys())
-
   try {
     const secretKey = process.env.CLERK_SECRET_KEY
-    if (secretKey && userIds.length > 0) {
-      const queryParams = userIds.map((id) => `user_id=${encodeURIComponent(id)}`).join('&')
-      const res = await fetch(`https://api.clerk.com/v1/users?limit=100&${queryParams}`, {
-        headers: { Authorization: `Bearer ${secretKey}` },
-      })
-      if (res.ok) {
+    if (secretKey) {
+      let page = 1
+      let hasMore = true
+      while (hasMore) {
+        const res = await fetch(`https://api.clerk.com/v1/users?limit=100&offset=${(page - 1) * 100}`, {
+          headers: { Authorization: `Bearer ${secretKey}` },
+        })
+        if (!res.ok) break
         const clerkUsers = await res.json() as any[]
-        const clerkMap = new Map(clerkUsers.map((u: any) => [u.id, u]))
-        for (const userId of userIds) {
-          const u = clerkMap.get(userId)
-          const info = userMap.get(userId)!
+        if (clerkUsers.length === 0) break
+        for (const u of clerkUsers) {
+          const stats = orderStats.get(u.id)
           customers.push({
-            id: userId,
-            email: u?.email_addresses?.[0]?.email_address ?? '',
-            first_name: u?.first_name ?? '',
-            last_name: u?.last_name ?? '',
-            order_count: info.order_count,
-            total_spent: info.total_spent,
-            created_at: u?.created_at ?? info.first_order ?? '',
+            id: u.id,
+            email: u.email_addresses?.[0]?.email_address ?? '',
+            first_name: u.first_name ?? '',
+            last_name: u.last_name ?? '',
+            order_count: stats?.order_count ?? 0,
+            total_spent: stats?.total_spent ?? 0,
+            created_at: u.created_at ?? '',
           })
         }
+        hasMore = clerkUsers.length === 100
+        page++
       }
     }
   } catch { /* clerk api not available */ }
 
+  // 3. Fallback: if Clerk API failed, show order-only customers
   if (customers.length === 0) {
-    for (const [userId, info] of Array.from(userMap.entries())) {
+    for (const [userId, stats] of Array.from(orderStats.entries())) {
       customers.push({
         id: userId,
         email: '',
         first_name: '',
         last_name: '',
-        order_count: info.order_count,
-        total_spent: info.total_spent,
-        created_at: info.first_order ?? '',
+        order_count: stats.order_count,
+        total_spent: stats.total_spent,
+        created_at: stats.first_order ?? '',
       })
     }
   }
