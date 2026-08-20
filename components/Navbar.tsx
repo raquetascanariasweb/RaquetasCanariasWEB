@@ -275,8 +275,8 @@ export default function Navbar({ categories }: { categories: Category[] }) {
     <header className="sticky top-0 z-50 bg-black">
       <nav className="flex items-center justify-between h-[60px] px-5 lg:px-8 max-w-[1800px] mx-auto relative">
         <Link href="/" className="shrink-0 flex items-baseline gap-0.5">
-          <span className="text-sm font-bold tracking-[0.2em] text-white uppercase">Sport</span>
-          <span className="text-sm font-bold tracking-[0.2em] text-ember uppercase">balin</span>
+          <span className="text-sm font-bold tracking-[0.2em] text-white uppercase">Raquetas</span>
+          <span className="text-sm font-bold tracking-[0.2em] text-ember uppercase">Canarias</span>
         </Link>
         <div className="hidden lg:flex items-center gap-0.5">
           <div className="relative" onMouseEnter={() => { moda.close(); varios.close(); sports.enter() }} onMouseLeave={sports.leave}>
@@ -313,7 +313,12 @@ export default function Navbar({ categories }: { categories: Category[] }) {
           ) : (
             <Link href="/sign-in" className="hidden lg:inline text-[13px] font-medium text-gray-400 hover:text-white transition-colors">Iniciar sesión</Link>
           )}
-          {isAdmin && <Link href="/admin" className="hidden lg:inline text-[11px] font-semibold text-gray-500 hover:text-ember transition-colors">Admin</Link>}
+          {isAdmin && (
+            <Link href="/admin" className="hidden lg:inline-flex items-center gap-1.5 text-[11px] font-semibold text-ember hover:text-white transition-colors bg-ember/10 px-2.5 py-1 rounded-full">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+              Admin
+            </Link>
+          )}
           <button onClick={() => setMenuOpen(true)} className="lg:hidden text-gray-400" aria-label="Abrir menú"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg></button>
         </div>
       </nav>
@@ -348,7 +353,7 @@ export default function Navbar({ categories }: { categories: Category[] }) {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setMenuOpen(false)} className="fixed inset-0 bg-black/50 z-30 lg:hidden" />
           <motion.div initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }} transition={{ type: "tween", duration: 0.25, ease: "easeInOut" }} className="fixed inset-0 top-0 z-40 w-80 max-w-[85vw] bg-black overflow-y-auto">
             <div className="flex items-center justify-between h-[60px] px-5 border-b border-white/10">
-              <span className="text-base font-bold tracking-[0.2em] text-white uppercase">Sport<span className="text-ember">balin</span></span>
+              <span className="text-base font-bold tracking-[0.2em] text-white uppercase">Raquetas<span className="text-ember">Canarias</span></span>
               <button onClick={() => setMenuOpen(false)} className="text-gray-400"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
             </div>
             <div className="px-5 py-4">
@@ -377,6 +382,12 @@ export default function Navbar({ categories }: { categories: Category[] }) {
                 )}
                 <Link href="/about" onClick={() => setMenuOpen(false)} className="block text-base font-semibold text-white">Sobre nosotros</Link>
                 <Link href="/terms" onClick={() => setMenuOpen(false)} className="block text-base font-semibold text-white">Condiciones de venta</Link>
+                {isAdmin && (
+                  <Link href="/admin" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 text-base font-semibold text-ember">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                    Panel de administración
+                  </Link>
+                )}
               </div>
             </div>
           </motion.div>
