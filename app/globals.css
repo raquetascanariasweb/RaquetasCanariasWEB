@@ -2,11 +2,12 @@
 @plugin "@tailwindcss/typography";
 
 @theme inline {
-  --color-paper: #EBECEE;
-  --color-ink: #3D3D3D;
-  --color-ember: #C4E326;
-  --color-linen: #8A8C8F;
-  --color-slate: #000000;
+  /* Raquetas Canarias — Volcanic palette */
+  --color-paper: #fdfcfa;
+  --color-ink: #1a1a1a;
+  --color-ember: #e85d2c;
+  --color-linen: #ecdbc8;
+  --color-slate: #0d0d0d;
 
   /* Admin dark semantic tokens */
   --color-admin-bg: #0d0d0d;
@@ -18,7 +19,7 @@
   --color-admin-success: #22c55e;
   --color-admin-warning: #f59e0b;
   --color-admin-danger: #dc2626;
-  --color-admin-info: #38bdf8;
+  --color-admin-info: #3d9fc8;
 
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
@@ -40,99 +41,99 @@
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
 
-  --font-display: var(--font-sora);
-  --font-sans: var(--font-inter);
+  --font-display: var(--font-space-grotesk);
+  --font-sans: var(--font-dm-sans);
   --font-mono: var(--font-jetbrains-mono);
 
   --radius: 0.375rem;
 }
 
 :root {
-  --background: 210 5% 95%;
-  --foreground: 0 0% 24%;
-  --card: 210 3% 90%;
-  --card-foreground: 0 0% 24%;
-  --popover: 210 5% 95%;
-  --popover-foreground: 0 0% 24%;
-  --primary: 68 80% 52%;
-  --primary-foreground: 0 0% 0%;
-  --secondary: 210 3% 90%;
-  --secondary-foreground: 0 0% 24%;
-  --muted: 210 3% 90%;
-  --muted-foreground: 216 2% 45%;
-  --accent: 68 80% 52%;
-  --accent-foreground: 0 0% 0%;
-  --destructive: 0 65% 50%;
+  --background: 30 33% 98%;
+  --foreground: 0 0% 10%;
+  --card: 30 50% 96%;
+  --card-foreground: 0 0% 10%;
+  --popover: 30 33% 98%;
+  --popover-foreground: 0 0% 10%;
+  --primary: 17 82% 54%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 30 50% 96%;
+  --secondary-foreground: 0 0% 22%;
+  --muted: 30 50% 96%;
+  --muted-foreground: 0 0% 51%;
+  --accent: 200 68% 34%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 72% 51%;
   --destructive-foreground: 0 0% 100%;
-  --border: 216 2% 82%;
-  --input: 216 2% 82%;
-  --ring: 68 80% 52%;
+  --border: 28 50% 85%;
+  --input: 28 50% 85%;
+  --ring: 20 86% 57%;
 }
 
 [data-theme="dark"] {
   --background: 0 0% 5%;
-  --foreground: 210 5% 90%;
+  --foreground: 30 33% 98%;
   --card: 0 0% 10%;
-  --card-foreground: 210 5% 90%;
+  --card-foreground: 30 33% 98%;
   --popover: 0 0% 10%;
-  --popover-foreground: 210 5% 90%;
-  --primary: 68 80% 52%;
-  --primary-foreground: 0 0% 0%;
+  --popover-foreground: 30 33% 98%;
+  --primary: 17 82% 54%;
+  --primary-foreground: 0 0% 100%;
   --secondary: 0 0% 10%;
-  --secondary-foreground: 210 5% 90%;
+  --secondary-foreground: 30 33% 98%;
   --muted: 0 0% 10%;
-  --muted-foreground: 216 2% 55%;
-  --accent: 68 80% 52%;
-  --accent-foreground: 0 0% 0%;
-  --destructive: 0 65% 50%;
+  --muted-foreground: 0 0% 51%;
+  --accent: 200 68% 34%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 72% 51%;
   --destructive-foreground: 0 0% 100%;
   --border: 0 0% 18%;
   --input: 0 0% 18%;
-  --ring: 68 80% 52%;
+  --ring: 20 86% 57%;
 }
 
 @layer base {
   * {
     scrollbar-width: thin;
-    scrollbar-color: #8A8C8F transparent;
+    scrollbar-color: #a4a4a4 transparent;
   }
 
   [data-theme="dark"] * {
-    scrollbar-color: #3D3D3D transparent;
+    scrollbar-color: #434343 transparent;
   }
 
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
-    font-family: var(--font-sans, Inter, Arial, Helvetica, sans-serif);
+    font-family: var(--font-sans, 'DM Sans', Arial, Helvetica, sans-serif);
   }
 
   ::selection {
-    background-color: rgba(196, 227, 38, 0.25);
-    color: #000000;
+    background-color: rgba(232, 93, 44, 0.2);
+    color: #1a1a1a;
   }
 }
 
 @utility container-main {
   width: 100%;
-  max-width: 1800px;
+  max-width: 1400px;
   margin-left: auto;
   margin-right: auto;
-  padding-left: 1rem;
-  padding-right: 1rem;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
 }
 
 @media (min-width: 640px) {
   .container-main {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
   }
 }
 
 @media (min-width: 1024px) {
   .container-main {
-    padding-left: 2rem;
-    padding-right: 2rem;
+    padding-left: 3rem;
+    padding-right: 3rem;
   }
 }
 
@@ -151,4 +152,9 @@
   to {
     transform: translateX(-50%);
   }
+}
+
+*:focus-visible {
+  outline: 2px solid var(--color-ember);
+  outline-offset: 2px;
 }

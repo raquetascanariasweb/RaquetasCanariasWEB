@@ -223,7 +223,7 @@ export async function POST(request: Request) {
         amount_off: totalDiscountCents,
         currency: 'eur',
         duration: 'once',
-        name: 'Sportbalin descuento',
+        name: 'Raquetas Canarias descuento',
       })
       couponId = coupon.id
     } catch (couponError: unknown) {

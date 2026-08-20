@@ -188,7 +188,7 @@ export default function AdminOrdersPage() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `pedidos-sportbalin-${new Date().toISOString().split('T')[0]}.csv`
+    a.download = `pedidos-raquetascanarias-${new Date().toISOString().split('T')[0]}.csv`
     a.click()
     URL.revokeObjectURL(url)
     toast.success(`${data.length} pedidos exportados`)

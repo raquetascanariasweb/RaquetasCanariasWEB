@@ -27,7 +27,7 @@ export default function FooterWrapper() {
     return (
       <footer className="border-t border-[#DDD8CC] py-10 text-center text-sm text-[#A09C95]">
         <div className="container-main">
-          <p>&copy; {new Date().getFullYear()} Sportbalin. Todos los derechos reservados.</p>
+          <p>&copy; {new Date().getFullYear()} Raquetas Canarias. Todos los derechos reservados.</p>
         </div>
       </footer>
     )
@@ -88,7 +88,7 @@ export default function FooterWrapper() {
         </div>
         <div className="mt-10 pt-6 border-t border-[#DDD8CC] flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-ink/40">
-            {footer.copyright_text || `\u00A9 ${year} Sportbalin. Todos los derechos reservados.`}
+            {footer.copyright_text || `\u00A9 ${year} Raquetas Canarias. Todos los derechos reservados.`}
           </p>
           {(footer.social_links || []).length > 0 && (
             <div className="flex items-center gap-4">

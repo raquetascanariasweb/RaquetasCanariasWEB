@@ -106,7 +106,7 @@ export default function CheckoutPage() {
               Indica en el concepto: <span className="font-mono text-ink">Pedido #{bizumOrder.orderId.slice(0, 8)}</span>
             </p>
             <p className="text-xs text-linen/70 mt-6 max-w-sm">
-              Tu pedido quedará en estado pendiente hasta que el equipo de Sportbalin verifique el pago. Recibirás un correo de confirmación en cuanto lo revisemos.
+              Tu pedido quedará en estado pendiente hasta que el equipo de Raquetas Canarias verifique el pago. Recibirás un correo de confirmación en cuanto lo revisemos.
             </p>
             <Link href="/shop" className="mt-8 inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-ember text-black font-semibold text-sm hover:bg-ember/90 transition-colors">
               Volver a la tienda

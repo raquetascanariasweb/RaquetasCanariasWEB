@@ -3,7 +3,7 @@ import { getStripe } from "@/lib/stripe"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { Resend } from "resend"
 
-const FROM = process.env.RESEND_FROM || "Sportbalin <onboarding@resend.dev>"
+const FROM = process.env.RESEND_FROM || "Raquetas Canarias <onboarding@resend.dev>"
 
 function formatPrice(cents: number) {
   return (cents / 100).toFixed(2)
@@ -36,14 +36,14 @@ async function sendConfirmationEmail(sessionId: string, customerEmail: string, o
 
   const html = `
     <div style="max-width:600px;margin:0 auto;font-family:Arial,sans-serif;color:#333">
-      <h1 style="color:#C4E326">¡Gracias por tu pedido!</h1>
+      <h1 style="color:#e85d2c">¡Gracias por tu pedido!</h1>
       <p>Hemos recibido tu pedido y lo estamos procesando.</p>
       <table style="width:100%;border-collapse:collapse;margin:20px 0">
         <thead><tr style="background:#f5f5f5"><th style="padding:8px;text-align:left">Producto</th><th style="padding:8px;text-align:center">Cant.</th><th style="padding:8px;text-align:right">Total</th></tr></thead>
         <tbody>${itemsHtml}</tbody>
         <tfoot><tr><td colspan="2" style="padding:12px 8px;text-align:right;font-weight:bold">Total:</td><td style="padding:12px 8px;text-align:right;font-weight:bold;font-size:18px">${formatPrice(total)}€</td></tr></tfoot>
       </table>
-      <p style="color:#888;font-size:13px">Si tienes alguna duda, contáctanos en sportbalin@gmail.com</p>
+      <p style="color:#888;font-size:13px">Si tienes alguna duda, contáctanos en info@raquetascanarias.com</p>
     </div>
   `
 

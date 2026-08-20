@@ -23,15 +23,15 @@ interface BaseEmailProps {
 }
 
 const brand = {
-  black: '#0a0a0f',
-  ivory: '#f0f0f5',
-  gold: '#00e5ff',
-  charcoal: '#12121a',
+  black: '#1a1a1a',
+  ivory: '#fdfcfa',
+  lava: '#e85d2c',
+  charcoal: '#0d0d0d',
 } as const
 
 export default function BaseEmail({
-  title = 'Sportbalin',
-  previewText = 'You have a new message from Sportbalin',
+  title = 'Raquetas Canarias',
+  previewText = 'You have a new message from Raquetas Canarias',
   content,
   ctaText,
   ctaUrl,
@@ -69,12 +69,12 @@ export default function BaseEmail({
 
           <Section style={styles.footer}>
             <Text style={styles.footerText}>
-              Sportbalin — Elegancia Deportiva
+              Raquetas Canarias — Pádel y Tenis en Canarias
             </Text>
             <Text style={styles.footerSmall}>
               Questions? Contact us at{' '}
-              <Link href="mailto:hello@sportbalin.com" style={styles.link}>
-                hello@sportbalin.com
+              <Link href="mailto:info@raquetascanarias.com" style={styles.link}>
+                info@raquetascanarias.com
               </Link>
             </Text>
           </Section>
@@ -90,7 +90,7 @@ const styles = {
     margin: '0',
     padding: '24px',
     fontFamily:
-      "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+      "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
   },
   container: {
     maxWidth: '600px',
@@ -98,7 +98,7 @@ const styles = {
     backgroundColor: brand.charcoal,
     borderRadius: '8px',
     overflow: 'hidden',
-    border: `1px solid ${brand.gold}33`,
+    border: `1px solid ${brand.lava}33`,
   },
   header: {
     backgroundColor: brand.black,
@@ -106,7 +106,7 @@ const styles = {
     textAlign: 'center' as const,
   },
   logo: {
-    color: brand.gold,
+    color: brand.lava,
     fontSize: '24px',
     fontWeight: '600',
     letterSpacing: '0.2em',
@@ -141,7 +141,7 @@ const styles = {
     marginTop: '32px',
   },
   ctaButton: {
-    backgroundColor: brand.gold,
+    backgroundColor: brand.lava,
     color: brand.black,
     borderRadius: '4px',
     padding: '14px 28px',
@@ -152,7 +152,7 @@ const styles = {
     letterSpacing: '0.1em',
   },
   divider: {
-    borderColor: `${brand.gold}33`,
+    borderColor: `${brand.lava}33`,
     margin: '0 32px',
   },
   footer: {
@@ -172,7 +172,7 @@ const styles = {
     opacity: 0.6,
   },
   link: {
-    color: brand.gold,
+    color: brand.lava,
     textDecoration: 'none',
   },
 }

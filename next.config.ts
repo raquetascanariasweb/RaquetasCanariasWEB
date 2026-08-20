@@ -13,11 +13,11 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "www.sportbalin.com",
+        hostname: "www.raquetascanarias.com",
       },
       {
         protocol: "https",
-        hostname: "sportbalin.com",
+        hostname: "raquetascanarias.com",
       },
     ],
   },

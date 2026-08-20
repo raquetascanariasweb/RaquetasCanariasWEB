@@ -1,6 +1,20 @@
 -- ═══════════════════════════════════════════════════════════════
 -- SPORTBALIN — Full Schema (unified, ejecutar una sola vez)
+-- Incluye: tablas base + migraciones 001-008 + multi-category
 -- ═══════════════════════════════════════════════════════════════
+
+-- ═══════════════════════════════════════════════════════════════
+-- CLEANUP: eliminar tablas y funciones existentes
+-- ═══════════════════════════════════════════════════════════════
+
+DROP TABLE IF EXISTS email_logs, email_campaigns, cart_items, user_favorites,
+  promotional_sections, banners, featured_products, seo_defaults,
+  footer_settings, navigation_menus, landing_pages, editorial_blocks,
+  homepage_hero, settings, newsletter_subscribers, gift_cards,
+  discounts, orders, product_variants, products, categories
+CASCADE;
+
+DROP FUNCTION IF EXISTS decrement_stock;
 
 -- 1. CATEGORIES
 CREATE TABLE IF NOT EXISTS categories (
@@ -24,6 +38,7 @@ CREATE TABLE IF NOT EXISTS products (
   price_cents INTEGER NOT NULL,
   compare_at_price_cents INTEGER,
   category_id UUID REFERENCES categories(id) ON DELETE SET NULL,
+  category_ids JSONB DEFAULT '[]'::jsonb,
   images JSONB NOT NULL DEFAULT '[]'::jsonb,
   sizes TEXT[] NOT NULL DEFAULT '{}',
   colors JSONB NOT NULL DEFAULT '[]',
@@ -53,10 +68,12 @@ CREATE TABLE IF NOT EXISTS product_variants (
 -- 4. ORDERS
 CREATE TABLE IF NOT EXISTS orders (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id TEXT NOT NULL,
+  user_id TEXT,
+  customer_email TEXT,
   status TEXT NOT NULL DEFAULT 'pending'
     CHECK (status IN ('draft','pending','paid','processing','shipped','delivered','cancelled','refunded')),
   total_cents INTEGER NOT NULL,
+  payment_method TEXT,
   stripe_session_id TEXT,
   stripe_payment_intent TEXT,
   payment_verified_at TIMESTAMPTZ,
@@ -65,6 +82,10 @@ CREATE TABLE IF NOT EXISTS orders (
   notes TEXT DEFAULT '',
   tracking_number TEXT DEFAULT '',
   shipping_carrier TEXT DEFAULT '',
+  discount_code TEXT,
+  discount_amount_cents INTEGER DEFAULT 0,
+  gift_card_code TEXT,
+  gift_card_amount_cents INTEGER DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -220,6 +241,7 @@ CREATE TABLE IF NOT EXISTS banners (
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );
+
 -- 17. PROMOTIONAL SECTIONS
 CREATE TABLE IF NOT EXISTS promotional_sections (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -272,31 +294,7 @@ CREATE TABLE IF NOT EXISTS user_favorites (
   UNIQUE(user_id, product_id)
 );
 
--- ═══════════════════════════════════════════════════════════════
--- INDEXES
--- ═══════════════════════════════════════════════════════════════
-
-CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id);
-CREATE INDEX IF NOT EXISTS idx_orders_stripe_session ON orders(stripe_session_id);
-CREATE INDEX IF NOT EXISTS idx_products_slug ON products(slug);
-CREATE INDEX IF NOT EXISTS idx_products_category ON products(category_id);
-CREATE INDEX IF NOT EXISTS idx_variants_product ON product_variants(product_id);
-CREATE INDEX IF NOT EXISTS idx_discounts_code ON discounts(code);
-CREATE INDEX IF NOT EXISTS idx_discounts_active ON discounts(active);
-CREATE INDEX IF NOT EXISTS idx_gift_cards_code ON gift_cards(code);
-CREATE INDEX IF NOT EXISTS idx_gift_cards_active ON gift_cards(active);
-CREATE INDEX IF NOT EXISTS idx_newsletter_email ON newsletter_subscribers(email);
-CREATE INDEX IF NOT EXISTS idx_newsletter_status ON newsletter_subscribers(status);
-CREATE INDEX IF NOT EXISTS idx_featured_products_order ON featured_products(sort_order);
-CREATE INDEX IF NOT EXISTS idx_banners_order ON banners(sort_order);
-CREATE INDEX IF NOT EXISTS idx_promotional_sections_order ON promotional_sections(sort_order);
-CREATE INDEX IF NOT EXISTS idx_landing_pages_slug ON landing_pages(slug);
-CREATE INDEX IF NOT EXISTS idx_email_logs_campaign ON email_logs(campaign_id);
-CREATE INDEX IF NOT EXISTS idx_email_campaigns_status ON email_campaigns(status);
-
--- ════════════════════════════════════════
--- cart_items — persistent per-user carts
--- ════════════════════════════════════════
+-- 21. CART ITEMS
 CREATE TABLE IF NOT EXISTS cart_items (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id TEXT NOT NULL,
@@ -311,6 +309,156 @@ CREATE TABLE IF NOT EXISTS cart_items (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
+-- ═══════════════════════════════════════════════════════════════
+-- INDEXES
+-- ═══════════════════════════════════════════════════════════════
+
+CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id);
+CREATE INDEX IF NOT EXISTS idx_orders_customer_email ON orders(customer_email);
+CREATE INDEX IF NOT EXISTS idx_orders_stripe_session ON orders(stripe_session_id);
+CREATE INDEX IF NOT EXISTS idx_products_slug ON products(slug);
+CREATE INDEX IF NOT EXISTS idx_products_category ON products(category_id);
+CREATE INDEX IF NOT EXISTS idx_products_category_ids ON products USING GIN (category_ids);
+CREATE INDEX IF NOT EXISTS idx_variants_product ON product_variants(product_id);
+CREATE INDEX IF NOT EXISTS idx_discounts_code ON discounts(code);
+CREATE INDEX IF NOT EXISTS idx_discounts_active ON discounts(active);
+CREATE INDEX IF NOT EXISTS idx_gift_cards_code ON gift_cards(code);
+CREATE INDEX IF NOT EXISTS idx_gift_cards_active ON gift_cards(active);
+CREATE INDEX IF NOT EXISTS idx_newsletter_email ON newsletter_subscribers(email);
+CREATE INDEX IF NOT EXISTS idx_newsletter_status ON newsletter_subscribers(status);
+CREATE INDEX IF NOT EXISTS idx_featured_products_order ON featured_products(sort_order);
+CREATE INDEX IF NOT EXISTS idx_banners_order ON banners(sort_order);
+CREATE INDEX IF NOT EXISTS idx_promotional_sections_order ON promotional_sections(sort_order);
+CREATE INDEX IF NOT EXISTS idx_landing_pages_slug ON landing_pages(slug);
+CREATE INDEX IF NOT EXISTS idx_email_logs_campaign ON email_logs(campaign_id);
+CREATE INDEX IF NOT EXISTS idx_email_campaigns_status ON email_campaigns(status);
 CREATE INDEX IF NOT EXISTS idx_cart_items_user_id ON cart_items(user_id);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_cart_items_user_product_variant ON cart_items(user_id, product_id, size, color);
 CREATE INDEX IF NOT EXISTS idx_user_favorites_user_id ON user_favorites(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_favorites_product_id ON user_favorites(product_id);
+
+-- ═══════════════════════════════════════════════════════════════
+-- ROW LEVEL SECURITY
+-- ═══════════════════════════════════════════════════════════════
+
+ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE products ENABLE ROW LEVEL SECURITY;
+ALTER TABLE product_variants ENABLE ROW LEVEL SECURITY;
+ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE discounts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE gift_cards ENABLE ROW LEVEL SECURITY;
+ALTER TABLE newsletter_subscribers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE homepage_hero ENABLE ROW LEVEL SECURITY;
+ALTER TABLE editorial_blocks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE landing_pages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE navigation_menus ENABLE ROW LEVEL SECURITY;
+ALTER TABLE footer_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE seo_defaults ENABLE ROW LEVEL SECURITY;
+ALTER TABLE featured_products ENABLE ROW LEVEL SECURITY;
+ALTER TABLE banners ENABLE ROW LEVEL SECURITY;
+ALTER TABLE promotional_sections ENABLE ROW LEVEL SECURITY;
+ALTER TABLE email_campaigns ENABLE ROW LEVEL SECURITY;
+ALTER TABLE email_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_favorites ENABLE ROW LEVEL SECURITY;
+ALTER TABLE cart_items ENABLE ROW LEVEL SECURITY;
+
+-- ═══════════════════════════════════════════════════════════════
+-- RLS POLICIES: lectura pública para catálogo
+-- (anon solo puede leer; escritura bloqueada excepto service role)
+-- ═══════════════════════════════════════════════════════════════
+
+CREATE POLICY "anon_read_categories" ON categories FOR SELECT TO anon USING (true);
+CREATE POLICY "anon_read_products" ON products FOR SELECT TO anon USING (true);
+CREATE POLICY "anon_read_product_variants" ON product_variants FOR SELECT TO anon USING (true);
+CREATE POLICY "anon_read_banners" ON banners FOR SELECT TO anon USING (true);
+CREATE POLICY "anon_read_homepage_hero" ON homepage_hero FOR SELECT TO anon USING (true);
+CREATE POLICY "anon_read_editorial_blocks" ON editorial_blocks FOR SELECT TO anon USING (true);
+CREATE POLICY "anon_read_landing_pages" ON landing_pages FOR SELECT TO anon USING (true);
+CREATE POLICY "anon_read_navigation_menus" ON navigation_menus FOR SELECT TO anon USING (true);
+CREATE POLICY "anon_read_footer_settings" ON footer_settings FOR SELECT TO anon USING (true);
+CREATE POLICY "anon_read_seo_defaults" ON seo_defaults FOR SELECT TO anon USING (true);
+CREATE POLICY "anon_read_featured_products" ON featured_products FOR SELECT TO anon USING (true);
+CREATE POLICY "anon_read_promotional_sections" ON promotional_sections FOR SELECT TO anon USING (true);
+
+-- Tablas sin política para anon → acceso denegado por defecto (solo service role):
+-- orders, discounts, gift_cards, newsletter_subscribers, settings,
+-- email_campaigns, email_logs, user_favorites, cart_items
+
+-- ═══════════════════════════════════════════════════════════════
+-- FUNCTIONS
+-- ═══════════════════════════════════════════════════════════════
+
+-- Decremento atómico de stock (evita condiciones de carrera)
+CREATE OR REPLACE FUNCTION decrement_stock(
+  p_product_id UUID,
+  p_size TEXT,
+  p_color TEXT,
+  p_quantity INT
+)
+RETURNS VOID
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_track BOOLEAN;
+  v_variant_id UUID;
+  v_current INT;
+BEGIN
+  IF p_quantity <= 0 THEN
+    RETURN;
+  END IF;
+
+  -- Variante: hay talla o color
+  IF p_size IS NOT NULL OR p_color IS NOT NULL THEN
+    SELECT id, stock_quantity, track_inventory
+    INTO v_variant_id, v_current, v_track
+    FROM product_variants
+    WHERE product_id = p_product_id
+      AND size = COALESCE(p_size, '')
+      AND color_slug = COALESCE(p_color, '')
+    FOR UPDATE;
+
+    IF FOUND AND COALESCE(v_track, false) THEN
+      UPDATE product_variants
+      SET stock_quantity = GREATEST(0, stock_quantity - p_quantity)
+      WHERE id = v_variant_id;
+
+      UPDATE products
+      SET stock_quantity = COALESCE((
+        SELECT SUM(stock_quantity)
+        FROM product_variants
+        WHERE product_id = p_product_id
+      ), 0),
+      in_stock = COALESCE((
+        SELECT SUM(stock_quantity)
+        FROM product_variants
+        WHERE product_id = p_product_id
+      ), 0) > 0
+      WHERE id = p_product_id;
+    END IF;
+  ELSE
+    -- Producto sin variantes
+    SELECT stock_quantity, track_inventory
+    INTO v_current, v_track
+    FROM products
+    WHERE id = p_product_id
+    FOR UPDATE;
+
+    IF FOUND AND COALESCE(v_track, false) THEN
+      UPDATE products
+      SET stock_quantity = GREATEST(0, stock_quantity - p_quantity),
+          in_stock = GREATEST(0, stock_quantity - p_quantity) > 0
+      WHERE id = p_product_id;
+    END IF;
+  END IF;
+END;
+$$;
+
+-- ═══════════════════════════════════════════════════════════════
+-- SEED DATA: notificaciones por defecto
+-- ═══════════════════════════════════════════════════════════════
+
+INSERT INTO settings (key, value)
+SELECT 'notifications',
+       '{"order_confirmed": true, "order_shipped": true, "order_delivered": true, "low_stock_alert": true, "new_subscriber": false, "notification_email": ""}'::jsonb
+WHERE NOT EXISTS (SELECT 1 FROM settings WHERE key = 'notifications');

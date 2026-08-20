@@ -46,11 +46,11 @@ export default async function AboutPage() {
             </h2>
             <div className="space-y-4 text-[#6B6863] leading-relaxed">
               <p>
-                SportBalin se crea en el año 2009, fruto de la adaptación al mundo online de una empresa 
+                Raquetas Canarias se crea en el año 2009, fruto de la adaptación al mundo online de una empresa 
                 dedicada exclusivamente al deporte y con una experiencia de más de 25 años.
               </p>
               <p>
-                SportBalin es una empresa joven y dinámica, especializada en tenis, pádel, squash, 
+                Raquetas Canarias es una empresa joven y dinámica, especializada en tenis, pádel, squash, 
                 trekking y senderismo. Nuestra experiencia adquirida durante estos años nos ha permitido 
                 acercarnos aún más a nuestra fiel clientela.
               </p>
@@ -99,14 +99,14 @@ export default async function AboutPage() {
               <p>Puedes contactar con nosotros a través de los siguientes canales:</p>
               <div className="space-y-3">
                 <a
-                  href="mailto:sportbalin@gmail.com"
+                  href="mailto:info@raquetascanarias.com"
                   className="flex items-center gap-3 p-3 rounded-xl bg-linen/60 border border-[#DDD8CC] text-ink hover:bg-linen transition-colors"
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-ember shrink-0">
                     <rect width="20" height="16" x="2" y="4" rx="2" />
                     <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
                   </svg>
-                  <span>sportbalin@gmail.com</span>
+                  <span>info@raquetascanarias.com</span>
                 </a>
                 <a
                   href="tel:644409549"

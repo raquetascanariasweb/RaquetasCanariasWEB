@@ -41,20 +41,20 @@ const SECTIONS: { key: SectionKey; label: string; icon: any; description: string
 ]
 
 const DEFAULTS: Record<SectionKey, any> = {
-  general: { store_name: 'Favsupply', store_description: '', store_currency: 'USD', store_timezone: 'America/New_York', store_language: 'en' },
+  general: { store_name: 'Raquetas Canarias', store_description: '', store_currency: 'EUR', store_timezone: 'Atlantic/Canary', store_language: 'es' },
   store: { address_line1: '', address_line2: '', city: '', state: '', zip: '', country: 'US', phone: '', email: '' },
-  brand: { brand_name: 'Favsupply', brand_tagline: '', brand_about: '' },
-  logo: { logo_url: '', logo_alt: 'Favsupply', favicon_url: '' },
-  colors: { primary: '#c9a962', secondary: '#0a0a0a', accent: '#f5f2eb', background: '#0a0a0a', text: '#f5f2eb' },
-  typography: { heading_font: 'Cormorant Garamond', body_font: 'Inter', base_font_size: 16 },
+  brand: { brand_name: 'Raquetas Canarias', brand_tagline: '', brand_about: '' },
+  logo: { logo_url: '', logo_alt: 'Raquetas Canarias', favicon_url: '' },
+  colors: { primary: '#e85d2c', secondary: '#1a1a1a', accent: '#1b6b93', background: '#fdfcfa', text: '#1a1a1a' },
+  typography: { heading_font: 'Space Grotesk', body_font: 'DM Sans', base_font_size: 16 },
   payments: { stripe_publishable_key: '', stripe_secret_key: '', stripe_webhook_secret: '', paypal_client_id: '', test_mode: true, bizum_enabled: false, bizum_phone: '' },
   shipping: { shipping_rate: 10, free_shipping_threshold: 200, default_weight_unit: 'lbs', handling_fee: 0, shipping_zones: '' },
   taxes: { default_tax_rate: 0, tax_inclusive_pricing: false, charge_tax_on_shipping: false, tax_jurisdictions: '' },
   email_templates: {
     order_confirmation_subject: 'Pedido confirmado — #{order_number}',
-    order_confirmation_body: `<div style="font-family:'Inter',Arial,sans-serif;color:#0a0a0f;line-height:1.6;max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #e5e5ea;border-radius:8px;padding:32px;">
+    order_confirmation_body: `<div style="font-family:'DM Sans',Arial,sans-serif;color:#1a1a1a;line-height:1.6;max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #ecdbc8;border-radius:8px;padding:32px;">
   <div style="text-align:center;margin-bottom:24px;"><span style="font-size:28px;">✨</span></div>
-  <h2 style="color:#0a0a0f;font-size:22px;margin:0 0 16px;text-align:center;">¡Gracias por tu compra en Sportbalin!</h2>
+  <h2 style="color:#1a1a1a;font-size:22px;margin:0 0 16px;text-align:center;">¡Gracias por tu compra en Raquetas Canarias!</h2>
   <p style="margin:0 0 12px;">Hola,</p>
   <p style="margin:0 0 16px;">Hemos recibido tu pedido <strong>#{order_number}</strong> correctamente y ya nos hemos puesto manos a la obra para prepararlo.</p>
   <p style="margin:0 0 16px;">Te enviaremos otro correo electrónico en cuanto tu paquete salga de nuestros almacenes.</p>
@@ -63,13 +63,13 @@ const DEFAULTS: Record<SectionKey, any> = {
   </div>
   <p style="margin:0 0 16px;">¡Gracias por confiar en nosotros!</p>
   <p style="margin:24px 0 0;padding-top:24px;border-top:1px solid #eee;font-size:14px;color:#666;">
-    Saludos,<br><strong style="color:#0a0a0f;">El equipo de Sportbalin</strong>
+    Saludos,<br><strong style="color:#1a1a1a;">El equipo de Raquetas Canarias</strong>
   </p>
 </div>`,
     shipping_confirmation_subject: 'Tu pedido ha sido enviado — #{order_number}',
-    shipping_confirmation_body: `<div style="font-family:'Inter',Arial,sans-serif;color:#0a0a0f;line-height:1.6;max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #e5e5ea;border-radius:8px;padding:32px;">
+    shipping_confirmation_body: `<div style="font-family:'DM Sans',Arial,sans-serif;color:#1a1a1a;line-height:1.6;max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #ecdbc8;border-radius:8px;padding:32px;">
   <div style="text-align:center;margin-bottom:24px;"><span style="font-size:28px;">🚀</span></div>
-  <h2 style="color:#0a0a0f;font-size:22px;margin:0 0 16px;text-align:center;">¡Buenas noticias! Tu pedido ya está en camino</h2>
+  <h2 style="color:#1a1a1a;font-size:22px;margin:0 0 16px;text-align:center;">¡Buenas noticias! Tu pedido ya está en camino</h2>
   <p style="margin:0 0 12px;">Hola,</p>
   <p style="margin:0 0 16px;">Queríamos avisarte de que tu pedido <strong>#{order_number}</strong> ya ha salido de nuestras instalaciones y se dirige hacia tu dirección.</p>
   <p style="margin:0 0 16px;">Prepárate, porque muy pronto podrás disfrutar de tus artículos.</p>
@@ -78,13 +78,13 @@ const DEFAULTS: Record<SectionKey, any> = {
   </div>
   <p style="margin:0 0 16px;">¡Esperamos que lo disfrutes mucho!</p>
   <p style="margin:24px 0 0;padding-top:24px;border-top:1px solid #eee;font-size:14px;color:#666;">
-    Saludos,<br><strong style="color:#0a0a0f;">El equipo de Sportbalin</strong>
+    Saludos,<br><strong style="color:#1a1a1a;">El equipo de Raquetas Canarias</strong>
   </p>
 </div>`,
   },
   notifications: { order_confirmed: true, order_shipped: true, order_delivered: true, low_stock_alert: true, new_subscriber: false, notification_email: '' },
-  seo: { global_title: 'Favsupply — Moda de lujo', global_description: '', og_image: '', google_analytics_id: '', facebook_pixel_id: '', robots_txt: '', custom_head_scripts: '' },
-  domains: { primary_domain: 'favsupply.com', redirect_www: true, force_https: true, custom_domains: '' },
+  seo: { global_title: 'Raquetas Canarias — Pádel y Tenis', global_description: '', og_image: '', google_analytics_id: '', facebook_pixel_id: '', robots_txt: '', custom_head_scripts: '' },
+  domains: { primary_domain: 'raquetascanarias.com', redirect_www: true, force_https: true, custom_domains: '' },
   legal: { privacy_policy: '', terms_of_service: '', refund_policy: '', shipping_policy: '', cookie_policy: '' },
   social: { instagram: '', facebook: '', twitter: '', pinterest: '', tiktok: '', youtube: '', linkedin: '' },
   news_ticker: { enabled: false, text: '' },

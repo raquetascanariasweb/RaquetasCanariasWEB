@@ -5,7 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { ORDER_STATUS_LABELS } from './types'
 import type { AdminOrder, NotificationSettings, OrderStatus } from './types'
 
-const FROM_EMAIL = 'Sportbalin <hello@sportbalin.com>'
+const FROM_EMAIL = 'Raquetas Canarias <info@raquetascanarias.com>'
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
 // Estados que disparan una notificación y su checkbox asociado.
@@ -61,7 +61,7 @@ export function getSampleOrder(): AdminOrder {
     stripe_payment_intent: null,
     payment_verified_at: null,
     items: [
-      { product_id: 'p1', product_name: 'Camiseta Sportbalin Premium', quantity: 2, price_cents: 4500, size: 'M', color: 'Negro' },
+      { product_id: 'p1', product_name: 'Camiseta Raquetas Canarias Premium', quantity: 2, price_cents: 4500, size: 'M', color: 'Negro' },
       { product_id: 'p2', product_name: 'Leggings Performance', quantity: 1, price_cents: 9900, size: 'S', color: 'Gris' },
     ],
     shipping_address: null,
@@ -78,7 +78,7 @@ export async function buildOrderStatusEmail(order: AdminOrder, status: OrderStat
   const subject = `Pedido #${order.id.slice(0, 8)} — ${statusLabel}`
   const html = await render(
     BaseEmail({
-      title: 'Sportbalin — Notificación de pedido',
+      title: 'Raquetas Canarias — Notificación de pedido',
       previewText: subject,
       content: buildOrderHtml(order, status),
       ctaText: 'Ver pedidos',

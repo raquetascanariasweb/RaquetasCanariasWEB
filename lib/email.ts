@@ -27,8 +27,8 @@ export interface SendCampaignOptions {
 
 export async function sendCampaignEmail(opts: SendCampaignOptions) {
   const r = getResend()
-  const fromName = opts.fromName || 'Sportbalin'
-  const fromEmail = opts.fromEmail || 'hello@sportbalin.com'
+  const fromName = opts.fromName || 'Raquetas Canarias'
+  const fromEmail = opts.fromEmail || 'info@raquetascanarias.com'
   const from = `${fromName} <${fromEmail}>`
 
   const result = await r.emails.send({

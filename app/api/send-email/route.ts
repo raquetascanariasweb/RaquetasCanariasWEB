@@ -6,7 +6,7 @@ import { render } from '@react-email/components'
 import BaseEmail from '@/emails/BaseEmail'
 import { isAdmin } from '@/lib/admin-auth'
 
-const FROM_EMAIL = 'Sportbalin <hello@sportbalin.com>'
+const FROM_EMAIL = 'Raquetas Canarias <info@raquetascanarias.com>'
 
 const SendEmailSchema = z.object({
   to: z.string().trim().email(),

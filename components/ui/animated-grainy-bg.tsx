@@ -51,7 +51,7 @@ export function AnimatedGrainyBg({
   animationType = "mesh",
   grainType = "paper",
   grainIntensity = 40,
-  colors = ["#000000", "#3D3D3D", "#C4E326", "#8A8C8F"],
+  colors = ["#0d0d0d", "#1a1a1a", "#e85d2c", "#a4a4a4"],
   speed = 0.5,
   className = "",
   children,

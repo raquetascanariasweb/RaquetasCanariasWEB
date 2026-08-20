@@ -8,9 +8,9 @@ function buildSections(shippingRate: number, freeThreshold: number) {
       title: "1. Precios",
       content: (
         <>
-          <p>Todos los precios expuestos en www.sportbalin.com son con impuestos incluidos.</p>
+          <p>Todos los precios expuestos en www.raquetascanarias.com son con impuestos incluidos.</p>
           <p>Los precios podrán ser revisados y modificados si las condiciones lo requieren en cualquier momento, sin que ello afecte a los pedidos ya confirmados.</p>
-          <p>Todos los productos que SPORTBALIN promocione u oferte a un precio especial estarán disponibles a ese precio de promoción solo hasta la fecha indicada, salvo fin de existencias.</p>
+          <p>Todos los productos que RAQUETAS CANARIAS promocione u oferte a un precio especial estarán disponibles a ese precio de promoción solo hasta la fecha indicada, salvo fin de existencias.</p>
         </>
       ),
     },
@@ -23,10 +23,10 @@ function buildSections(shippingRate: number, freeThreshold: number) {
           <p>El pago con tarjeta de crédito se realiza mediante plataforma de pago segura proporcionada por la entidad bancaria. Toda la transacción relacionada con el pago se realizará a través de los sistemas de la entidad bancaria, garantizando la confidencialidad de tus datos.</p>
 
           <p className="font-medium text-ink">2.2 Transferencia bancaria</p>
-          <p>Si seleccionas como medio de pago la transferencia bancaria, recibirás junto con la confirmación de tu pedido un email donde se te indicará el número de cuenta en el que efectuar la transferencia a nombre de SPORTBALIN.</p>
-          <p>Es muy importante que indiques el número de pedido, así como tu nombre y apellidos, y realices la transferencia dentro de los 3 días posteriores a la fecha de confirmación del pedido. Una vez realizada, envía el justificante a <a href="mailto:sportbalin@gmail.com" className="text-ember underline underline-offset-2">sportbalin@gmail.com</a>.</p>
+          <p>Si seleccionas como medio de pago la transferencia bancaria, recibirás junto con la confirmación de tu pedido un email donde se te indicará el número de cuenta en el que efectuar la transferencia a nombre de RAQUETAS CANARIAS.</p>
+          <p>Es muy importante que indiques el número de pedido, así como tu nombre y apellidos, y realices la transferencia dentro de los 3 días posteriores a la fecha de confirmación del pedido. Una vez realizada, envía el justificante a <a href="mailto:info@raquetascanarias.com" className="text-ember underline underline-offset-2">info@raquetascanarias.com</a>.</p>
           <p>No se considerará efectivo el pedido hasta que nuestro departamento de administración tenga confirmación bancaria de la transferencia.</p>
-          <p>El pago debe realizarse en euros. Todas las eventuales comisiones de cambio y bancarias corren por cuenta del comprador al optar por este sistema de pago. En el caso de transferencias desde fuera de España, es importante que comuniques a tu banco hacerse cargo de las comisiones en origen. De no ser así, SPORTBALIN podría paralizar el envío de tu pedido al no recibir la cantidad íntegra.</p>
+          <p>El pago debe realizarse en euros. Todas las eventuales comisiones de cambio y bancarias corren por cuenta del comprador al optar por este sistema de pago. En el caso de transferencias desde fuera de España, es importante que comuniques a tu banco hacerse cargo de las comisiones en origen. De no ser así, RAQUETAS CANARIAS podría paralizar el envío de tu pedido al no recibir la cantidad íntegra.</p>
 
           <p className="font-medium text-ink">2.3 PayPal</p>
           <p>PayPal permite enviar pagos en Internet de forma segura, cómoda y rentable. La red de PayPal se basa en la infraestructura financiera existente de cuentas bancarias y tarjetas de crédito para crear una solución global de pago en tiempo real.</p>
@@ -44,17 +44,17 @@ function buildSections(shippingRate: number, freeThreshold: number) {
       title: "3. Formas de Envío y Plazos de Entrega",
       content: (
         <>
-          <p>SPORTBALIN garantiza la entrega mediante correos certificado, en un plazo de 4-5 días hábiles una vez validado el pedido, siempre que correos cumpla con sus plazos de entrega.</p>
+          <p>RAQUETAS CANARIAS garantiza la entrega mediante correos certificado, en un plazo de 4-5 días hábiles una vez validado el pedido, siempre que correos cumpla con sus plazos de entrega.</p>
           <p>Los plazos se computan en días laborables y pueden verse alterados por festivos locales o nacionales.</p>
           <p>Si la forma de pago elegida es transferencia bancaria, no se realizará el envío hasta que tengamos confirmación bancaria de la transferencia.</p>
-          <p>SPORTBALIN se reserva el derecho de variar el tipo de envío y la compañía por la cual se efectúa este, independientemente de lo expuesto en estas páginas, siempre que no suponga un perjuicio manifiesto para el cliente.</p>
+          <p>RAQUETAS CANARIAS se reserva el derecho de variar el tipo de envío y la compañía por la cual se efectúa este, independientemente de lo expuesto en estas páginas, siempre que no suponga un perjuicio manifiesto para el cliente.</p>
           <p className="font-semibold text-ink">Atención: No realizamos envíos a apartados postales.</p>
 
           <div className="mt-6 p-4 bg-linen/60 rounded-xl border border-[#DDD8CC]">
             <p className="font-semibold text-ink mb-2">Envíos a domicilio</p>
             <ul className="space-y-1.5 list-disc list-inside text-[#6B6863]">
               <li>Península: <strong className="text-ink">{shippingRate} €</strong>. Gratuito para pedidos superiores a <strong className="text-ink">{freeThreshold} €</strong>.</li>
-              <li>Europa y resto del mundo: consultar portes en <a href="mailto:sportbalin@gmail.com" className="text-ember underline underline-offset-2">sportbalin@gmail.com</a>.</li>
+              <li>Europa y resto del mundo: consultar portes en <a href="mailto:info@raquetascanarias.com" className="text-ember underline underline-offset-2">info@raquetascanarias.com</a>.</li>
             </ul>
           </div>
 
@@ -71,7 +71,7 @@ function buildSections(shippingRate: number, freeThreshold: number) {
     title: "4. Garantía",
     content: (
       <>
-        <p>Los clientes de SPORTBALIN se benefician de la garantía ofrecida por los distintos fabricantes de cada uno de los artículos.</p>
+        <p>Los clientes de RAQUETAS CANARIAS se benefician de la garantía ofrecida por los distintos fabricantes de cada uno de los artículos.</p>
         <p>Los defectos o desperfectos debidos a una incorrecta utilización o manipulación del material, así como los desgastes producidos por un uso normal del mismo, no se incluyen en esta garantía.</p>
       </>
     ),
@@ -92,8 +92,8 @@ function buildSections(shippingRate: number, freeThreshold: number) {
         </ul>
 
         <h3 className="font-medium text-ink mt-6 mb-2">Proceso de devolución</h3>
-        <p>Para realizar un cambio o devolución, envía un email a <a href="mailto:sportbalin@gmail.com" className="text-ember underline underline-offset-2">sportbalin@gmail.com</a> y te indicaremos cómo proceder.</p>
-        <p className="font-semibold text-ink">Importante: SPORTBALIN no admite envíos a portes debidos. Antes de cualquier cambio, contacta con Atención al Cliente.</p>
+        <p>Para realizar un cambio o devolución, envía un email a <a href="mailto:info@raquetascanarias.com" className="text-ember underline underline-offset-2">info@raquetascanarias.com</a> y te indicaremos cómo proceder.</p>
+        <p className="font-semibold text-ink">Importante: RAQUETAS CANARIAS no admite envíos a portes debidos. Antes de cualquier cambio, contacta con Atención al Cliente.</p>
 
         <h3 className="font-medium text-ink mt-6 mb-2">Reintegro del importe</h3>
         <p>Una vez recibamos la mercancía en nuestros almacenes y comprobemos que se cumplen todas las condiciones, procederemos al reintegro del importe:</p>
@@ -110,9 +110,9 @@ function buildSections(shippingRate: number, freeThreshold: number) {
     title: "6. Protección de Datos de Carácter Personal",
     content: (
       <>
-        <p>En cumplimiento de lo establecido en la Ley Orgánica 15/1999, de 13 de diciembre, de Protección de Datos de Carácter Personal, te informamos de que los datos personales que nos facilites serán incluidos en un fichero automatizado creado y mantenido bajo la responsabilidad de SPORTBALIN.</p>
-        <p>La finalidad de dicho fichero es facilitar la tramitación de los pedidos y, en caso de que nos hayas autorizado expresamente, enviarte comunicaciones comerciales sobre productos, ofertas, bonos descuento y servicios que puedan resultar de tu interés. Si no deseas recibir estas comunicaciones, indícanoslo enviando un email a <a href="mailto:sportbalin@gmail.com" className="text-ember underline underline-offset-2">sportbalin@gmail.com</a>.</p>
-        <p>Podrás ejercitar en todo momento los derechos de acceso, rectificación, cancelación y oposición comunicándolo por correo electrónico a <a href="mailto:sportbalin@gmail.com" className="text-ember underline underline-offset-2">sportbalin@gmail.com</a>.</p>
+        <p>En cumplimiento de lo establecido en la Ley Orgánica 15/1999, de 13 de diciembre, de Protección de Datos de Carácter Personal, te informamos de que los datos personales que nos facilites serán incluidos en un fichero automatizado creado y mantenido bajo la responsabilidad de RAQUETAS CANARIAS.</p>
+        <p>La finalidad de dicho fichero es facilitar la tramitación de los pedidos y, en caso de que nos hayas autorizado expresamente, enviarte comunicaciones comerciales sobre productos, ofertas, bonos descuento y servicios que puedan resultar de tu interés. Si no deseas recibir estas comunicaciones, indícanoslo enviando un email a <a href="mailto:info@raquetascanarias.com" className="text-ember underline underline-offset-2">info@raquetascanarias.com</a>.</p>
+        <p>Podrás ejercitar en todo momento los derechos de acceso, rectificación, cancelación y oposición comunicándolo por correo electrónico a <a href="mailto:info@raquetascanarias.com" className="text-ember underline underline-offset-2">info@raquetascanarias.com</a>.</p>
       </>
     ),
   },

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next"
-import { Sora, Inter, JetBrains_Mono } from "next/font/google"
+import { Space_Grotesk, DM_Sans, JetBrains_Mono } from "next/font/google"
 import { ClerkProvider } from "@clerk/nextjs"
 import FavoritesHydrator from "@/components/FavoritesHydrator"
 import { Toaster } from "sonner"
@@ -11,30 +11,30 @@ export const viewport: Viewport = {
   maximumScale: 5,
 }
 
-const sora = Sora({
-  variable: "--font-sora",
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 })
 
-const inter = Inter({
-  variable: "--font-inter",
+const dmSans = DM_Sans({
+  variable: "--font-dm-sans",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
+  weight: ["300", "400", "500", "600", "700"],
   display: "swap",
 })
 
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
   subsets: ["latin"],
-  weight: ["400", "500"],
+  weight: ["400", "500", "600"],
   display: "swap",
 })
 
 export const metadata: Metadata = {
-  title: "Sportbalin | Elegancia Deportiva",
-  description: "Tu tienda especializada en pádel y tenis. Equipamiento premium con la mejor tecnología.",
+  title: "Raquetas Canarias | Pádel y Tenis en Canarias",
+  description: "Tu tienda especializada en pádel y tenis. Equipamiento premium con la mejor tecnología en las Islas Canarias.",
 }
 
 export default function RootLayout({
@@ -46,7 +46,7 @@ export default function RootLayout({
     <ClerkProvider>
       <html
         lang="es"
-        className={`${sora.variable} ${inter.variable} ${jetbrainsMono.variable} h-full antialiased`}
+        className={`${spaceGrotesk.variable} ${dmSans.variable} ${jetbrainsMono.variable} h-full antialiased`}
       >
         <body className="min-h-full flex flex-col bg-paper text-ink overflow-x-hidden">
           <link rel="preconnect" href="https://fonts.googleapis.com" />

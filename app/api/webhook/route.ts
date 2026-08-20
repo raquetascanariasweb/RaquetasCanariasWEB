@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin"
 import { decrementStockWithFallback } from "@/lib/stock"
 import { Resend } from "resend"
 
-const FROM = process.env.RESEND_FROM || "Sportbalin <onboarding@resend.dev>"
+const FROM = process.env.RESEND_FROM || "Raquetas Canarias <onboarding@resend.dev>"
 
 function formatPrice(cents: number) {
   return (cents / 100).toFixed(2)
@@ -86,7 +86,7 @@ async function sendOrderConfirmation(session: any) {
 
     html = `
       <div style="max-width:600px;margin:0 auto;font-family:Arial,sans-serif;color:#333">
-        <h1 style="color:#C4E326">¡Gracias por tu pedido!</h1>
+        <h1 style="color:#e85d2c">¡Gracias por tu pedido!</h1>
         <p>Hemos recibido tu pedido y lo estamos procesando.</p>
         <table style="width:100%;border-collapse:collapse;margin:20px 0">
           <thead><tr style="background:#f5f5f5"><th style="padding:8px;text-align:left">Producto</th><th style="padding:8px;text-align:center">Cant.</th><th style="padding:8px;text-align:right">Total</th></tr></thead>
@@ -97,7 +97,7 @@ async function sendOrderConfirmation(session: any) {
           ? `<div style="background:#f9f9f9;padding:16px;border-radius:8px;margin:16px 0"><h3 style="margin:0 0 8px">Dirección de envío</h3><p style="margin:0">${session.shipping_details.name || ""}<br/>${session.shipping_details.address.line1 || ""}<br/>${session.shipping_details.address.line2 ? session.shipping_details.address.line2 + "<br/>" : ""}${session.shipping_details.address.postal_code || ""} ${session.shipping_details.address.city || ""}<br/>${session.shipping_details.address.country || ""}</p></div>`
           : ""
         }
-        <p style="color:#888;font-size:13px">Si tienes alguna duda, contáctanos en sportbalin@gmail.com</p>
+        <p style="color:#888;font-size:13px">Si tienes alguna duda, contáctanos en info@raquetascanarias.com</p>
       </div>
     `
   }

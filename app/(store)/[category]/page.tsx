@@ -103,10 +103,10 @@ export async function generateMetadata({ params }: { params: Promise<{ category:
   const { category: slug } = await params
   const categories = await getCategories()
   const category = categories.find((c) => c.slug === slug)
-  if (!category) return { title: "Categoría no encontrada | Sportbalin" }
+  if (!category) return { title: "Categoría no encontrada | Raquetas Canarias" }
   return {
-    title: `${category.name} | Sportbalin`,
-    description: `Explora nuestra colección de ${category.name.toLowerCase()} en Sportbalin.`,
+    title: `${category.name} | Raquetas Canarias`,
+    description: `Explora nuestra colección de ${category.name.toLowerCase()} en Raquetas Canarias.`,
   }
 }
 

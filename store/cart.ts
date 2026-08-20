@@ -96,6 +96,6 @@ export const useCartStore = create<CartState>()(
       openCart: () => set({ isOpen: true }),
       closeCart: () => set({ isOpen: false }),
     }),
-    { name: 'sportbalin-cart' }
+    { name: 'raquetascanarias-cart' }
   )
 )

@@ -90,7 +90,7 @@ export default function AdminHeader({ className }: AdminHeaderProps) {
             {user?.fullName ?? 'Administrador'}
           </p>
           <p className="text-xs text-admin-muted">
-            {user?.primaryEmailAddress?.emailAddress ?? 'admin@sportbalin.com'}
+            {user?.primaryEmailAddress?.emailAddress ?? 'admin@raquetascanarias.com'}
           </p>
         </div>
         <UserButton

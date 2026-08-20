@@ -116,7 +116,7 @@ function HeroBanner() {
             {b.subtitle && (
               <p
                 className="mt-3 text-base sm:text-lg max-w-lg mx-auto"
-                style={{ color: b.subtitle_color || "#EBECEE" }}
+                style={{ color: b.subtitle_color || "#fdfcfa" }}
               >
                 {b.subtitle}
               </p>
@@ -155,7 +155,7 @@ function HeroBanner() {
           className="absolute inset-0"
           style={{
             backgroundImage:
-              "radial-gradient(circle at 20% 50%, #C4E326 0%, transparent 50%), radial-gradient(circle at 80% 30%, #C4E326 0%, transparent 40%)",
+              "radial-gradient(circle at 20% 50%, #e85d2c 0%, transparent 50%), radial-gradient(circle at 80% 30%, #e85d2c 0%, transparent 40%)",
           }}
         />
       </div>

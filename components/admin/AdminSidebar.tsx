@@ -221,7 +221,7 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
     <Link href="/admin" className="flex items-center">
       <Activity className="mr-2 size-6 shrink-0 text-primary" />
       <span className="font-display text-lg font-bold tracking-tight text-white">
-        Sportbalin
+        Raquetas Canarias
       </span>
     </Link>
   )
@@ -256,7 +256,7 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
             <Activity className="size-6 shrink-0 text-primary" />
             {!collapsed && (
               <span className="ml-2 font-display text-lg font-bold tracking-tight text-white">
-                Sportbalin
+                Raquetas Canarias
               </span>
             )}
           </Link>
@@ -295,7 +295,7 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
                 <span>Ir a la tienda</span>
               </Link>
               <p className="text-[9px] uppercase tracking-wider text-admin-muted/50">
-                Sportbalin Admin
+                Raquetas Canarias Admin
               </p>
             </div>
           )}

@@ -34,10 +34,10 @@ async function ProductContent({ slug }: { slug: string }) {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
   const product = await getProductBySlug(decodeURIComponent(slug))
-  if (!product) return { title: "Producto no encontrado | Sportbalin" }
+  if (!product) return { title: "Producto no encontrado | Raquetas Canarias" }
   return {
-    title: `${product.name} | Sportbalin`,
-    description: product.description?.slice(0, 160) || `Compra ${product.name} en Sportbalin.`,
+    title: `${product.name} | Raquetas Canarias`,
+    description: product.description?.slice(0, 160) || `Compra ${product.name} en Raquetas Canarias.`,
     openGraph: product.images[0]?.url ? { images: [product.images[0].url] } : undefined,
   }
 }
