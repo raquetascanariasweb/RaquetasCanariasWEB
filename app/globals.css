@@ -2,12 +2,13 @@
 @plugin "@tailwindcss/typography";
 
 @theme inline {
-  /* Raquetas Canarias — Volcanic palette */
-  --color-paper: #fdfcfa;
-  --color-ink: #1a1a1a;
-  --color-ember: #e85d2c;
-  --color-linen: #818181;
-  --color-slate: #0d0d0d;
+/* Raquetas Canarias — Bandera Canaria palette */
+  --color-paper: #ffffff; /* Blanco canario (puro o ligeramente roto como #fdfcfa si prefieres menos brillo) */
+  --color-ink: #1a1a1a;   /* Mantenemos el contraste para el texto */
+  --color-canary-blue: #005eb8; /* Azul canario (Botones principales, CTAs) */
+  --color-canary-yellow: #ffd100; /* Amarillo canario (Detalles, etiquetas, hovers) */
+  --color-linen: #818181; /* Gris para textos secundarios */
+  --color-slate: #0d0d0d; /* Fondos muy oscuros/pies de página */
 
   /* Admin dark semantic tokens */
   --color-admin-bg: #0d0d0d;
@@ -17,9 +18,9 @@
   --color-admin-muted: #666666;
   --color-admin-slate: #6b6d70;
   --color-admin-success: #22c55e;
-  --color-admin-warning: #f59e0b;
+  --color-admin-warning: #ffd100; /* Actualizado al Amarillo canario */
   --color-admin-danger: #dc2626;
-  --color-admin-info: #3d9fc8;
+  --color-admin-info: #005eb8;    /* Actualizado al Azul canario */
 
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
@@ -155,6 +156,6 @@
 }
 
 *:focus-visible {
-  outline: 2px solid var(--color-ember);
+  outline: 2px solid var(--color-canary-blue);
   outline-offset: 2px;
 }

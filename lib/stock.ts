@@ -9,6 +9,29 @@ export interface StockItem {
 
 type SupabaseAdmin = ReturnType<typeof createAdminClient>
 
+async function normalizeColorSlug(
+  supabase: SupabaseAdmin,
+  productId: string,
+  color: string
+): Promise<string> {
+  if (!color) return ""
+  // Intentar obtener el slug desde los colores del producto
+  const { data: product } = await supabase
+    .from("products")
+    .select("colors")
+    .eq("id", productId)
+    .maybeSingle()
+
+  if (product?.colors) {
+    const colors = product.colors as { name: string; slug: string }[]
+    const found = colors.find(
+      (c) => c.name.toLowerCase() === color.toLowerCase() || c.slug.toLowerCase() === color.toLowerCase()
+    )
+    if (found) return found.slug
+  }
+  return color.toLowerCase()
+}
+
 async function decrementStockFallback(
   supabase: SupabaseAdmin,
   item: StockItem
@@ -16,12 +39,14 @@ async function decrementStockFallback(
   if (!item.product_id || item.quantity <= 0) return
 
   if (item.size || item.color) {
+    const colorSlug = await normalizeColorSlug(supabase, item.product_id, item.color || "")
+
     const { data: variant, error: variantError } = await supabase
       .from("product_variants")
       .select("id, product_id, stock_quantity")
       .eq("product_id", item.product_id)
       .eq("size", item.size || "")
-      .eq("color_slug", item.color || "")
+      .eq("color_slug", colorSlug)
       .maybeSingle()
 
     if (variantError) return variantError.message
@@ -67,10 +92,15 @@ export async function decrementStockWithFallback(
   items: StockItem[]
 ): Promise<{ error?: string }> {
   for (const item of items) {
+    // Normalizar color a slug antes de llamar al RPC
+    const colorSlug = item.color
+      ? await normalizeColorSlug(supabase, item.product_id, item.color)
+      : null
+
     const { error: rpcError } = await supabase.rpc("decrement_stock", {
       p_product_id: item.product_id,
       p_size: item.size || null,
-      p_color: item.color || null,
+      p_color: colorSlug,
       p_quantity: item.quantity,
     })
 
