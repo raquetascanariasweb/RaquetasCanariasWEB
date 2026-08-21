@@ -54,7 +54,7 @@ export async function createBanner(formData: FormData) {
 
     const text_x = parseInt(formData.get('text_x') as string) || 50
     const text_y = parseInt(formData.get('text_y') as string) || 50
-    const height = parseInt(formData.get('height') as string) || 55
+    const image_position = parseInt(formData.get('image_position') as string) || 50
     const videoStart = formData.get('video_start') ? parseInt(formData.get('video_start') as string) || 0 : null
     const videoEnd = formData.get('video_end') ? parseInt(formData.get('video_end') as string) || null : null
 
@@ -69,7 +69,7 @@ export async function createBanner(formData: FormData) {
       sort_order: (count ?? 0) + 1,
       text_x,
       text_y,
-      height,
+      image_position,
       video_url: videoUrl,
       video_start: videoStart,
       video_end: videoEnd,
@@ -114,7 +114,7 @@ export async function updateBanner(id: string, formData: FormData) {
 
     const text_x = parseInt(formData.get('text_x') as string) || 50
     const text_y = parseInt(formData.get('text_y') as string) || 50
-    const height = parseInt(formData.get('height') as string) || 55
+    const image_position = parseInt(formData.get('image_position') as string) || 50
     const videoStart = formData.get('video_start') ? parseInt(formData.get('video_start') as string) || 0 : null
     const videoEnd = formData.get('video_end') ? parseInt(formData.get('video_end') as string) || null : null
 
@@ -127,7 +127,7 @@ export async function updateBanner(id: string, formData: FormData) {
       active: formData.get('active') !== 'false',
       text_x,
       text_y,
-      height,
+      image_position,
       video_start: videoStart,
       video_end: videoEnd,
     }

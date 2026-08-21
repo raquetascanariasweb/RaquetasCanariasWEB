@@ -38,7 +38,7 @@ export default function BannersPage() {
   const [formVideoUrl, setFormVideoUrl] = useState('')
   const [formVideoStart, setFormVideoStart] = useState('')
   const [formVideoEnd, setFormVideoEnd] = useState('')
-  const [formHeight, setFormHeight] = useState(55)
+  const [formImagePosition, setFormImagePosition] = useState(50)
   const [formActive, setFormActive] = useState(true)
   const [saving, setSaving] = useState(false)
   const [mediaPicker, setMediaPicker] = useState(false)
@@ -70,7 +70,7 @@ export default function BannersPage() {
     setFormVideoUrl(b.video_url ?? '')
     setFormVideoStart(b.video_start ? String(b.video_start) : '')
     setFormVideoEnd(b.video_end ? String(b.video_end) : '')
-    setFormHeight(b.height ?? 55)
+    setFormImagePosition(b.image_position ?? 50)
     setFormActive(b.active)
   }
 
@@ -89,7 +89,7 @@ export default function BannersPage() {
     setFormVideoUrl('')
     setFormVideoStart('')
     setFormVideoEnd('')
-    setFormHeight(55)
+    setFormImagePosition(50)
     setFormActive(true)
     setShowAdd(true)
   }
@@ -107,7 +107,7 @@ export default function BannersPage() {
     fd.append('active', String(formActive))
     fd.append('text_x', String(formTextX))
     fd.append('text_y', String(formTextY))
-    fd.append('height', String(formHeight))
+    fd.append('image_position', String(formImagePosition))
     fd.append('video_url', formVideoUrl)
     fd.append('video_start', formVideoStart)
     fd.append('video_end', formVideoEnd)
@@ -334,16 +334,26 @@ export default function BannersPage() {
               )}
             </div>
             <div>
-              <Label>Altura del banner</Label>
+              <Label>Posición de la imagen</Label>
               <div className="mt-1">
                 <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                  <span>Altura</span><span>{formHeight}vh</span>
+                  <span>Vertical</span><span>{formImagePosition}%</span>
                 </div>
-                <input type="range" min="30" max="100" value={formHeight} onChange={(e) => setFormHeight(Number(e.target.value))} className="w-full" />
+                <input type="range" min="0" max="100" value={formImagePosition} onChange={(e) => setFormImagePosition(Number(e.target.value))} className="w-full" />
                 <div className="flex justify-between text-[10px] text-muted-foreground/60 mt-0.5">
-                  <span>30vh (bajo)</span><span>100vh (pantalla completa)</span>
+                  <span>Arriba</span><span>Abajo</span>
                 </div>
               </div>
+              {(formImagePreview || formImage) && (
+                <div className="mt-2 relative w-48 h-28 rounded border border-border overflow-hidden">
+                  <img
+                    src={formImage ? URL.createObjectURL(formImage) : formImagePreview}
+                    alt=""
+                    className="w-full h-full object-cover"
+                    style={{ objectPosition: `center ${formImagePosition}%` }}
+                  />
+                </div>
+              )}
             </div>
             <div>
               <Label>VÃ­deo de fondo (opcional)</Label>
