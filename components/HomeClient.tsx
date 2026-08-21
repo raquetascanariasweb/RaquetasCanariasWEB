@@ -118,7 +118,7 @@ function HeroBanner() {
             {b.subtitle && (
               <p
                 className="mt-3 text-base sm:text-lg max-w-lg mx-auto"
-                style={{ color: b.subtitle_color || "#fdfcfa" }}
+                style={{ color: b.subtitle_color || "#a4a4a4" }}
               >
                 {b.subtitle}
               </p>
