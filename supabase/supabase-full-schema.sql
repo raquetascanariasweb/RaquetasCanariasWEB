@@ -381,9 +381,38 @@ CREATE POLICY "anon_read_seo_defaults" ON seo_defaults FOR SELECT TO anon USING 
 CREATE POLICY "anon_read_featured_products" ON featured_products FOR SELECT TO anon USING (true);
 CREATE POLICY "anon_read_promotional_sections" ON promotional_sections FOR SELECT TO anon USING (true);
 
--- Tablas sin política para anon → acceso denegado por defecto (solo service role):
--- orders, discounts, gift_cards, newsletter_subscribers, settings,
--- email_campaigns, email_logs, user_favorites, cart_items
+-- ═══════════════════════════════════════════════════════════════
+-- RLS POLICIES: escritura para usuarios autenticados
+-- ═══════════════════════════════════════════════════════════════
+
+-- ORDERS: usuarios autenticados pueden crear pedidos
+CREATE POLICY "authenticated_insert_orders" ON orders
+  FOR INSERT TO authenticated
+  WITH CHECK (true);
+
+CREATE POLICY "authenticated_select_own_orders" ON orders
+  FOR SELECT TO authenticated
+  USING (user_id = auth.uid()::text);
+
+-- CART_ITEMS: usuarios autenticados gestionan su propio carrito
+CREATE POLICY "authenticated_manage_cart" ON cart_items
+  FOR ALL TO authenticated
+  USING (user_id = auth.uid()::text)
+  WITH CHECK (user_id = auth.uid()::text);
+
+-- USER_FAVORITES: usuarios autenticados gestionan sus favoritos
+CREATE POLICY "authenticated_manage_favorites" ON user_favorites
+  FOR ALL TO authenticated
+  USING (user_id = auth.uid()::text)
+  WITH CHECK (user_id = auth.uid()::text);
+
+-- NEWSLETTER_SUBSCRIBERS: permitir inserción pública (suscripción)
+CREATE POLICY "anon_insert_newsletter" ON newsletter_subscribers
+  FOR INSERT TO anon
+  WITH CHECK (true);
+
+-- Tablas de admin (settings, discounts, gift_cards, etc.)
+-- → el service role bypassa RLS automáticamente, no necesitan policies.
 
 -- ═══════════════════════════════════════════════════════════════
 -- FUNCTIONS
