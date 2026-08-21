@@ -2,13 +2,12 @@
 @plugin "@tailwindcss/typography";
 
 @theme inline {
-/* Raquetas Canarias — Bandera Canaria palette */
-  --color-paper: #ffffff; /* Blanco canario (puro o ligeramente roto como #fdfcfa si prefieres menos brillo) */
-  --color-ink: #1a1a1a;   /* Mantenemos el contraste para el texto */
-  --color-canary-blue: #005eb8; /* Azul canario (Botones principales, CTAs) */
-  --color-canary-yellow: #ffd100; /* Amarillo canario (Detalles, etiquetas, hovers) */
-  --color-linen: #818181; /* Gris para textos secundarios */
-  --color-slate: #0d0d0d; /* Fondos muy oscuros/pies de página */
+  /* Raquetas Canarias — Bandera Canaria palette */
+  --color-paper: #ffffff;
+  --color-ink: #1a1a1a;
+  --color-ember: #005eb8;
+  --color-linen: #6b7280;
+  --color-slate: #0d0d0d;
 
   /* Admin dark semantic tokens */
   --color-admin-bg: #0d0d0d;
@@ -18,9 +17,9 @@
   --color-admin-muted: #666666;
   --color-admin-slate: #6b6d70;
   --color-admin-success: #22c55e;
-  --color-admin-warning: #ffd100; /* Actualizado al Amarillo canario */
+  --color-admin-warning: #ffd100;
   --color-admin-danger: #dc2626;
-  --color-admin-info: #005eb8;    /* Actualizado al Azul canario */
+  --color-admin-info: #005eb8;
 
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
@@ -50,47 +49,47 @@
 }
 
 :root {
-  --background: 30 33% 98%;
+  --background: 0 0% 100%;
   --foreground: 0 0% 10%;
-  --card: 30 50% 96%;
+  --card: 0 0% 98%;
   --card-foreground: 0 0% 10%;
-  --popover: 30 33% 98%;
+  --popover: 0 0% 100%;
   --popover-foreground: 0 0% 10%;
-  --primary: 17 82% 54%;
+  --primary: 211 100% 36%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 30 50% 96%;
-  --secondary-foreground: 0 0% 22%;
-  --muted: 30 50% 96%;
-  --muted-foreground: 0 0% 51%;
-  --accent: 200 68% 34%;
-  --accent-foreground: 0 0% 100%;
+  --secondary: 48 100% 50%;
+  --secondary-foreground: 0 0% 10%;
+  --muted: 220 14% 96%;
+  --muted-foreground: 220 9% 46%;
+  --accent: 48 100% 50%;
+  --accent-foreground: 0 0% 10%;
   --destructive: 0 72% 51%;
   --destructive-foreground: 0 0% 100%;
-  --border: 28 50% 85%;
-  --input: 28 50% 85%;
-  --ring: 20 86% 57%;
+  --border: 220 13% 91%;
+  --input: 220 13% 91%;
+  --ring: 211 100% 36%;
 }
 
 [data-theme="dark"] {
   --background: 0 0% 5%;
-  --foreground: 30 33% 98%;
+  --foreground: 0 0% 95%;
   --card: 0 0% 10%;
-  --card-foreground: 30 33% 98%;
+  --card-foreground: 0 0% 95%;
   --popover: 0 0% 10%;
-  --popover-foreground: 30 33% 98%;
-  --primary: 17 82% 54%;
+  --popover-foreground: 0 0% 95%;
+  --primary: 211 100% 36%;
   --primary-foreground: 0 0% 100%;
   --secondary: 0 0% 10%;
-  --secondary-foreground: 30 33% 98%;
+  --secondary-foreground: 0 0% 95%;
   --muted: 0 0% 10%;
   --muted-foreground: 0 0% 51%;
-  --accent: 200 68% 34%;
-  --accent-foreground: 0 0% 100%;
+  --accent: 48 100% 50%;
+  --accent-foreground: 0 0% 10%;
   --destructive: 0 72% 51%;
   --destructive-foreground: 0 0% 100%;
   --border: 0 0% 18%;
   --input: 0 0% 18%;
-  --ring: 20 86% 57%;
+  --ring: 211 100% 36%;
 }
 
 @layer base {
@@ -110,7 +109,7 @@
   }
 
   ::selection {
-    background-color: rgba(232, 93, 44, 0.2);
+    background-color: rgba(0, 94, 184, 0.15);
     color: #1a1a1a;
   }
 }
@@ -156,6 +155,6 @@
 }
 
 *:focus-visible {
-  outline: 2px solid var(--color-canary-blue);
+  outline: 2px solid hsl(211 100% 36%);
   outline-offset: 2px;
 }

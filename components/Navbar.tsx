@@ -254,9 +254,8 @@ function UserMenu() {
 export default function Navbar({ categories, isAdmin }: { categories: Category[]; isAdmin: boolean }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
-  const sports = useDropdown()
-  const moda = useDropdown()
-  const varios = useDropdown()
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const itemCount = useCartStore((s) => s.totalItems())
   const favCount = useFavoritesStore((s) => s.items.length)
   const { isSignedIn, user } = useUser()
@@ -264,9 +263,16 @@ export default function Navbar({ categories, isAdmin }: { categories: Category[]
   const mounted = useSyncExternalStore(() => () => {}, () => true, () => false)
 
   const allParents = categories.filter((c) => !c.parent_id)
-  const modaCat = allParents.find((c) => c.slug === "moda")
-  const variosCat = allParents.find((c) => c.slug === "varios")
   const linkClass = (active: boolean) => `inline-block px-3 py-5 text-[13px] font-semibold transition-colors ${active ? "text-white" : "text-gray-400 hover:text-white"}`
+
+  function handleEnter(slug: string) {
+    clearTimeout(timeoutRef.current!)
+    setOpenDropdown(slug)
+  }
+
+  function handleLeave() {
+    timeoutRef.current = setTimeout(() => setOpenDropdown(null), 250)
+  }
 
   return (
     <header className="sticky top-0 z-50 bg-black">
@@ -276,25 +282,21 @@ export default function Navbar({ categories, isAdmin }: { categories: Category[]
           <span className="text-sm font-bold tracking-[0.2em] text-ember uppercase">Canarias</span>
         </Link>
         <div className="hidden lg:flex items-center gap-0.5">
-          <div className="relative" onMouseEnter={() => { moda.close(); varios.close(); sports.enter() }} onMouseLeave={sports.leave}>
-            <Link href="/shop" className={linkClass(sports.open)}>Deportes</Link>
-          </div>
-          {modaCat && (
-            <div className="relative" onMouseEnter={() => { sports.close(); varios.close(); moda.enter() }} onMouseLeave={moda.leave}>
-              <Link href={`/${modaCat.slug}`} className={linkClass(moda.open)}>Moda</Link>
+          {allParents.map((cat) => (
+            <div key={cat.id} className="relative" onMouseEnter={() => handleEnter(cat.slug)} onMouseLeave={handleLeave}>
+              <Link href={`/${cat.slug}`} className={linkClass(openDropdown === cat.slug)}>
+                {cat.name}
+              </Link>
+              <AnimatePresence>
+                {openDropdown === cat.slug && (cat.children ?? []).length > 0 && (
+                  <CategoryMegaMenu category={cat} onClose={() => setOpenDropdown(null)} onEnter={() => handleEnter(cat.slug)} onLeave={handleLeave} />
+                )}
+              </AnimatePresence>
             </div>
-          )}
-          {variosCat && (
-            <div className="relative" onMouseEnter={() => { sports.close(); moda.close(); varios.enter() }} onMouseLeave={varios.leave}>
-              <Link href={`/${variosCat.slug}`} className={linkClass(varios.open)}>Varios</Link>
-            </div>
-          )}
+          ))}
           <span className="w-px h-5 bg-white/15 self-center" />
-          <Link href="/about" onMouseEnter={() => { sports.close(); moda.close(); varios.close() }} className="inline-block px-3 py-5 text-[13px] font-semibold text-gray-400 hover:text-white transition-colors">Sobre nosotros</Link>
-          <Link href="/terms" onMouseEnter={() => { sports.close(); moda.close(); varios.close() }} className="inline-block px-3 py-5 text-[13px] font-semibold text-gray-400 hover:text-white transition-colors">Condiciones de venta</Link>
-          <AnimatePresence>{sports.open && <SportsMegaMenu categories={categories} onClose={sports.close} onEnter={sports.enter} onLeave={sports.leave} />}</AnimatePresence>
-          <AnimatePresence>{moda.open && modaCat && <CategoryMegaMenu category={modaCat} onClose={moda.close} onEnter={moda.enter} onLeave={moda.leave} />}</AnimatePresence>
-          <AnimatePresence>{varios.open && variosCat && <CategoryMegaMenu category={variosCat} onClose={varios.close} onEnter={varios.enter} onLeave={varios.leave} />}</AnimatePresence>
+          <Link href="/about" onMouseEnter={() => setOpenDropdown(null)} className="inline-block px-3 py-5 text-[13px] font-semibold text-gray-400 hover:text-white transition-colors">Sobre nosotros</Link>
+          <Link href="/terms" onMouseEnter={() => setOpenDropdown(null)} className="inline-block px-3 py-5 text-[13px] font-semibold text-gray-400 hover:text-white transition-colors">Condiciones de venta</Link>
         </div>
         <div className="flex items-center gap-3">
           <div className="hidden lg:flex items-center gap-2 bg-white/10 rounded-full h-9 px-4 w-[180px] hover:bg-white/15 transition-colors">
