@@ -13,7 +13,7 @@ import { getMediaList } from '@/lib/admin/media'
 import { uploadDirect } from '@/lib/storage-client'
 import type { MediaFile } from '@/lib/admin/media'
 
-const BUCKET_URL = `https://${(process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://flshhgzyzhgrnorgkcsx.supabase.co').replace('https://', '')}/storage/v1/object/public/product-images`
+const BUCKET_URL = `https://${(process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://flshhgzyzhgrnorgkcsx.supabase.co').replace('https://', '')}/storage/v1/object/public/media`
 
 function getFileType(name: string): 'image' | 'video' | 'other' {
   const ext = name.split('.').pop()?.toLowerCase()

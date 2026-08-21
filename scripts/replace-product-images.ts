@@ -135,7 +135,7 @@ async function main() {
     // 2. Upload to Supabase Storage
     const fileName = `${randomUUID()}.${ext}`
     const { error: uploadErr } = await supabase.storage
-      .from("product-images")
+      .from("media")
       .upload(fileName, imageData, {
         contentType,
         cacheControl: "3600",
@@ -148,7 +148,7 @@ async function main() {
     }
 
     const { data: publicUrlData } = supabase.storage
-      .from("product-images")
+      .from("media")
       .getPublicUrl(fileName)
 
     const newUrl = publicUrlData.publicUrl

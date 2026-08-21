@@ -4,7 +4,7 @@ import { requireAdmin } from '@/lib/admin-auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 
-const BUCKET = 'product-images'
+const BUCKET = 'media'
 
 async function checkAdmin() {
   await requireAdmin()

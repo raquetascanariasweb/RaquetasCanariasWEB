@@ -20,7 +20,7 @@ export async function getSystemHealth(): Promise<SystemHealth> {
 
   let bucketPublic: boolean | null = null
   try {
-    const { data: bucket } = await supabase.storage.getBucket('product-images')
+    const { data: bucket } = await supabase.storage.getBucket('media')
     bucketPublic = bucket?.public ?? null
   } catch { /* ignore */ }
 
@@ -51,7 +51,7 @@ export async function getSystemHealth(): Promise<SystemHealth> {
 export async function setupStoragePublicBucket() {
   await checkAdmin()
   const supabase = createAdminClient()
-  const { error } = await supabase.storage.updateBucket('product-images', { public: true })
+  const { error } = await supabase.storage.updateBucket('media', { public: true })
   if (error) return { error: error.message }
   return { success: true }
 }

@@ -231,7 +231,7 @@ async function deleteProductImages(supabase: any, images: { url: string }[]) {
     })
     .filter((p): p is string => !!p)
   if (paths.length > 0) {
-    await supabase.storage.from('product-images').remove(paths)
+    await supabase.storage.from('media').remove(paths)
   }
 }
 

@@ -1,6 +1,6 @@
 import { createAdminClient } from './admin'
 
-const BUCKET = 'product-images'
+const BUCKET = 'media'
 
 export function getPublicUrl(name: string): string {
   const { data } = createAdminClient().storage.from(BUCKET).getPublicUrl(name)

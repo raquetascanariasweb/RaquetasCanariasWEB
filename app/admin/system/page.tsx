@@ -119,7 +119,7 @@ export default function AdminSystemPage() {
         <CardHeader>
           <CardTitle className="text-sm font-medium flex items-center gap-2">
             <Database size={14} className="text-muted-foreground" />
-            Bucket de almacenamiento (product-images)
+            Bucket de almacenamiento (media)
           </CardTitle>
         </CardHeader>
         <CardContent>

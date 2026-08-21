@@ -90,7 +90,7 @@ export async function POST(request: Request) {
         uploadedUrls = await uploadProductImages(files)
       } catch (uploadErr) {
         return NextResponse.json({
-          error: `Image upload failed: ${uploadErr instanceof Error ? uploadErr.message : 'Unknown error'}. Make sure the "product-images" bucket exists in Supabase Storage.`,
+          error: `Image upload failed: ${uploadErr instanceof Error ? uploadErr.message : 'Unknown error'}. Make sure the "media" bucket exists in Supabase Storage.`,
         }, { status: 500 })
       }
     }

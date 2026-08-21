@@ -16,7 +16,7 @@ import { uploadDirect } from '@/lib/storage-client'
 import type { MediaFile } from '@/lib/admin/media'
 
 const PAGE_SIZE = 24
-const BUCKET_URL = `https://${process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('https://', '') || 'flshhgzyzhgrnorgkcsx.supabase.co'}/storage/v1/object/public/product-images`
+const BUCKET_URL = `https://${process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('https://', '') || 'flshhgzyzhgrnorgkcsx.supabase.co'}/storage/v1/object/public/media`
 
 function getFileType(name: string): 'image' | 'video' | 'other' {
   const ext = name.split('.').pop()?.toLowerCase()
