@@ -10,7 +10,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { toast } from 'sonner'
 import { getMediaList } from '@/lib/admin/media'
-import { uploadDirect } from '@/lib/storage-client'
+import { uploadMediaFile } from '@/lib/admin/media-upload'
 import type { MediaFile } from '@/lib/admin/media'
 
 const BUCKET_URL = `https://${(process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://flshhgzyzhgrnorgkcsx.supabase.co').replace('https://', '')}/storage/v1/object/public/media`
@@ -60,7 +60,7 @@ export default function MediaPicker({ open, onClose, onSelect }: MediaPickerProp
 
     let ok = 0
     for (const file of Array.from(files)) {
-      const res = await uploadDirect(file)
+      const res = await uploadMediaFile(file)
       if ('error' in res) toast.error(res.error)
       else ok++
     }

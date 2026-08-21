@@ -12,7 +12,7 @@ import { toast } from 'sonner'
 import SimplePagination from '@/components/admin/SimplePagination'
 import { getPublicUrl } from '@/lib/supabase/storage'
 import { getMediaList, deleteMedia } from '@/lib/admin/media'
-import { uploadDirect } from '@/lib/storage-client'
+import { uploadMediaFile } from '@/lib/admin/media-upload'
 import type { MediaFile } from '@/lib/admin/media'
 
 const PAGE_SIZE = 24
@@ -74,7 +74,7 @@ export default function MediaPage() {
     try {
       let ok = 0
       for (const file of fileArr) {
-        const res = await uploadDirect(file)
+        const res = await uploadMediaFile(file)
         if ('error' in res) {
           toast.error(res.error)
         } else {
@@ -146,7 +146,7 @@ export default function MediaPage() {
     try {
       let ok = 0
       for (const file of Array.from(files)) {
-        const res = await uploadDirect(file)
+        const res = await uploadMediaFile(file)
         if ('error' in res) {
           toast.error(res.error)
         } else {
