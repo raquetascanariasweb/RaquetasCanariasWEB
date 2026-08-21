@@ -131,11 +131,13 @@ async function processPaidOrder(supabase: ReturnType<typeof createAdminClient>, 
   }
 
   const items = JSON.parse(session.metadata?.items || "[]") as OrderItem[]
+  console.log("[webhook] Processing order items:", JSON.stringify(items, null, 2))
 
   const { error: stockError } = await decrementStockWithFallback(supabase, items)
   if (stockError) {
     console.error(`[webhook] Stock decrement failed for ${session.id}:`, stockError)
-    // Do not fail the webhook; stock issue must be resolved manually.
+  } else {
+    console.log(`[webhook] Stock decremented successfully for ${session.id}`)
   }
 
   const updateData: Record<string, unknown> = {
