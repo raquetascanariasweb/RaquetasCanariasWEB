@@ -59,11 +59,22 @@ export async function POST(request: Request) {
   // Validar stock antes de crear la sesión de pago
   const needsVariants = items.some((i) => i.size || i.color)
   const variantMap = new Map<string, { stock_quantity: number; track_inventory: boolean }>()
+  const colorSlugMap = new Map<string, string>() // name -> slug
   if (needsVariants) {
     const { data: variants } = await supabase
       .from('product_variants')
       .select('product_id, size, color_slug, stock_quantity, track_inventory')
       .in('product_id', items.map((i) => i.product_id))
+
+    // Construir mapa de color name -> slug desde los productos
+    for (const product of products) {
+      const colors = (product.colors as ColorSwatch[]) ?? []
+      for (const c of colors) {
+        colorSlugMap.set(c.name.toLowerCase(), c.slug)
+        colorSlugMap.set(c.slug.toLowerCase(), c.slug)
+      }
+    }
+
     for (const v of variants ?? []) {
       const key = `${v.product_id}::${v.size ?? ''}::${v.color_slug ?? ''}`
       variantMap.set(key, v)
@@ -75,7 +86,9 @@ export async function POST(request: Request) {
     if (!product) continue
     const hasVariant = Boolean(item.size || item.color)
     if (hasVariant) {
-      const key = `${item.product_id}::${item.size ?? ''}::${item.color ?? ''}`
+      // Normalizar color: convertir name a slug si es necesario
+      const colorSlug = colorSlugMap.get(item.color.toLowerCase()) ?? item.color.toLowerCase()
+      const key = `${item.product_id}::${item.size ?? ''}::${colorSlug}`
       const variant = variantMap.get(key)
       if (!variant) {
         return NextResponse.json({ error: `La variante seleccionada no existe para ${product.name}.` }, { status: 400 })
