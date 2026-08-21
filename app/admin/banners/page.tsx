@@ -38,6 +38,7 @@ export default function BannersPage() {
   const [formVideoUrl, setFormVideoUrl] = useState('')
   const [formVideoStart, setFormVideoStart] = useState('')
   const [formVideoEnd, setFormVideoEnd] = useState('')
+  const [formHeight, setFormHeight] = useState(55)
   const [formActive, setFormActive] = useState(true)
   const [saving, setSaving] = useState(false)
   const [mediaPicker, setMediaPicker] = useState(false)
@@ -69,6 +70,7 @@ export default function BannersPage() {
     setFormVideoUrl(b.video_url ?? '')
     setFormVideoStart(b.video_start ? String(b.video_start) : '')
     setFormVideoEnd(b.video_end ? String(b.video_end) : '')
+    setFormHeight(b.height ?? 55)
     setFormActive(b.active)
   }
 
@@ -87,6 +89,7 @@ export default function BannersPage() {
     setFormVideoUrl('')
     setFormVideoStart('')
     setFormVideoEnd('')
+    setFormHeight(55)
     setFormActive(true)
     setShowAdd(true)
   }
@@ -104,6 +107,7 @@ export default function BannersPage() {
     fd.append('active', String(formActive))
     fd.append('text_x', String(formTextX))
     fd.append('text_y', String(formTextY))
+    fd.append('height', String(formHeight))
     fd.append('video_url', formVideoUrl)
     fd.append('video_start', formVideoStart)
     fd.append('video_end', formVideoEnd)
@@ -328,6 +332,18 @@ export default function BannersPage() {
                   <div className="absolute w-4 h-4 rounded-full bg-primary border-2 border-admin-bg shadow-md" style={{ left: `${formTextX}%`, top: `${formTextY}%`, transform: 'translate(-50%,-50%)' }} />
                 </div>
               )}
+            </div>
+            <div>
+              <Label>Altura del banner</Label>
+              <div className="mt-1">
+                <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                  <span>Altura</span><span>{formHeight}vh</span>
+                </div>
+                <input type="range" min="30" max="100" value={formHeight} onChange={(e) => setFormHeight(Number(e.target.value))} className="w-full" />
+                <div className="flex justify-between text-[10px] text-muted-foreground/60 mt-0.5">
+                  <span>30vh (bajo)</span><span>100vh (pantalla completa)</span>
+                </div>
+              </div>
             </div>
             <div>
               <Label>VÃ­deo de fondo (opcional)</Label>

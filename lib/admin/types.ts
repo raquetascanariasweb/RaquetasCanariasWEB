@@ -235,6 +235,7 @@ export interface Banner {
   video_url: string | null
   video_start: number | null
   video_end: number | null
+  height: number | null
   created_at: string
   updated_at: string
 }

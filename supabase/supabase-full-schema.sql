@@ -238,6 +238,7 @@ CREATE TABLE IF NOT EXISTS banners (
   video_url TEXT,
   video_start INTEGER,
   video_end INTEGER,
+  height INTEGER DEFAULT 55,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );

@@ -90,8 +90,10 @@ function HeroBanner() {
   if (banners.length > 0) {
     const b = banners[current]
 
+    const bannerHeight = b.height ?? (b.video_url ? 80 : 55)
+
     return (
-      <section className={`relative bg-ink overflow-hidden ${b.video_url ? 'h-[60vh] sm:h-[80vh]' : 'h-[45vh] sm:h-[55vh]'}`}>
+      <section className="relative bg-ink overflow-hidden" style={{ height: `${bannerHeight}vh` }}>
         {b.video_url ? (
           <BannerVideo src={b.video_url} start={b.video_start} end={b.video_end} />
         ) : b.image_url ? (
