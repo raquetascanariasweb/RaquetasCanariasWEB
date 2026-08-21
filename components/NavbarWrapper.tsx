@@ -19,7 +19,7 @@ function buildTree(flat: Category[]): Category[] {
   return roots
 }
 
-export default function NavbarWrapper({ categories }: { categories: Category[] }) {
+export default function NavbarWrapper({ categories, isAdmin }: { categories: Category[]; isAdmin: boolean }) {
   const tree = useMemo(() => buildTree(categories), [categories])
-  return <Navbar categories={tree} />
+  return <Navbar categories={tree} isAdmin={isAdmin} />
 }

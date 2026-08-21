@@ -251,7 +251,7 @@ function UserMenu() {
   )
 }
 
-export default function Navbar({ categories }: { categories: Category[] }) {
+export default function Navbar({ categories, isAdmin }: { categories: Category[]; isAdmin: boolean }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const sports = useDropdown()
@@ -262,9 +262,6 @@ export default function Navbar({ categories }: { categories: Category[] }) {
   const { isSignedIn, user } = useUser()
   const { signOut } = useClerk()
   const mounted = useSyncExternalStore(() => () => {}, () => true, () => false)
-  const adminIds = (process.env.NEXT_PUBLIC_ADMIN_USER_IDS || process.env.NEXT_PUBLIC_ADMIN_USER_ID || '')
-    .split(',').map((s) => s.trim()).filter(Boolean)
-  const isAdmin = isSignedIn && !!user?.id && adminIds.includes(user.id)
 
   const allParents = categories.filter((c) => !c.parent_id)
   const modaCat = allParents.find((c) => c.slug === "moda")
